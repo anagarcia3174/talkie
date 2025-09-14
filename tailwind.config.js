@@ -5,6 +5,13 @@ module.exports = {
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
+      fontFamily: {
+        'SpaceGrotesk-Bold': ['SpaceGrotesk-Bold'],
+        'SpaceGrotesk-Light': ['SpaceGrotesk-Light'],
+        'SpaceGrotesk-Medium': ['SpaceGrotesk-Medium'],
+        'SpaceGrotesk-Regular': ['SpaceGrotesk-Regular'],
+        'SpaceGrotesk-SemiBold': ['SpaceGrotesk-SemiBold']
+      },
       colors: {
        primary: {
           50: '#fafafa',
