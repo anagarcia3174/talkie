@@ -1,11 +1,12 @@
 import '~/global.css';
-import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
+
 import { Stack } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
-import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
+import { AuthProvider, useAuth } from '~/context/AuthContext';
+import LoadingScreen from '~/components/LoadingScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,23 +15,20 @@ SplashScreen.setOptions({
   fade: true
 });
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 const InitialLayout = () => {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (!isLoaded) {
-    return <ActivityIndicator />;
+  if (loading) {
+    return <LoadingScreen fullScreen={true} />
   }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!isSignedIn}>
+      <Stack.Protected guard={!user}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="signin" />
-        <Stack.Screen name="signup" />
       </Stack.Protected>
-      <Stack.Protected guard={!!isSignedIn}>
+      <Stack.Protected guard={!!user}>
         <Stack.Screen name="(protected)" />
       </Stack.Protected>
     </Stack>
@@ -58,8 +56,8 @@ export default function RootLayout() {
   }
 
   return (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+    <AuthProvider>
       <InitialLayout />
-    </ClerkProvider>
+    </AuthProvider>
   );
 }

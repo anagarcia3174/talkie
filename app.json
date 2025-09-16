@@ -49,6 +49,7 @@
       "**/*"
     ],
     "ios": {
+      "usesAppleSignIn": true,
       "supportsTablet": true,
       "bundleIdentifier": "com.noatapp.mobile",
       "infoPlist": {

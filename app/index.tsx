@@ -1,19 +1,12 @@
-import { Text, View, TouchableOpacity } from 'react-native';
-import { ArrowRight } from 'lucide-react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '~/hooks/useTheme';
-import { useRouter } from 'expo-router';
+import { Auth } from '~/components/Auth.native';
 
 export default function Index() {
-  const theme = useTheme();
-  const router = useRouter();
-  const handleGetStarted = () => {
-    router.push('/signin');
-  }
 
 
   return (
-    <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
+    <SafeAreaView className="flex-1 bg-primary-100 dark:bg-primary-950">
       <View className="flex-1 justify-center px-8">
         <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50 text-6xl font-CourierPrime-Regular">
           Noat
@@ -28,10 +21,7 @@ export default function Index() {
       </View>
       </View>
       <View className="items-center p-6">
-        <TouchableOpacity onPress={handleGetStarted} className="flex-row items-center justify-center gap-3 bg-primary-900 dark:bg-primary-200 rounded-xl p-4 w-full">
-          <Text className="text-primary-50 dark:text-primary-950 text-lg font-SpaceGrotesk-Medium">Get Started</Text>
-          <ArrowRight color={theme.primary[50]} size={20} />
-        </TouchableOpacity>
+        <Auth />
       </View>
     </SafeAreaView>
   );
