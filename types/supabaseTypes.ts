@@ -1,4 +1,3 @@
-
 // Enum types
 export type MediaType = 'movie' | 'tv';
 export type ListType = 'watchlist' | 'favorites' | 'watched' | 'custom';
@@ -8,6 +7,21 @@ export type Visibility = 'private' | 'followers' | 'public';
 interface BaseRecord {
   id: number;
   created_at: string;
+}
+
+export interface Profile extends BaseRecord {
+  display_name: string;
+  avatar_url: string;
+  bio: string;
+  updated_at: string;
+}
+
+export interface ProfileStats {
+  followers: number;
+  following: number;
+  reviews: number;
+  totalLogged: number;
+  avgRating: number;
 }
 
 // Core table types
@@ -91,7 +105,10 @@ export interface Review extends BaseRecord {
 
 // Input types for creating/updating records (omit auto-generated fields)
 export type CreateBlockInput = Omit<Block, 'id' | 'created_at'>;
-export type CreateCommentInput = Omit<Comment, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'reply_count'>;
+export type CreateCommentInput = Omit<
+  Comment,
+  'id' | 'created_at' | 'updated_at' | 'like_count' | 'reply_count'
+>;
 export type CreateFollowInput = Omit<Follow, 'id' | 'created_at'>;
 export type CreateListItemInput = Omit<ListItem, 'id' | 'created_at'>;
 export type CreateListInput = Omit<List, 'id' | 'created_at' | 'updated_at' | 'item_count'>;
@@ -100,9 +117,12 @@ export type CreateReviewInput = Omit<Review, 'id' | 'created_at' | 'updated_at' 
 
 // Update types (all fields optional except id)
 export type UpdateCommentInput = Partial<Pick<Comment, 'content' | 'is_spoiler'>> & { id: number };
-export type UpdateListInput = Partial<Pick<List, 'name' | 'description' | 'visibility'>> & { id: number };
-export type UpdateReviewInput = Partial<Pick<Review, 'rating' | 'content' | 'is_spoiler'>> & { id: number };
-
+export type UpdateListInput = Partial<Pick<List, 'name' | 'description' | 'visibility'>> & {
+  id: number;
+};
+export type UpdateReviewInput = Partial<Pick<Review, 'rating' | 'content' | 'is_spoiler'>> & {
+  id: number;
+};
 
 // Utility types for API responses
 export interface PaginatedResponse<T> {
