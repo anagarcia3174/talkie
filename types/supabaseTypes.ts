@@ -3,6 +3,10 @@ export type MediaType = 'movie' | 'tv';
 export type ListType = 'watchlist' | 'favorites' | 'watched' | 'custom';
 export type Visibility = 'private' | 'followers' | 'public';
 
+export type Result<T = void> =
+  | { success: true; data?: T }
+  | { success: false; error: string };
+
 // Base database record interface
 interface BaseRecord {
   id: number;

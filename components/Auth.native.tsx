@@ -3,12 +3,13 @@ import { Platform, Alert, View, Text, StyleSheet, Dimensions } from 'react-nativ
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '~/utils/supabase';
 import { useTheme } from '~/hooks/useTheme';
+import { useState } from 'react';
 
 export function Auth() {
   const { width } = Dimensions.get('window');
   const buttonWidth = width - 40;
   const theme = useTheme();
-
+  const [error, setError] = useState('');
   const handleAppleSignIn = async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -20,29 +21,27 @@ export function Auth() {
 
       if (credential.identityToken) {
         const {
-          error,
+          error: signInError,
           data: { user },
         } = await supabase.auth.signInWithIdToken({
           provider: 'apple',
           token: credential.identityToken,
         });
 
-        if (error) {
-          throw error;
+        if (signInError) {
+          setError(signInError.message);
+          return;
         }
 
-        console.log('User signed in:', user?.email);
-        // Navigation or success handling will be handled by AuthContext
+        // If success, clear any old error
+        setError('');
       } else {
         throw new Error('No identity token received');
       }
     } catch (e: any) {
-      if (e.code === 'ERR_REQUEST_CANCELED') {
-        console.log('User canceled Apple Sign In');
-      } else {
-        console.error('Apple Sign In Error:', e);
-        Alert.alert('Sign In Error', e.message || 'An error occurred during sign in');
-      }
+      setError(
+        'An error ocurred while signing you in. Try again or contact support if the problem persists.'
+      );
     }
   };
 
@@ -69,10 +68,16 @@ export function Auth() {
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
-      {/* We'll add Google Sign In here next */}
-      <Text className='text-primary-950 dark:text-primary-50 text-center'>
+      {error && (
+        <View className="mb-4 rounded-lg bg-red-400 px-4 py-3 dark:bg-red-800">
+          <Text className="text-md font-SpaceGrotesk-Medium text-white dark:text-red-100">
+            {error}
+          </Text>
+        </View>
+      )}
+      <Text className="text-center text-primary-950 dark:text-primary-50">
         Sign in options for Android coming soon...
       </Text>
     </View>
-  )
+  );
 }

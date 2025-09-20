@@ -1,16 +1,20 @@
-import { Profile, ProfileStats } from '~/types/supabaseTypes';
+import { Profile, ProfileStats, Result } from '~/types/supabaseTypes';
 import { supabase } from '~/utils/supabase';
 import { create } from 'zustand';
+import { getErrorMessage } from '~/utils/errorHandler';
+import { ImagePickerAsset } from 'expo-image-picker';
+import { withPublicUrl } from '~/utils/storageUrl';
+
 interface ProfileState {
   profile: Profile | null;
   stats: ProfileStats;
   loading: boolean;
   error: string | null;
 
-  getProfile: (userId: string) => Promise<void>;
-  getStats: (userId: string) => Promise<void>;
-  uploadAvatar: (userId: string, fileUri: string) => Promise<void>;
-  updateProfile: (updates: Partial<Profile>) => Promise<void>;
+  getProfile: (userId: string) => Promise<Result<void>>;
+  getStats: (userId: string) => Promise<Result<void>>;
+  uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<Result<void>>;
+  updateProfile: (updates: Partial<Profile>) => Promise<Result<void>>;
   clearProfile: () => void;
 }
 export const useProfile = create<ProfileState>((set, get) => ({
@@ -26,62 +30,76 @@ export const useProfile = create<ProfileState>((set, get) => ({
   error: null,
 
   // Fetch current user's profile
-  getProfile: async (userId: string) => {
+  getProfile: async (userId) => {
     set({ loading: true, error: null });
     try {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
       if (error) throw error;
-      set({ profile: data, loading: false });
+
+      const normalized = withPublicUrl(data);
+      set({ profile: normalized, loading: false });
+      return { success: true };
     } catch (err: any) {
-      set({ error: err.message, loading: false });
+      const message = getErrorMessage(err);
+      set({ error: message, loading: false });
+      return { success: false, error: message };
     }
   },
-  getStats: async (userId: string) => {
-    try {
-      const { data, error } = await supabase.rpc('get_profile_stats', { user_id: userId });
 
+  getStats: async (userId) => {
+    try {
+      const { data, error } = await supabase.rpc('get_profile_stats', {
+        user_id: userId,
+      });
       if (error) throw error;
 
-      set({
-        stats: {
-          followers: data.followers,
-          following: data.following,
-          reviews: data.reviews,
-          totalLogged: data.totalLogged,
-          avgRating: data.avgRating,
-        },
-      });
+      const stats: ProfileStats = {
+        followers: data.followers,
+        following: data.following,
+        reviews: data.reviews,
+        avgRating: data.avgRating,
+        totalLogged: data.totalLogged
+      };
+      set({ stats });
+      return { success: true };
     } catch (err: any) {
-      set({ error: err.message });
+      console.log(err)
+      const message = getErrorMessage(err);
+      set({ error: message });
+      return { success: false, error: message };
     }
   },
-  // Upload avatar and let trigger update profiles.avatar_url
-  uploadAvatar: async (userId: string, fileUri: string) => {
-    try {
-      const fileExt = fileUri.split('.').pop();
-      const filePath = `${userId}/avatar.${fileExt}`;
 
-      const response = await fetch(fileUri);
-      const blob = await response.blob();
+  uploadAvatar: async (userId, image) => {
+    try {
+      const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
+      const fileExt = image.uri?.split('.').pop()?.toLowerCase() ?? 'jpeg';
+      const filePath = `${userId}/avatar.${fileExt}`;
 
       const { error } = await supabase.storage
         .from('avatars')
-        .upload(filePath, blob, { upsert: true });
+        .upload(filePath, arraybuffer, {
+          upsert: true,
+          contentType: image.mimeType ?? 'image/jpeg',
+        });
 
       if (error) throw error;
 
-      // Re-fetch profile so UI updates
       await get().getProfile(userId);
+      return { success: true };
     } catch (err: any) {
-      set({ error: err.message });
+      console.log(err);
+      const message = getErrorMessage(err);
+      set({ error: message });
+      return { success: false, error: message };
     }
   },
 
-  // Update display_name, bio, etc.
-  updateProfile: async (updates: Partial<Profile>) => {
-    if (!get().profile) return;
-
+  updateProfile: async (updates) => {
+    if (!get().profile) {
+      return { success: false, error: 'No profile loaded' };
+    }
     const { id } = get().profile!;
     try {
       const { data, error } = await supabase
@@ -95,12 +113,15 @@ export const useProfile = create<ProfileState>((set, get) => ({
         .single();
 
       if (error) throw error;
-      set({ profile: data });
+      const normalized = withPublicUrl(data);
+      set({ profile: normalized });
+      return { success: true };
     } catch (err: any) {
-      set({ error: err.message });
+      const message = getErrorMessage(err);
+      set({ error: message });
+      return { success: false, error: message };
     }
   },
 
-  // Clear store (e.g. on sign out)
   clearProfile: () => set({ profile: null, error: null }),
 }));
