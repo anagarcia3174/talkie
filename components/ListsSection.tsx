@@ -1,6 +1,6 @@
 import { List } from '~/types/supabaseTypes';
 import { View, Text } from 'react-native';
-import { Star, Library, CheckCircle2, Clapperboard } from 'lucide-react-native';
+import { Star, Library, Clapperboard } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useLists } from '~/store/listStore';
 import { useRouter } from 'expo-router';
@@ -12,10 +12,10 @@ export default function ListsSection() {
     switch (list.list_type) {
       case 'favorites':
         return <Star size={16} color={theme.primary[600]} />;
-      case 'watchlist':
+      case 'library':
         return <Library size={16} color={theme.primary[600]} />;
-      case 'watched':
-        return <CheckCircle2 size={16} color={theme.primary[600]} />;
+      case 'custom':
+        return <Clapperboard size={16} color={theme.primary[600]} />; // fallback for custom
       default:
         return <Clapperboard size={16} color={theme.primary[600]} />; // fallback for custom
     }

@@ -1,7 +1,8 @@
 // Enum types
 export type MediaType = 'movie' | 'tv';
-export type ListType = 'watchlist' | 'favorites' | 'watched' | 'custom';
+export type ListType = 'library' | 'favorites' | 'custom';
 export type Visibility = 'private' | 'followers' | 'public';
+export type LibraryStatus = 'watched' | 'watching' | 'want_to_watch';
 
 export type Result<T = void> =
   | { success: true; data?: T }
@@ -63,6 +64,7 @@ export interface ListItem extends BaseRecord {
   list_id: number;
   media_id: number;
   user_id: string;
+  status: LibraryStatus | null;
 }
 
 export interface ListLike extends BaseRecord {
