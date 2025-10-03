@@ -9,7 +9,7 @@ export default function Profile() {
   const { error } = useProfile();
 
   return (
-    <SafeAreaView className="flex-1 bg-primary-100 px-4 py-4 dark:bg-primary-950">
+    <SafeAreaView className="flex-1 bg-primary-50 px-4 py-4 dark:bg-primary-950">
       <Text className="mb-2 font-SpaceGrotesk-Bold text-4xl text-primary-950 dark:text-primary-50">
         Profile
       </Text>

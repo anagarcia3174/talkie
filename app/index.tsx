@@ -6,7 +6,7 @@ export default function Index() {
 
 
   return (
-    <SafeAreaView className="flex-1 bg-primary-100 dark:bg-primary-950">
+    <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
       <View className="flex-1 justify-center px-8">
         <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50 text-6xl font-CourierPrime-Regular">
           Noat

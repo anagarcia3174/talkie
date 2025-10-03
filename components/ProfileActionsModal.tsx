@@ -105,7 +105,7 @@ export default function ProfileActionsModal({
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="absolute inset-0 items-center justify-center p-6">
-        <View className="w-full max-w-md rounded-2xl bg-primary-100 p-6 dark:bg-primary-950">
+        <View className="w-full max-w-md rounded-2xl bg-primary-50 p-6 dark:bg-primary-950">
           <Text className="mb-4 font-SpaceGrotesk-Medium text-lg text-primary-950 dark:text-primary-50">
             Edit Profile
           </Text>

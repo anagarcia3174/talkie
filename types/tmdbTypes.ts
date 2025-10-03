@@ -27,9 +27,17 @@ export interface TMDBReview {
   created_at: string;
   author_details: {
     username: string;
+    name: string;
     rating: number | null;
     avatar_path: string | null;
   };
+  movie?: {
+    id: number;
+    title: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    release_date: string;
+  }
 }
 
 export interface TMDBReviewResponse {

@@ -1,11 +1,7 @@
 // src/store/homeStore.ts
-import { create } from "zustand";
-import { HomeService } from "~/services/tmdbService";
-import {
-  TMDBBaseMedia,
-  TMDBReview,
-  TMDBPaginatedResponse,
-} from "~/types/tmdbTypes";
+import { create } from 'zustand';
+import { HomeService } from '~/services/tmdbService';
+import { TMDBBaseMedia, TMDBReview, TMDBPaginatedResponse } from '~/types/tmdbTypes';
 
 interface HomeState {
   loading: boolean;
@@ -28,21 +24,34 @@ export const useHomeStore = create<HomeState>((set) => ({
   fetchHomeData: async () => {
     set({ loading: true, error: null });
     try {
-      const [nowPlayingMovies, nowPlayingTV, trending, upcoming] =
-        await Promise.all([
-          HomeService.getNowPlayingMovies(),
-          HomeService.getNowPlayingTV(),
-          HomeService.getTrending("day"),
-          HomeService.getUpcomingMovies(),
-        ]);
+      const [nowPlayingMovies, nowPlayingTV, trending, upcoming] = await Promise.all([
+        HomeService.getNowPlayingMovies(),
+        HomeService.getNowPlayingTV(),
+        HomeService.getTrending('day'),
+        HomeService.getUpcomingMovies(),
+      ]);
 
-      // pick one random movie to fetch reviews from
-      const sampleId = nowPlayingMovies.results[0]?.id;
-      let reviews: TMDBReview[] = [];
-      if (sampleId) {
-        const reviewRes = await HomeService.getMovieReviews(sampleId);
-        reviews = reviewRes.results;
-      }
+      const newMovieIds = nowPlayingMovies.results.slice(0, 5).map((m) => m.id);
+
+      // fetch reviews for each movie
+      const reviewPromises = newMovieIds.map(async (id) => {
+        const res = await HomeService.getMovieReviews(id).catch(() => ({ results: [] }));
+        // attach the movie details to each review
+        const movie = nowPlayingMovies.results.find((m) => m.id === id);
+        return res.results.map((r) => ({
+          ...r,
+          movie: {
+            id: movie!.id,
+            title: movie!.title!,
+            poster_path: movie!.poster_path ?? null,
+            backdrop_path: movie!.backdrop_path ?? null,
+            release_date: movie!.release_date!,
+          },
+        }));
+      });
+
+      const reviewResponses = await Promise.all(reviewPromises);
+      const reviews = reviewResponses.flat();
 
       set({
         nowPlaying: [...nowPlayingMovies.results, ...nowPlayingTV.results],
@@ -52,7 +61,7 @@ export const useHomeStore = create<HomeState>((set) => ({
         loading: false,
       });
     } catch (err: any) {
-      set({ error: err.message || "Failed to load home data", loading: false });
+      set({ error: err.message || 'Failed to load home data', loading: false });
     }
   },
 }));

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Bell, Home, Search, User } from 'lucide-react-native';
+import { Bell, Home, Library, Search, User } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 
 
@@ -14,7 +14,7 @@ export default function Layout() {
         tabBarActiveTintColor: theme.primary[900],
         tabBarInactiveTintColor: theme.primaryOpacity[700],
         tabBarStyle: {
-          backgroundColor: theme.isDark ? '#1a1a1a' : '#f4f4f5',
+          backgroundColor: theme.primary[50],
           position: 'absolute',
           borderTopWidth: 0,
           elevation: 0,
@@ -38,10 +38,10 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="activity"
+        name="library"
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Bell color={color} strokeWidth={focused ? 2 : 1.5} />
+            <Library color={color} strokeWidth={focused ? 2 : 1.5} />
           ),
         }}
       />

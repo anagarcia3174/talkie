@@ -10,10 +10,10 @@ import LoadingScreen from '~/components/LoadingScreen';
 
 SplashScreen.preventAutoHideAsync();
 
-SplashScreen.setOptions({
-  duration: 400,
-  fade: true
-});
+// SplashScreen.setOptions({
+//   duration: 400,
+//   fade: true
+// });
 
 
 const InitialLayout = () => {
