@@ -9,11 +9,13 @@ export default function Profile() {
   const { error } = useProfile();
 
   return (
-    <SafeAreaView className="flex-1 bg-primary-50 px-4 py-4 dark:bg-primary-950">
-      <Text className="mb-2 font-SpaceGrotesk-Bold text-4xl text-primary-950 dark:text-primary-50">
-        Profile
-      </Text>
-      <ScrollView>
+    <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
+        <View className="mb-2 flex-row items-center justify-start px-4">
+        <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
+          Profile
+        </Text>
+      </View>
+      <ScrollView className='px-4'>
         {error && (
           <View className="mb-4 rounded-lg bg-red-400 px-4 py-3 dark:bg-red-800">
             <Text className="text-md font-SpaceGrotesk-Medium text-white dark:text-red-100">

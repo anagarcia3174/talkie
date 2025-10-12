@@ -1,7 +1,5 @@
 // src/store/homeStore.ts
 import { create } from 'zustand';
-import { HomeService } from '~/services/tmdbService';
-import { TMDBBaseMedia, TMDBReview, TMDBPaginatedResponse } from '~/types/tmdbTypes';
 
 interface HomeState {
   loading: boolean;

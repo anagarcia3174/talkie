@@ -67,6 +67,18 @@ export interface ListItem extends BaseRecord {
   status: LibraryStatus | null;
 }
 
+// ✅ New — list item including media details (from Supabase function)
+export interface ListItemWithMedia extends ListItem {
+  tmdb_id: number;
+  media_type: MediaType;
+  title: string;
+  synopsis?: string;
+  poster_path?: string;
+  release_date?: string;
+  runtime_minutes?: number;
+  comment_count?: number;
+}
+
 export interface ListLike extends BaseRecord {
   user_id: string;
   list_id: number;
@@ -83,15 +95,23 @@ export interface List extends BaseRecord {
   updated_at: string;
 }
 
+// ✅ Generic ListWithItems type (works for both basic + media-enriched items)
+export interface ListWithItems<T extends ListItem = ListItem> extends List {
+  items: T[];
+}
+
 export interface Media extends BaseRecord {
   tmdb_id: number;
   media_type: MediaType;
   title: string;
-  synopsis?: string;
-  poster_path?: string;
-  release_date?: string; // ISO date string
-  runtime_minutes?: number;
+  synopsis: string;
+  poster_path: string;
+  release_date: string; // ISO date string
+  runtime_minutes: number;
   comment_count: number;
+  backdrop_path: string;
+  popularity: number;
+  vote_average: number;
 }
 
 export interface ReviewLike extends BaseRecord {
@@ -108,6 +128,7 @@ export interface Review extends BaseRecord {
   like_count: number;
   updated_at: string;
 }
+
 
 // Input types for creating/updating records (omit auto-generated fields)
 export type CreateBlockInput = Omit<Block, 'id' | 'created_at'>;

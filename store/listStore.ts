@@ -1,11 +1,11 @@
-import { List, ListItem } from '~/types/supabaseTypes';
-import {create } from 'zustand'
+import { List, ListItem, ListWithItems, ListItemWithMedia } from '~/types/supabaseTypes';
+import { create } from 'zustand';
 import { supabase } from '~/utils/supabase';
-
 
 interface ListState {
   lists: List[];
-  listItems: Record<number, ListItem[]>; // keyed by listId
+  library: ListWithItems<ListItemWithMedia> | null;
+  listItems: Record<number, ListItem[] | ListItemWithMedia[]>; // keyed by listId
   loading: boolean;
   error: string | null;
 
@@ -26,6 +26,7 @@ interface ListState {
 
 export const useLists = create<ListState>((set, get) => ({
   lists: [],
+  library: null,
   listItems: {},
   loading: false,
   error: null,
@@ -34,14 +35,43 @@ export const useLists = create<ListState>((set, get) => ({
   getLists: async (userId) => {
     set({ loading: true, error: null });
     try {
-      const { data, error } = await supabase
+      // Fetch all lists for the user
+      const { data: lists, error: listError } = await supabase
         .from('lists')
         .select('*')
         .eq('user_id', userId);
 
-      if (error) throw error;
-      set({ lists: data || [], loading: false });
+      if (listError) throw listError;
+
+      const library = lists?.find(
+        (l) => l.is_default && l.list_type === 'library'
+      );
+
+      let libraryWithItems: ListWithItems<ListItemWithMedia> | null = null;
+      const itemsByList: Record<number, ListItem[] | ListItemWithMedia[]> = {};
+
+      // Only fetch detailed media data for the library
+      if (library) {
+        const { data: items, error: itemsError } = await supabase.rpc(
+          'get_list_items_with_media',
+          { p_list_id: library.id }
+        );
+
+        if (itemsError) throw itemsError;
+
+        const typedItems = (items || []) as ListItemWithMedia[];
+        itemsByList[library.id] = typedItems;
+        libraryWithItems = { ...library, items: typedItems };
+      }
+
+      set({
+        lists: lists || [],
+        library: libraryWithItems,
+        listItems: itemsByList,
+        loading: false,
+      });
     } catch (err: any) {
+      console.error('getLists error:', err);
       set({ error: err.message, loading: false });
     }
   },
@@ -121,14 +151,16 @@ export const useLists = create<ListState>((set, get) => ({
   // ---- ITEM ACTIONS ----
   getListItems: async (listId) => {
     try {
-      const { data, error } = await supabase
-        .from('list_items')
-        .select('*')
-        .eq('list_id', listId);
+      const { data, error } = await supabase.rpc(
+        'get_list_items_with_media',
+        { p_list_id: listId }
+      );
 
       if (error) throw error;
+      const typedItems = (data || []) as ListItemWithMedia[];
+
       set((state) => ({
-        listItems: { ...state.listItems, [listId]: data || [] },
+        listItems: { ...state.listItems, [listId]: typedItems },
       }));
     } catch (err: any) {
       set({ error: err.message });
@@ -144,6 +176,7 @@ export const useLists = create<ListState>((set, get) => ({
         .single();
 
       if (error) throw error;
+
       set((state) => ({
         listItems: {
           ...state.listItems,
@@ -154,8 +187,6 @@ export const useLists = create<ListState>((set, get) => ({
       set({ error: err.message });
     }
   },
-
-  
 
   removeItemFromList: async (itemId, listId) => {
     try {
@@ -169,7 +200,7 @@ export const useLists = create<ListState>((set, get) => ({
       set((state) => ({
         listItems: {
           ...state.listItems,
-          [listId]: state.listItems[listId].filter((i) => i.id !== itemId),
+          [listId]: state.listItems[listId]?.filter((i) => i.id !== itemId) || [],
         },
       }));
     } catch (err: any) {

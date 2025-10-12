@@ -2,18 +2,18 @@ import { BlurView } from 'expo-blur';
 import { Star, Plus, Library } from 'lucide-react-native';
 import { Image, Text, View, Dimensions, TouchableOpacity } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
-import { TMDBBaseMedia } from '~/types/tmdbTypes';
+import { Media } from '~/types/supabaseTypes';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
 interface TrendingSectionProps {
-  movies: TMDBBaseMedia[];
+  movies: Media[];
 }
 
 export default function TrendingSection({ movies }: TrendingSectionProps) {
   return (
-    <View className="p-4">
+    <View className="px-4">
       <Text className="font-SpaceGrotesk-SemiBold text-2xl text-primary-950 dark:text-primary-50">
         Trending
       </Text>
@@ -53,12 +53,12 @@ export default function TrendingSection({ movies }: TrendingSectionProps) {
                     numberOfLines={1}
                     ellipsizeMode="tail"
                     >
-                    {item.title || item.name}
+                    {item.title}
                   </Text>
 
                   <View className="flex-row items-center justify-between">
                     <Text className="text-md font-SpaceGrotesk-Regular text-primary-200">
-                      {item.release_date?.split('-')[0] || item.first_air_date?.split('-')[0]}
+                      {item.release_date.split('-')[0]}
                     </Text>
 
                     <View className="flex-row items-center gap-x-1">
