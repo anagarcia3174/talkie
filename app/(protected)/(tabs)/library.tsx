@@ -2,7 +2,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, View, TextInput } from 'react-native';
 import { ArrowDownUp } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useLists } from '~/store/listStore';
 import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 

@@ -1,3 +1,5 @@
+import type { PostgrestError } from "@supabase/supabase-js";
+
 
 const DATABASE_ERROR_MESSAGES: Record<string, string> = {
   '23505': 'This item already exists. Please use a different value.',

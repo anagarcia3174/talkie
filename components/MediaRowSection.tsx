@@ -5,14 +5,15 @@ import { useRouter } from 'expo-router';
 import { Media } from '~/types/supabaseTypes';
 
 interface MediaRowSectionProps {
-    title: string;
+  title: string;
   movies: Media[];
+  onAddToLibrary: (mediaId: number) => Promise<void>;
 }
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.38;
 
-export default function MediaRowSection({ title, movies }: MediaRowSectionProps) {
+export default function MediaRowSection({ title, movies, onAddToLibrary }: MediaRowSectionProps) {
   const router = useRouter();
   return (
     <View className="px-4">
@@ -37,7 +38,7 @@ export default function MediaRowSection({ title, movies }: MediaRowSectionProps)
                 pathname: '/media/[id]',
                 params: {
                   id: item.id.toString(),
-                  mediaData: JSON.stringify(item)
+                  mediaData: JSON.stringify(item),
                 },
               });
             }}>
@@ -51,6 +52,7 @@ export default function MediaRowSection({ title, movies }: MediaRowSectionProps)
 
               {/* Add Button */}
               <TouchableOpacity
+                onPress={() => onAddToLibrary(item.id)}
                 className="absolute right-2 top-2 rounded-full  "
                 activeOpacity={0.7}>
                 <BlurView

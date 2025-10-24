@@ -2,23 +2,26 @@ import { View, Text, TouchableOpacity, ImageBackground, Image, ScrollView } from
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Star, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { ArrowLeft, Star, ChevronDown, ChevronUp, Plus } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { Media } from '~/types/supabaseTypes';
+import ListSelectionModal from '~/components/ListSelectionModal';
+import { useAuth } from '~/context/AuthContext';
 
 const CONTENT_OPTIONS = ['Reviews', 'Comments'];
 
 export default function MediaScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const params = useLocalSearchParams<{ id: string; mediaData: string }>();
   const media: Media = JSON.parse(params.mediaData as string);
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
   const [selectedSegment, setSelectedSegment] = useState(0);
-
+  const [listModalVisible, setListModalVisible] = useState(false);
   const year = (media.release_date)?.slice(0, 4);
   const rating = media.vote_average?.toFixed(1);
   const backdrop = media.backdrop_path
@@ -28,6 +31,8 @@ export default function MediaScreen() {
 
   const overviewLength = media.synopsis?.length || 0;
   const isOverviewLong = overviewLength > 200;
+  
+
 
   return (
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
@@ -48,8 +53,8 @@ export default function MediaScreen() {
                 <ArrowLeft className="text-primary-50 dark:text-primary-950" size={24} />
               </TouchableOpacity>
 
-              <TouchableOpacity className="rounded-full bg-primary-900/40 dark:bg-primary-100/40 p-2">
-                <Star className="text-primary-50 dark:text-primary-950" size={24} />
+              <TouchableOpacity onPress={() => setListModalVisible(true)} className="rounded-full bg-primary-900/40 dark:bg-primary-100/40 p-2">
+                <Plus className="text-primary-50 dark:text-primary-950" size={24} />
               </TouchableOpacity>
             </View>
 
@@ -141,6 +146,7 @@ export default function MediaScreen() {
                 </View>
               </View>
             </ScrollView>
+            <ListSelectionModal visible={listModalVisible} onClose={() => setListModalVisible(false)} mediaId={media.id} userId={user?.id}/>
           </SafeAreaView>
         </BlurView>
       </ImageBackground>

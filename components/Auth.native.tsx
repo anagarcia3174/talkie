@@ -1,5 +1,5 @@
 // components/Auth.tsx
-import { Platform, Alert, View, Text, StyleSheet, Dimensions } from 'react-native';
+import { Platform, View, Text, Dimensions } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '~/utils/supabase';
 import { useTheme } from '~/hooks/useTheme';

@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '~/utils/supabase';
-import { Profile } from '~/types/supabaseTypes';
 import { useProfile } from '~/store/profileStore';
 import { useLists } from '~/store/listStore';
 
@@ -12,12 +11,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  signOut: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -35,94 +29,99 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  const { getProfile, getStats } = useProfile();
-  const { getLists } = useLists();
+  const isInitializedRef = useRef(false);
 
-  // Helper function to load user data
-  const loadUserData = async (userId: string) => {
+  // Load user data function with proper error handling
+  const loadUserData = useCallback(async (userId: string) => {
     try {
-      await Promise.all([
+      const { getProfile, getStats } = useProfile.getState();
+      const { getLists } = useLists.getState();
+      
+      await Promise.allSettled([
         getProfile(userId),
         getStats(userId),
         getLists(userId)
       ]);
     } catch (error) {
       console.error('Error loading user data:', error);
-      // Don't throw - we still want to set loading to false
-
     }
-  };
+  }, []);
 
+  // Handle session updates
+  const updateSession = useCallback(async (newSession: Session | null) => {
+    setSession(newSession);
+    setUser(newSession?.user ?? null);
+    
+    if (newSession?.user?.id) {
+      await loadUserData(newSession.user.id);
+    } else {
+      // Clear user data on sign out
+      useProfile.getState().clearProfile();
+      
+    }
+  }, [loadUserData]);
+
+  // Initialize auth state and listen for changes
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
-    const initializeAuth = async () => {
+    const initialize = async () => {
       try {
         // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
         
-        if (error) {
-          console.error('Error getting session:', error);
-        }
-
-        if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          // If we have a session, load the user data
-          if (session?.user?.id) {
-            await loadUserData(session.user.id);
-          }
-          
-          setLoading(false);
+        if (mounted) {
+          await updateSession(session);
+          isInitializedRef.current = true;
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        if (isMounted) {
+      } finally {
+        if (mounted) {
           setLoading(false);
         }
       }
     };
 
-    initializeAuth();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!isMounted) return;
-      
-      setLoading(true);
-      
-      try {
-        if (session?.user?.id) {
-          setSession(session);
-          setUser(session.user);
-          await loadUserData(session.user.id);
-        } else {
-          setSession(null);
-          setUser(null);
-          useProfile.getState().clearProfile();
-        }
-      } catch (error) {
-        console.error('Error handling auth state change:', error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        // Skip the initial SIGNED_IN event to prevent duplicate processing
+        if (!isInitializedRef.current) return;
+        
+        if (!mounted) return;
+        
+        setLoading(true);
+        try {
+          await updateSession(newSession);
+        } catch (error) {
+          console.error('Auth state change error:', error);
+        } finally {
+          if (mounted) {
+            setLoading(false);
+          }
         }
       }
-    });
+    );
+
+    initialize();
 
     return () => {
-      isMounted = false;
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, [getProfile, getStats, getLists]);
+  }, [updateSession]);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
+  const signOut = useCallback(async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+  }, []);
 
   const value = {
     user,

@@ -1,210 +1,247 @@
 import { List, ListItem, ListWithItems, ListItemWithMedia } from '~/types/supabaseTypes';
 import { create } from 'zustand';
-import { supabase } from '~/utils/supabase';
+import {
+  getAllLists,
+  createList,
+  updateList,
+  deleteList,
+  getListItems,
+  addListItem,
+  removeListItem,
+  likeList,
+  unlikeList,
+} from '~/services/listService';
+
+type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
 interface ListState {
-  lists: List[];
-  library: ListWithItems<ListItemWithMedia> | null;
-  listItems: Record<number, ListItem[] | ListItemWithMedia[]>; // keyed by listId
+  defaultLists: {
+    library: ListWithItems<ListItemWithMedia> | null;
+    favorites: ListWithItems<ListItemWithMedia> | null;
+  };
+  customLists: List[];
+  listItems: Record<number, ListItem[] | ListItemWithMedia[]>;
   loading: boolean;
-  error: string | null;
 
   // list actions
-  getLists: (userId: string) => Promise<void>;
-  createList: (userId: string, newList: Partial<List>) => Promise<void>;
-  updateList: (listId: number, updates: Partial<List>) => Promise<void>;
-  deleteList: (listId: number) => Promise<void>;
+  getLists: (userId: string) => Promise<StoreResult<void>>;
+  createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
+  updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
+  deleteList: (listId: number) => Promise<StoreResult<void>>;
 
-  likeList: (listId: number, userId: string) => Promise<void>;
-  unlikeList: (listId: number, userId: string) => Promise<void>;
+  likeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
+  unlikeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
 
   // item actions
-  getListItems: (listId: number) => Promise<void>;
-  addItemToList: (listId: number, item: Partial<ListItem>) => Promise<void>;
-  removeItemFromList: (itemId: number, listId: number) => Promise<void>;
+  getListItems: (listId: number) => Promise<StoreResult<void>>;
+  addItemToList: (listId: number, mediaId: number, userId: string) => Promise<StoreResult<void>>;
+  removeItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
 }
 
 export const useLists = create<ListState>((set, get) => ({
-  lists: [],
-  library: null,
+  defaultLists: {
+    library: null,
+    favorites: null,
+  },
+  customLists: [],
   listItems: {},
   loading: false,
-  error: null,
 
   // ---- LIST ACTIONS ----
   getLists: async (userId) => {
-    set({ loading: true, error: null });
+    set({ loading: true });
     try {
-      // Fetch all lists for the user
-      const { data: lists, error: listError } = await supabase
-        .from('lists')
-        .select('*')
-        .eq('user_id', userId);
+      const result = await getAllLists(userId);
+      if (!result.success) {
+        set({ loading: false });
+        return { success: false, error: result.error };
+      }
 
-      if (listError) throw listError;
-
-      const library = lists?.find(
-        (l) => l.is_default && l.list_type === 'library'
-      );
+      const lists = result.data || [];
+      const library = lists.find((l) => l.is_default && l.list_type === 'library');
+      const favorites = lists.find((l) => l.is_default && l.list_type === 'favorites');
+      const custom = lists.filter((l) => !l.is_default);
 
       let libraryWithItems: ListWithItems<ListItemWithMedia> | null = null;
-      const itemsByList: Record<number, ListItem[] | ListItemWithMedia[]> = {};
+      let favoritesWithItems: ListWithItems<ListItemWithMedia> | null = null;
 
-      // Only fetch detailed media data for the library
       if (library) {
-        const { data: items, error: itemsError } = await supabase.rpc(
-          'get_list_items_with_media',
-          { p_list_id: library.id }
-        );
+        const itemsResult = await getListItems(library.id);
+        if (itemsResult.success) {
+          const items = itemsResult.data || [];
+          libraryWithItems = { ...library, items };
+        }
+      }
 
-        if (itemsError) throw itemsError;
-
-        const typedItems = (items || []) as ListItemWithMedia[];
-        itemsByList[library.id] = typedItems;
-        libraryWithItems = { ...library, items: typedItems };
+      if (favorites) {
+        const itemsResult = await getListItems(favorites.id);
+        if (itemsResult.success) {
+          const items = itemsResult.data || [];
+          favoritesWithItems = { ...favorites, items };
+        }
       }
 
       set({
-        lists: lists || [],
-        library: libraryWithItems,
-        listItems: itemsByList,
+        defaultLists: {
+          library: libraryWithItems,
+          favorites: favoritesWithItems,
+        },
+        customLists: custom,
         loading: false,
       });
+      return { success: true };
     } catch (err: any) {
       console.error('getLists error:', err);
-      set({ error: err.message, loading: false });
+      set({ loading: false });
+      return { success: false, error: 'An unexpected error ocurred while retrieving your lists.' };
     }
   },
 
   createList: async (userId, newList) => {
-    try {
-      const { data, error } = await supabase
-        .from('lists')
-        .insert([{ ...newList, user_id: userId }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      set((state) => ({ lists: [...state.lists, data] }));
-    } catch (err: any) {
-      set({ error: err.message });
+    set({ loading: true });
+    const result = await createList(userId, newList);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+
+    // Refresh lists after creation
+    await get().getLists(userId);
+    return { success: true };
   },
 
   updateList: async (listId, updates) => {
-    try {
-      const { data, error } = await supabase
-        .from('lists')
-        .update(updates)
-        .eq('id', listId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      set((state) => ({
-        lists: state.lists.map((l) => (l.id === listId ? data : l)),
-      }));
-    } catch (err: any) {
-      set({ error: err.message });
+    set({ loading: true });
+    const result = await updateList(listId, updates);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+    // Refresh locally
+    set((state) => {
+      const updatedDefaultLists = { ...state.defaultLists };
+
+      // Update library if it matches
+      if (updatedDefaultLists.library && updatedDefaultLists.library.id === listId) {
+        updatedDefaultLists.library = { ...updatedDefaultLists.library, ...updates };
+      }
+
+      // Update favorites if it matches
+      if (updatedDefaultLists.favorites && updatedDefaultLists.favorites.id === listId) {
+        updatedDefaultLists.favorites = { ...updatedDefaultLists.favorites, ...updates };
+      }
+
+      // Update custom lists
+      const updatedCustomLists = state.customLists.map((l) =>
+        l.id === listId ? { ...l, ...updates } : l
+      );
+
+      return {
+        defaultLists: updatedDefaultLists,
+        customLists: updatedCustomLists,
+        loading: false,
+      };
+    });
+    return { success: true };
   },
 
   deleteList: async (listId) => {
-    try {
-      const { error } = await supabase.from('lists').delete().eq('id', listId);
-      if (error) throw error;
-
-      set((state) => ({
-        lists: state.lists.filter((l) => l.id !== listId),
-      }));
-    } catch (err: any) {
-      set({ error: err.message });
+    set({ loading: true });
+    const result = await deleteList(listId);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+    set((state) => ({
+      customLists: state.customLists.filter((l) => l.id !== listId),
+    }));
+    return { success: true };
   },
 
   likeList: async (listId, userId) => {
-    try {
-      const { error } = await supabase
-        .from('list_likes')
-        .insert([{ list_id: listId, user_id: userId }]);
-
-      if (error) throw error;
-    } catch (err: any) {
-      set({ error: err.message });
+    set({ loading: true });
+    const result = await likeList(listId, userId);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+    return { success: true };
   },
 
   unlikeList: async (listId, userId) => {
-    try {
-      const { error } = await supabase
-        .from('list_likes')
-        .delete()
-        .eq('list_id', listId)
-        .eq('user_id', userId);
-
-      if (error) throw error;
-    } catch (err: any) {
-      set({ error: err.message });
+    set({ loading: true });
+    const result = await unlikeList(listId, userId);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+    return { success: true };
   },
 
   // ---- ITEM ACTIONS ----
   getListItems: async (listId) => {
-    try {
-      const { data, error } = await supabase.rpc(
-        'get_list_items_with_media',
-        { p_list_id: listId }
-      );
-
-      if (error) throw error;
-      const typedItems = (data || []) as ListItemWithMedia[];
-
-      set((state) => ({
-        listItems: { ...state.listItems, [listId]: typedItems },
-      }));
-    } catch (err: any) {
-      set({ error: err.message });
+    set({ loading: true });
+    const result = await getListItems(listId);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+    const items = result.data || [];
+    set((state) => ({
+      listItems: { ...state.listItems, [listId]: items },
+    }));
+    return { success: true };
   },
 
-  addItemToList: async (listId, item) => {
-    try {
-      const { data, error } = await supabase
-        .from('list_items')
-        .insert([{ ...item, list_id: listId }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      set((state) => ({
-        listItems: {
-          ...state.listItems,
-          [listId]: [...(state.listItems[listId] || []), data],
-        },
-      }));
-    } catch (err: any) {
-      set({ error: err.message });
+  addItemToList: async (listId, mediaId, userId) => {
+    set({ loading: true });
+    const result = await addListItem(listId, mediaId, userId);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+    // Refresh list items
+    await get().getListItems(listId);
+    return { success: true };
   },
 
-  removeItemFromList: async (itemId, listId) => {
-    try {
-      const { error } = await supabase
-        .from('list_items')
-        .delete()
-        .eq('id', itemId);
-
-      if (error) throw error;
-
-      set((state) => ({
-        listItems: {
-          ...state.listItems,
-          [listId]: state.listItems[listId]?.filter((i) => i.id !== itemId) || [],
-        },
-      }));
-    } catch (err: any) {
-      set({ error: err.message });
+  removeItemFromList: async (item) => {
+    set({ loading: true });
+    const result = await removeListItem(item.id);
+    if (!result.success) {
+      set({ loading: false });
+      return {
+        success: false,
+        error: result.error,
+      };
     }
+    set((state) => ({
+      listItems: {
+        ...state.listItems,
+        [item.list_id]: state.listItems[item.list_id]?.filter((i) => i.id !== item.id) || [],
+      },
+    }));
+    return { success: true };
   },
 }));

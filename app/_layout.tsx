@@ -1,13 +1,15 @@
 import '~/global.css';
 
 import { Stack } from 'expo-router';
-import { ActivityIndicator } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '~/context/AuthContext';
 import LoadingScreen from '~/components/LoadingScreen';
-
+import ToastManager from 'toastify-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { toastConfig } from '~/components/ToastConfig';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 SplashScreen.preventAutoHideAsync();
 
 // SplashScreen.setOptions({
@@ -15,23 +17,23 @@ SplashScreen.preventAutoHideAsync();
 //   fade: true
 // });
 
-
 const InitialLayout = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingScreen fullScreen={true} />
+    return <LoadingScreen fullScreen={true} />;
   }
-
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!user}>
-        <Stack.Screen name="index" />
-      </Stack.Protected>
-      <Stack.Protected guard={!!user}>
-        <Stack.Screen name="(protected)" />
-      </Stack.Protected>
-    </Stack>
+    <SafeAreaProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={!user}>
+          <Stack.Screen name="index" />
+        </Stack.Protected>
+        <Stack.Protected guard={!!user}>
+          <Stack.Screen name="(protected)" />
+        </Stack.Protected>
+      </Stack>
+    </SafeAreaProvider>
   );
 };
 
@@ -42,8 +44,8 @@ export default function RootLayout() {
     'SpaceGrotesk-Medium': require('../assets/fonts/SpaceGrotesk-Medium.ttf'),
     'SpaceGrotesk-Regular': require('../assets/fonts/SpaceGrotesk-Regular.ttf'),
     'SpaceGrotesk-SemiBold': require('../assets/fonts/SpaceGrotesk-SemiBold.ttf'),
-
   });
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (loaded || error) {
@@ -58,6 +60,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <InitialLayout />
+      <ToastManager config={toastConfig} topOffset={insets.top + 10} />
     </AuthProvider>
   );
 }

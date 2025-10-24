@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '~/hooks/useTheme';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react-native';
+import { AlertTriangle } from 'lucide-react-native';
 
 interface ErrorScreenProps {
   title?: string;

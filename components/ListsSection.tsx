@@ -6,7 +6,7 @@ import { useLists } from '~/store/listStore';
 import { useRouter } from 'expo-router';
 export default function ListsSection() {
   const theme = useTheme();
-  const { lists } = useLists();
+  const { defaultLists, customLists } = useLists();
   const router = useRouter();
   const getIconForList = (list: List) => {
     switch (list.list_type) {
@@ -29,7 +29,7 @@ export default function ListsSection() {
       </Text>
 
       <View className="-mx-1 flex-row flex-wrap">
-        {lists.map((list: List) => (
+        {customLists.map((list: List) => (
           <View key={list.id} className="mb-2 w-1/3 px-1">
             <View className="h-20 items-center justify-center rounded-lg bg-primary-200 p-4 dark:bg-primary-900">
               {getIconForList(list)}

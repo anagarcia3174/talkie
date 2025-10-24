@@ -1,65 +1,43 @@
-// src/store/homeStore.ts
 import { create } from 'zustand';
+import { Media } from '~/types/supabaseTypes';
+import { getTrending, getHiddenGems } from '~/services/mediaService';
+
+type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
 interface HomeState {
   loading: boolean;
-  error: string | null;
-  nowPlaying: TMDBBaseMedia[];
-  trending: TMDBBaseMedia[];
-  upcoming: TMDBBaseMedia[];
-  reviews: TMDBReview[];
-  fetchHomeData: () => Promise<void>;
+  trending: Media[];
+  hiddenGems: Media[];
+  fetchHomeData: () => Promise<StoreResult<void>>;
 }
 
 export const useHomeStore = create<HomeState>((set) => ({
   loading: false,
-  error: null,
-  nowPlaying: [],
   trending: [],
-  upcoming: [],
-  reviews: [],
+  hiddenGems: [],
 
   fetchHomeData: async () => {
-    set({ loading: true, error: null });
-    try {
-      const [nowPlayingMovies, nowPlayingTV, trending, upcoming] = await Promise.all([
-        HomeService.getNowPlayingMovies(),
-        HomeService.getNowPlayingTV(),
-        HomeService.getTrending('day'),
-        HomeService.getUpcomingMovies(),
-      ]);
+    set({ loading: true });
 
-      const newMovieIds = nowPlayingMovies.results.slice(0, 5).map((m) => m.id);
+    const [trendingResult, hiddenGemsResult] = await Promise.all([getTrending(), getHiddenGems()]);
 
-      // fetch reviews for each movie
-      const reviewPromises = newMovieIds.map(async (id) => {
-        const res = await HomeService.getMovieReviews(id).catch(() => ({ results: [] }));
-        // attach the movie details to each review
-        const movie = nowPlayingMovies.results.find((m) => m.id === id);
-        return res.results.map((r) => ({
-          ...r,
-          movie: {
-            id: movie!.id,
-            title: movie!.title!,
-            poster_path: movie!.poster_path ?? null,
-            backdrop_path: movie!.backdrop_path ?? null,
-            release_date: movie!.release_date!,
-          },
-        }));
-      });
-
-      const reviewResponses = await Promise.all(reviewPromises);
-      const reviews = reviewResponses.flat();
-
-      set({
-        nowPlaying: [...nowPlayingMovies.results, ...nowPlayingTV.results],
-        trending: trending.results,
-        upcoming: upcoming.results,
-        reviews,
-        loading: false,
-      });
-    } catch (err: any) {
-      set({ error: err.message || 'Failed to load home data', loading: false });
+    // Check if any requests failed
+    if (!trendingResult.success) {
+      set({ loading: false });
+      return { success: false, error: trendingResult.error };
     }
-  },
+
+    if (!hiddenGemsResult.success) {
+      set({ loading: false });
+      return { success: false, error: hiddenGemsResult.error };
+    }
+
+    // All requests succeeded
+    set({
+      trending: trendingResult.data,
+      hiddenGems: hiddenGemsResult.data,
+      loading: false,
+    });
+    return { success: true}
+  }
 }));

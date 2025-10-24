@@ -1,0 +1,44 @@
+import { supabase } from "~/utils/supabase"
+import type { Media, Result } from "~/types/supabaseTypes"
+import { errorResult, successResult } from "~/types/supabaseTypes"
+
+
+export async function getMediaById(
+  id: number, 
+  mediaType: string
+): Promise<Result<Media>> {
+  try {
+    const { data, error } = await supabase
+      .from('media')
+      .select('*')
+      .eq('id', id)
+      .eq('media_type', mediaType)
+      .single()
+
+    if (error) return errorResult(error)
+    if (!data) return errorResult('Media not found')
+    
+    return successResult(data)
+  } catch (err) {
+    return errorResult(err)
+  }
+}
+
+async function getCollection(
+  collection: 'trending' | 'hidden_gems'
+): Promise<Result<Media[]>> {
+  try {
+    const { data, error } = await supabase.rpc(`get_${collection}_media`)
+
+    if (error) return errorResult(error)
+    if (!data) return errorResult('No data found')
+    
+    return successResult(data)
+  } catch (err) {
+    return errorResult(err)
+  }
+}
+
+// Usage
+export const getTrending = () => getCollection('trending')
+export const getHiddenGems = () => getCollection('hidden_gems')

@@ -1,12 +1,28 @@
+import { getErrorMessage } from "~/utils/errorHandler";
+
 // Enum types
 export type MediaType = 'movie' | 'tv';
 export type ListType = 'library' | 'favorites' | 'custom';
 export type Visibility = 'private' | 'followers' | 'public';
 export type LibraryStatus = 'watched' | 'watching' | 'want_to_watch';
 
-export type Result<T = void> =
-  | { success: true; data?: T }
-  | { success: false; error: string };
+export type Result<T = void> = { success: true; data?: T } | { success: false; error: string };
+
+export function successResult<T>(data: T): Result<T> {
+  return {
+    success: true,
+    data,
+  };
+}
+
+export function errorResult<T = void>(error: unknown): Result<T> {
+
+
+  return {
+    success: false,
+    error: getErrorMessage(error),
+  };
+}
 
 // Base database record interface
 interface BaseRecord {
@@ -67,16 +83,20 @@ export interface ListItem extends BaseRecord {
   status: LibraryStatus | null;
 }
 
-// ✅ New — list item including media details (from Supabase function)
 export interface ListItemWithMedia extends ListItem {
-  tmdb_id: number;
-  media_type: MediaType;
-  title: string;
-  synopsis?: string;
-  poster_path?: string;
-  release_date?: string;
-  runtime_minutes?: number;
-  comment_count?: number;
+  media?: {
+    tmdb_id: number;
+    media_type: MediaType;
+    title: string;
+    synopsis: string;
+    poster_path: string;
+    release_date: string; // ISO date string
+    runtime_minutes: number;
+    comment_count: number;
+    backdrop_path: string;
+    popularity: number;
+    vote_average: number;
+  };
 }
 
 export interface ListLike extends BaseRecord {
@@ -128,7 +148,6 @@ export interface Review extends BaseRecord {
   like_count: number;
   updated_at: string;
 }
-
 
 // Input types for creating/updating records (omit auto-generated fields)
 export type CreateBlockInput = Omit<Block, 'id' | 'created_at'>;
