@@ -61,7 +61,8 @@ export default function ProfileSection() {
           else alert(res.error);
         }}
         onUpdateProfile={async (updates) => {
-          const res = await updateProfile(updates);
+          if (!user) return;
+          const res = await updateProfile(user.id, updates);
           if (res.success) setShowProfileModal(false);
           else alert(res.error);
         }}

@@ -1,4 +1,4 @@
-import { getErrorMessage } from "~/utils/errorHandler";
+import { getErrorMessage } from '~/utils/errorHandler';
 
 // Enum types
 export type MediaType = 'movie' | 'tv';
@@ -16,8 +16,6 @@ export function successResult<T>(data: T): Result<T> {
 }
 
 export function errorResult<T = void>(error: unknown): Result<T> {
-
-
   return {
     success: false,
     error: getErrorMessage(error),
@@ -90,7 +88,7 @@ export interface ListItemWithMedia extends ListItem {
     title: string;
     synopsis: string;
     poster_path: string;
-    release_date: string; // ISO date string
+    release_date: string;
     runtime_minutes: number;
     comment_count: number;
     backdrop_path: string;
@@ -139,14 +137,21 @@ export interface ReviewLike extends BaseRecord {
   review_id: number;
 }
 
-export interface Review extends BaseRecord {
+export interface Review  {
   user_id: string;
   media_id: number;
-  rating?: number; // 0-10
+  rating: number; // 0-10
   content?: string;
   is_spoiler: boolean;
   like_count: number;
   updated_at: string;
+  id: number;
+  created_at: string;
+}
+
+export interface ReviewWithProfile extends Review {
+  display_name: string;
+  avatar_url: string;
 }
 
 // Input types for creating/updating records (omit auto-generated fields)

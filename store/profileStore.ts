@@ -1,20 +1,23 @@
 import { Profile, ProfileStats, Result } from '~/types/supabaseTypes';
-import { supabase } from '~/utils/supabase';
 import { create } from 'zustand';
 import { getErrorMessage } from '~/utils/errorHandler';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { withPublicUrl } from '~/utils/storageUrl';
-
+import {
+  getProfileById,
+  getProfileStats,
+  updateProfile,
+  uploadAvatar,
+} from '~/services/profileService';
 interface ProfileState {
   profile: Profile | null;
   stats: ProfileStats;
   loading: boolean;
-  error: string | null;
 
   getProfile: (userId: string) => Promise<Result<void>>;
   getStats: (userId: string) => Promise<Result<void>>;
   uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<Result<void>>;
-  updateProfile: (updates: Partial<Profile>) => Promise<Result<void>>;
+  updateProfile: (userId: string, updates: Partial<Profile>) => Promise<Result<void>>;
   clearProfile: () => void;
 }
 export const useProfile = create<ProfileState>((set, get) => ({
@@ -27,101 +30,76 @@ export const useProfile = create<ProfileState>((set, get) => ({
     avgRating: 0,
   },
   loading: false,
-  error: null,
 
   // Fetch current user's profile
   getProfile: async (userId) => {
-    set({ loading: true, error: null });
-    try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    set({ loading: true });
+    const result = await getProfileById(userId);
 
-      if (error) throw error;
-
-      const normalized = withPublicUrl(data);
-      set({ profile: normalized, loading: false });
-      return { success: true };
-    } catch (err: any) {
-      const message = getErrorMessage(err);
-      set({ error: message, loading: false });
-      return { success: false, error: message };
+    if (!result.success) {
+      set({ loading: false });
+      return { success: false, error: result.error };
     }
+
+    const normalized = withPublicUrl(result.data!);
+    set({ profile: normalized, loading: false });
+    return { success: true };
   },
 
   getStats: async (userId) => {
-    try {
-      const { data, error } = await supabase.rpc('get_profile_stats', {
-        user_id: userId,
-      });
-      if (error) throw error;
+    const result = await getProfileStats(userId);
 
-      const stats: ProfileStats = {
-        followers: data.followers,
-        following: data.following,
-        reviews: data.reviews,
-        avgRating: data.avgRating,
-        totalLogged: data.totalLogged
-      };
-      set({ stats });
-      return { success: true };
-    } catch (err: any) {
-      console.log(err)
-      const message = getErrorMessage(err);
-      set({ error: message });
-      return { success: false, error: message };
+    if (!result.success) {
+      return { success: false, error: result.error };
     }
+
+    const data = result.data!;
+    const stats: ProfileStats = {
+      followers: data.followers,
+      following: data.following,
+      reviews: data.reviews,
+      avgRating: data.avgRating,
+      totalLogged: data.totalLogged,
+    };
+
+    set({ stats });
+    return { success: true };
   },
 
   uploadAvatar: async (userId, image) => {
     try {
-      const arraybuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
+      const arrayBuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
       const fileExt = image.uri?.split('.').pop()?.toLowerCase() ?? 'jpeg';
       const filePath = `${userId}/avatar.${fileExt}`;
+      const mimeType = image.mimeType ?? 'image/jpeg';
 
-      const { error } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, arraybuffer, {
-          upsert: true,
-          contentType: image.mimeType ?? 'image/jpeg',
-        });
+      const result = await uploadAvatar(userId, filePath, arrayBuffer, mimeType);
 
-      if (error) throw error;
+      if (!result.success) {
+        return { success: false, error: result.error };
+      }
 
+      // Refresh the profile after upload
       await get().getProfile(userId);
       return { success: true };
     } catch (err: any) {
-      console.log(err);
       const message = getErrorMessage(err);
-      set({ error: message });
       return { success: false, error: message };
     }
   },
 
-  updateProfile: async (updates) => {
-    if (!get().profile) {
-      return { success: false, error: 'No profile loaded' };
-    }
-    const { id } = get().profile!;
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
+  // ─── Update profile ─────────────────────────────────────────────────
+  updateProfile: async (userId, updates) => {
+    const result = await updateProfile(userId, updates);
 
-      if (error) throw error;
-      const normalized = withPublicUrl(data);
-      set({ profile: normalized });
-      return { success: true };
-    } catch (err: any) {
-      const message = getErrorMessage(err);
-      set({ error: message });
-      return { success: false, error: message };
+    if (!result.success) {
+      return { success: false, error: result.error };
     }
+
+    const normalized = withPublicUrl(result.data!);
+    set({ profile: normalized });
+    return { success: true };
   },
 
-  clearProfile: () => set({ profile: null, error: null }),
+  clearProfile: () => set({ profile: null }),
 }));

@@ -54,7 +54,6 @@ export async function deleteList(listId: number): Promise<Result<void>> {
 export async function getListItems(listId: number): Promise<Result<ListItemWithMedia[]>> {
   try {
     const { data, error } = await supabase.rpc('get_list_items_with_media', { p_list_id: listId });
-
     if (error) throw error;
     if (!data) return errorResult('List Items not found');
     return successResult(data);

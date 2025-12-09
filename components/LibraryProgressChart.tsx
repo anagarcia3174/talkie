@@ -1,37 +1,47 @@
+import { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { ListItemWithMedia } from '~/types/supabaseTypes';
 
 interface LibraryProgressChartProps {
-  watched: number;
-  watching: number;
-  pending: number;
+  items: ListItemWithMedia[];
 }
 
-const LibraryProgressChart = ({ watched, watching, pending }: LibraryProgressChartProps) => {
-  const total = watched + watching + pending;
+const LibraryProgressChart = ({ items }: LibraryProgressChartProps) => {
+  const total = items.length;
   const radius = 45;
   const circumference = 2 * Math.PI * radius;
   const gapSize = 3; // space between arcs (degrees)
   const gapPercent = gapSize / 360;
 
+  const counts = useMemo(() => {
+    return items.reduce(
+      (acc, item) => {
+        acc[item.status ?? 'want_to_watch'] += 1;
+        return acc;
+      },
+      { watched: 0, watching: 0, want_to_watch: 0 }
+    );
+  }, [items]);
+
   const segments = [
     {
       label: 'Watched',
-      value: watched,
+      value: counts.watched,
       hexColor: '#10b981',
       lightClass: 'bg-emerald-500',
       darkClass: 'dark:bg-emerald-400',
     },
     {
       label: 'Watching',
-      value: watching,
+      value: counts.watching,
       hexColor: '#f59e0b',
       lightClass: 'bg-amber-500',
       darkClass: 'dark:bg-amber-400',
     },
     {
       label: 'Pending',
-      value: pending,
+      value: counts.want_to_watch,
       hexColor: '#ef4444',
       lightClass: 'bg-red-500',
       darkClass: 'dark:bg-red-400',
@@ -92,8 +102,8 @@ const LibraryProgressChart = ({ watched, watching, pending }: LibraryProgressCha
           {segments.map((seg, i) => (
             <View key={i} className="flex-row items-center gap-2">
               <View className={`h-4 w-4 rounded-full ${seg.lightClass} ${seg.darkClass}`} />
-              <Text className="font-SpaceGrotesk-Regular text-sm font-medium text-primary-900 dark:text-primary-50">
-                {seg.label}: {seg.value}
+              <Text className="font-SpaceGrotesk-Medium text-md text-primary-900 dark:text-primary-50">
+                {seg.label}:  {seg.value}
               </Text>
             </View>
           ))}

@@ -6,7 +6,6 @@ import ListsSection from '~/components/ListsSection';
 import ProfileSection from '~/components/ProfileSection';
 
 export default function Profile() {
-  const { error } = useProfile();
 
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
@@ -16,13 +15,7 @@ export default function Profile() {
         </Text>
       </View>
       <ScrollView className='px-4'>
-        {error && (
-          <View className="mb-4 rounded-lg bg-red-400 px-4 py-3 dark:bg-red-800">
-            <Text className="text-md font-SpaceGrotesk-Medium text-white dark:text-red-100">
-              {error}
-            </Text>
-          </View>
-        )}
+        
         <ProfileSection />
         <StatsSection />
         <ListsSection />

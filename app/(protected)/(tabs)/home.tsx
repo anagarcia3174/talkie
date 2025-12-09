@@ -13,7 +13,7 @@ export default function Home() {
   const { fetchHomeData, trending, hiddenGems } = useHomeStore();
   const tabBarHeight = useBottomTabBarHeight();
   const { defaultLists, addItemToList } = useLists();
-
+  
   useEffect(() => {
     fetchHomeData();
   }, []);
@@ -27,11 +27,15 @@ export default function Home() {
       position: 'top',
       visibilityTime: 3000,
       autoHide: true,
-      onPress: () => Toast.hide()
+      onPress: () => Toast.hide(),
     });
 
     try {
-      const result = await addItemToList(defaultLists.library.id, mediaId, defaultLists.library.user_id);
+      const result = await addItemToList(
+        defaultLists.library.id,
+        mediaId,
+        defaultLists.library.user_id
+      );
 
       if (!result.success) {
         Toast.show({
@@ -40,7 +44,7 @@ export default function Home() {
           position: 'top',
           visibilityTime: 4000,
           autoHide: true,
-          onPress: () => Toast.hide()
+          onPress: () => Toast.hide(),
         });
       } else {
         Toast.show({
@@ -49,18 +53,18 @@ export default function Home() {
           position: 'top',
           visibilityTime: 3000,
           autoHide: true,
-          onPress: () => Toast.hide()
+          onPress: () => Toast.hide(),
         });
       }
     } catch (error) {
-        Toast.show({
-          type: 'error',
-          text1: 'An unexpected error ocurred while adding the item to your library',
-          position: 'top',
-          visibilityTime: 4000,
-          autoHide: true,
-          onPress: () => Toast.hide()
-        })
+      Toast.show({
+        type: 'error',
+        text1: 'An unexpected error ocurred while adding the item to your library',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
     }
   };
 
@@ -77,7 +81,7 @@ export default function Home() {
             movies={hiddenGems}
             onAddToLibrary={addMediaToLibrary}
           />
-          <LibraryProgressChart watched={50} watching={8} pending={45} />
+          <LibraryProgressChart items={defaultLists.library?.items ?? []} />
         </View>
       </ScrollView>
     </SafeAreaView>
