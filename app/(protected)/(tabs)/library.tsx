@@ -1,5 +1,11 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, View, TextInput, TouchableOpacity, Image } from 'react-native';
+import {
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import { ArrowDownUp, Plus } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
@@ -9,15 +15,21 @@ import { FlatList } from 'react-native-gesture-handler';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useRouter } from 'expo-router';
 import { LibraryStatus } from '~/types/supabaseTypes';
+import SortByModal from '~/components/SortByModal';
 
 const FILTERS = ['All', 'Watching', 'Watched', 'Pending'];
 const ROW_GAP = 16;
 type FilterIndex = 0 | 1 | 2 | 3;
+export type SortType = 'alpha' | 'release' | 'added';
+export type SortOrder = 'asc' | 'desc';
 
 export default function Library() {
   const theme = useTheme();
   const [selected, setSelected] = useState<FilterIndex>(0);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<SortType>('added');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [modalVisible, setModalVisible] = useState(false);
   const library = useLists((s) => s.defaultLists.library);
   const tabBarHeight = useBottomTabBarHeight();
   const router = useRouter();
@@ -27,14 +39,48 @@ export default function Library() {
     2: 'watched',
     3: 'want_to_watch',
   } as const;
-  
-  const filtered = library?.items?.filter((item) => {
-    const selectedStatus = statusMap[selected];
-    const matchesStatus = selectedStatus ? item.status === selectedStatus : true;
 
-    const matchesSearch = item.media?.title?.toLowerCase()?.includes(search.toLowerCase());
+  const filtered =
+    library?.items?.filter((item) => {
+      const selectedStatus = statusMap[selected];
+      const matchesStatus = selectedStatus ? item.status === selectedStatus : true;
 
-    return matchesStatus && matchesSearch;
+      const matchesSearch = item.media?.title?.toLowerCase()?.includes(search.toLowerCase());
+
+      return matchesStatus && matchesSearch;
+    }) ?? [];
+
+  const sorted = [...filtered].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortBy) {
+      case 'alpha': {
+        const aTitle = a.media?.title ?? '';
+        const bTitle = b.media?.title ?? '';
+        comparison = bTitle.localeCompare(aTitle);
+        break;
+      }
+
+      case 'release': {
+        const aDate = a.media?.release_date ? new Date(a.media.release_date) : new Date(0);
+        const bDate = b.media?.release_date ? new Date(b.media.release_date) : new Date(0);
+        comparison = bDate.getTime() - aDate.getTime(); // newest first
+        break;
+      }
+
+      case 'added': {
+        const aAdded = new Date(a.created_at).getTime();
+        const bAdded = new Date(b.created_at).getTime();
+        comparison = bAdded - aAdded; // newest first
+        break;
+      }
+
+      default:
+        comparison = 0;
+    }
+
+    // Apply ascending / descending
+    return sortOrder === 'asc' ? comparison * -1 : comparison;
   });
 
   return (
@@ -57,7 +103,7 @@ export default function Library() {
           placeholder="Search your library"
           placeholderTextColor={theme.primary[500]}
         />
-        <ArrowDownUp color={theme.primary[950]} />
+        <ArrowDownUp onPress={() => setModalVisible(true)} color={theme.primary[950]} />
       </View>
       {/* Filter Slider */}
       <View className="mt-1 px-4">
@@ -81,7 +127,7 @@ export default function Library() {
         />
       </View>
       <FlatList
-        data={filtered}
+        data={sorted}
         keyExtractor={(item) => item.id.toString()}
         numColumns={3}
         columnWrapperStyle={{
@@ -118,6 +164,14 @@ export default function Library() {
               </View>
             </TouchableOpacity>
           );
+        }}
+      />
+      <SortByModal
+        isVisible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSelect={(option, order) => {
+          setSortBy(option);
+          setSortOrder(order);
         }}
       />
     </SafeAreaView>

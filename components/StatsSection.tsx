@@ -27,7 +27,7 @@ export default function StatsSection() {
           </View>
           <View className="mt-2 flex-row items-center">
             <Film size={16} color={theme.primary[600]} />
-            <Text className="ml-1 text-xs text-primary-700 dark:text-primary-300">Logged</Text>
+            <Text className="ml-1 text-xs text-primary-700 dark:text-primary-300">Watched</Text>
           </View>
         </View>
 

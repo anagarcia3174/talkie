@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import { Bell, MessageCircle, Star } from "lucide-react-native";
+import { Bell, MessageCircle, Popcorn, Star } from "lucide-react-native";
 import { useTheme } from "~/hooks/useTheme";
 
 
@@ -12,8 +12,8 @@ export function Header() {
         <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">Noat</Text>
       </View>
       <View>
-        <TouchableOpacity>
-          <Bell color={theme.primary[900]} strokeWidth={1.5} size={24}/>
+        <TouchableOpacity disabled={true}>
+          <Popcorn color={theme.primary[900]} strokeWidth={1.5} size={24}/>
         </TouchableOpacity>
       </View>
     </View>
