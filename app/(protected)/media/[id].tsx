@@ -3,14 +3,12 @@ import {
   TouchableOpacity,
   ImageBackground,
   FlatList,
-  Image,
-  Text,
   ActivityIndicator,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Plus, Star } from 'lucide-react-native';
+import { ArrowLeft, Eye, Plus, Star } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useEffect, useState } from 'react';
 import { Media, ReviewWithProfile } from '~/types/supabaseTypes';
@@ -22,6 +20,8 @@ import { useReviews } from '~/store/reviewStore';
 import { Toast } from 'toastify-react-native';
 import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
+import { useLists } from '~/store/listStore';
+
 
 const CONTENT_OPTIONS = ['Reviews', 'Comments'];
 
@@ -43,7 +43,7 @@ export default function MediaScreen() {
   const [loadingReviews, setLoadingReviews] = useState(true);
   const userReview = reviews.find((r) => r.user_id === user?.id);
   const otherReviews = reviews.filter((r) => r.user_id !== user?.id);
-
+  const { addItemToList } = useLists();
   const sortedReviews = userReview ? [userReview, ...otherReviews] : reviews;
   const hasReviewed = !!userReview;
 
@@ -59,6 +59,42 @@ export default function MediaScreen() {
   useEffect(() => {
     loadReviews();
   }, [media.id]);
+
+  const handleAddToList = async (listId: number) => {
+    if(!listId || !user?.id) return;
+    setListModalVisible(false);
+
+    Toast.show({
+      type: 'info',
+      text1: 'Adding to list...',
+      position: 'top',
+      visibilityTime: 3000,
+      autoHide: true,
+      onPress: () => Toast.hide(),
+    });
+
+    const result = await addItemToList(listId, media.id, user.id);
+
+    if (!result.success) {
+      Toast.show({
+          type: 'error',
+          text1: result.error || 'Failed to add item to your list',
+          position: 'top',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => Toast.hide(),
+        });
+    }else {
+      Toast.show({
+          type: 'success',
+          text1: 'Item was added to your list!',
+          position: 'top',
+          visibilityTime: 3000,
+          autoHide: true,
+          onPress: () => Toast.hide(),
+        });
+    }
+  }
 
   const handleSubmitReview = async (rating: number, content: string) => {
     if (user?.id) {
@@ -120,11 +156,18 @@ export default function MediaScreen() {
                 onPress={() => router.back()}>
                 <ArrowLeft className="text-primary-50 dark:text-primary-950" size={24} />
               </TouchableOpacity>
+              <View className='flex-row gap-x-2'>
+              <TouchableOpacity
+                onPress={() => setListModalVisible(true)}
+                className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40">
+                <Eye className="text-primary-50 dark:text-primary-950" size={24} />
+              </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setListModalVisible(true)}
                 className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40">
                 <Plus className="text-primary-50 dark:text-primary-950" size={24} />
               </TouchableOpacity>
+              </View>
             </View>
             <View className="flex-1 px-4">
               <MediaHeader media={media} shrinkHeader={shrinkHeader} />
@@ -160,8 +203,7 @@ export default function MediaScreen() {
             <ListSelectionModal
               visible={listModalVisible}
               onClose={() => setListModalVisible(false)}
-              mediaId={media.id}
-              userId={user?.id}
+              onConfirm={handleAddToList}
             />
           </SafeAreaView>
         </BlurView>

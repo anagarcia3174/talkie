@@ -1,5 +1,5 @@
 import { supabase } from '~/utils/supabase';
-import type { List, ListItemWithMedia, Media, Result } from '~/types/supabaseTypes';
+import type { LibraryStatus, List, ListItemWithMedia, Media, Result } from '~/types/supabaseTypes';
 import { errorResult, successResult } from '~/types/supabaseTypes';
 
 export async function getAllLists(userId: string): Promise<Result<List[]>> {
@@ -18,23 +18,27 @@ export async function getAllLists(userId: string): Promise<Result<List[]>> {
   }
 }
 
-export async function createList(userId: string, newList: Partial<List>): Promise<Result<void>> {
+export async function createList(userId: string, newList: Partial<List>): Promise<Result<List>> {
   try {
-    const { error } = await supabase.from('lists').insert([{ ...newList, user_id: userId }]);
+    const { data, error } = await supabase
+      .from('lists')
+      .insert([{ ...newList, user_id: userId }])
+      .select()
+      .single();
 
     if (error) throw error;
-    return successResult(undefined);
+    return successResult(data);
   } catch (err) {
     return errorResult(err);
   }
 }
 
-export async function updateList(listId: number, updates: Partial<List>): Promise<Result<void>> {
+export async function updateList(listId: number, updates: Partial<List>): Promise<Result<List>> {
   try {
-    const { error } = await supabase.from('lists').update(updates).eq('id', listId);
+    const { data, error } = await supabase.from('lists').update(updates).eq('id', listId).select().single();
 
     if (error) throw error;
-    return successResult(undefined);
+    return successResult(data);
   } catch (err) {
     return errorResult(err);
   }
@@ -81,10 +85,7 @@ export async function addListItem(
 
 export async function removeListItem(itemId: number): Promise<Result<void>> {
   try {
-    const { error } = await supabase
-      .from('list_items')
-      .delete()
-      .eq('id', itemId);
+    const { error } = await supabase.from('list_items').delete().eq('id', itemId);
 
     if (error) throw error;
     return successResult(undefined);
@@ -94,29 +95,40 @@ export async function removeListItem(itemId: number): Promise<Result<void>> {
 }
 
 export async function likeList(listId: number, userId: string): Promise<Result<void>> {
-    try {
+  try {
     const { error } = await supabase
-      .from("list_likes")
-      .insert([{ list_id: listId, user_id: userId }])
+      .from('list_likes')
+      .insert([{ list_id: listId, user_id: userId }]);
 
-    if (error) throw error
-    return successResult(undefined)
+    if (error) throw error;
+    return successResult(undefined);
   } catch (err) {
-    return errorResult(err)
+    return errorResult(err);
   }
 }
 
 export async function unlikeList(listId: number, userId: string): Promise<Result<void>> {
-      try {
+  try {
     const { error } = await supabase
-      .from("list_likes")
+      .from('list_likes')
       .delete()
-      .eq("list_id", listId)
-      .eq("user_id", userId)
+      .eq('list_id', listId)
+      .eq('user_id', userId);
 
-    if (error) throw error
-    return successResult(undefined)
+    if (error) throw error;
+    return successResult(undefined);
   } catch (err) {
-    return errorResult(err)
+    return errorResult(err);
+  }
+}
+
+export async function updateItemStatus(user_id: string, mediaId: number, status: LibraryStatus ): Promise<Result<void>> {
+  try {
+    const { error } = await supabase.from('user_media').update({status: status}).eq('user_id', user_id).eq('media_id', mediaId);
+
+    if(error) throw error;
+    return successResult(undefined);
+  }catch (err) {
+    return errorResult(err);
   }
 }

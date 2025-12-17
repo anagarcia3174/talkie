@@ -17,10 +17,10 @@ const LibraryProgressChart = ({ items }: LibraryProgressChartProps) => {
   const counts = useMemo(() => {
     return items.reduce(
       (acc, item) => {
-        acc[item.status ?? 'want_to_watch'] += 1;
+        acc[item.status ?? 'pending'] += 1;
         return acc;
       },
-      { watched: 0, watching: 0, want_to_watch: 0 }
+      { watched: 0, watching: 0, pending: 0 }
     );
   }, [items]);
 
@@ -41,7 +41,7 @@ const LibraryProgressChart = ({ items }: LibraryProgressChartProps) => {
     },
     {
       label: 'Pending',
-      value: counts.want_to_watch,
+      value: counts.pending,
       hexColor: '#ef4444',
       lightClass: 'bg-red-500',
       darkClass: 'dark:bg-red-400',

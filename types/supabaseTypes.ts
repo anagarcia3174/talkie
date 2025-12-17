@@ -4,7 +4,7 @@ import { getErrorMessage } from '~/utils/errorHandler';
 export type MediaType = 'movie' | 'tv';
 export type ListType = 'library' | 'favorites' | 'custom';
 export type Visibility = 'private' | 'followers' | 'public';
-export type LibraryStatus = 'watched' | 'watching' | 'want_to_watch';
+export type LibraryStatus = 'watched' | 'watching' | 'pending';
 
 export type Result<T = void> = { success: true; data?: T } | { success: false; error: string };
 

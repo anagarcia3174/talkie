@@ -7,6 +7,7 @@ export default function Layout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="media/[id]" />
+        <Stack.Screen name="list/[id]" />
       </Stack>
     </GestureHandlerRootView>
   );

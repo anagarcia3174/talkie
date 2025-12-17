@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
-import { SortOrder, SortType } from '~/app/(protected)/(tabs)/library';
+import { SortOrder, SortType } from './ListContent';
 
 interface SortByModalPropsModal {
   isVisible: boolean;

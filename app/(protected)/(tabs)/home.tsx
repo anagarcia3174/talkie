@@ -12,14 +12,19 @@ import { Toast } from 'toastify-react-native';
 export default function Home() {
   const { fetchHomeData, trending, hiddenGems } = useHomeStore();
   const tabBarHeight = useBottomTabBarHeight();
-  const { defaultLists, addItemToList } = useLists();
-  
+  const { listsById, defaultListIds, addItemToList } = useLists();
+
   useEffect(() => {
     fetchHomeData();
   }, []);
 
+  const library =
+    defaultListIds.library != null
+      ? listsById[defaultListIds.library]
+      : null;
+
   const addMediaToLibrary = async (mediaId: number): Promise<void> => {
-    if (!defaultLists.library) return;
+    if (!library) return;
 
     Toast.show({
       type: 'info',
@@ -32,9 +37,9 @@ export default function Home() {
 
     try {
       const result = await addItemToList(
-        defaultLists.library.id,
+        library.id,
         mediaId,
-        defaultLists.library.user_id
+        library.user_id
       );
 
       if (!result.success) {
@@ -81,7 +86,6 @@ export default function Home() {
             movies={hiddenGems}
             onAddToLibrary={addMediaToLibrary}
           />
-          <LibraryProgressChart items={defaultLists.library?.items ?? []} />
         </View>
       </ScrollView>
     </SafeAreaView>

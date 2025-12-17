@@ -1,4 +1,9 @@
-import { List, ListItem, ListWithItems, ListItemWithMedia } from '~/types/supabaseTypes';
+import {
+  List,
+  ListItem,
+  ListItemWithMedia,
+  LibraryStatus,
+} from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import {
   getAllLists,
@@ -10,18 +15,26 @@ import {
   removeListItem,
   likeList,
   unlikeList,
+  updateItemStatus,
 } from '~/services/listService';
 
 type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
 interface ListState {
-  defaultLists: {
-    library: ListWithItems<ListItemWithMedia> | null;
-    favorites: ListWithItems<ListItemWithMedia> | null;
+  listsById: Record<number, List>;
+
+  // ids for convenience / ordering
+  defaultListIds: {
+    library: number | null;
+    favorites: number | null;
   };
-  customLists: List[];
-  listItems: Record<number, ListItem[] | ListItemWithMedia[]>;
-  loading: boolean;
+  customListIds: number[];
+
+  /* =======================
+   * List items (lazy-loaded)
+   * ======================= */
+
+  listItems: Record<number, ListItemWithMedia[] | undefined>;
 
   // list actions
   getLists: (userId: string) => Promise<StoreResult<void>>;
@@ -36,142 +49,155 @@ interface ListState {
   getListItems: (listId: number) => Promise<StoreResult<void>>;
   addItemToList: (listId: number, mediaId: number, userId: string) => Promise<StoreResult<void>>;
   removeItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
+  updateItemStatus: (
+    item: ListItem | ListItemWithMedia,
+    status: LibraryStatus
+  ) => Promise<StoreResult<void>>;
 }
 
 export const useLists = create<ListState>((set, get) => ({
-  defaultLists: {
+  listsById: {},
+  defaultListIds: {
     library: null,
     favorites: null,
   },
-  customLists: [],
+  customListIds: [],
   listItems: {},
-  loading: false,
 
   // ---- LIST ACTIONS ----
   getLists: async (userId) => {
-    set({ loading: true });
     try {
       const result = await getAllLists(userId);
       if (!result.success) {
-        set({ loading: false });
         return { success: false, error: result.error };
       }
 
-      const lists = result.data || [];
-      const library = lists.find((l) => l.is_default && l.list_type === 'library');
-      const favorites = lists.find((l) => l.is_default && l.list_type === 'favorites');
-      const custom = lists.filter((l) => !l.is_default);
+      const lists = result.data ?? [];
 
-      let libraryWithItems: ListWithItems<ListItemWithMedia> | null = null;
-      let favoritesWithItems: ListWithItems<ListItemWithMedia> | null = null;
+      const listsById: Record<number, List> = {};
+      const customListIds: number[] = [];
 
-      if (library) {
-        const itemsResult = await getListItems(library.id);
-        if (itemsResult.success) {
-          const items = itemsResult.data || [];
-          libraryWithItems = { ...library, items };
+      let libraryId: number | null = null;
+      let favoritesId: number | null = null;
+
+      for (const list of lists) {
+        listsById[list.id] = list;
+
+        if (list.is_default) {
+          if (list.list_type === 'library') {
+            libraryId = list.id;
+          } else if (list.list_type === 'favorites') {
+            favoritesId = list.id;
+          }
+        } else {
+          customListIds.push(list.id);
         }
       }
-
-      if (favorites) {
-        const itemsResult = await getListItems(favorites.id);
-        if (itemsResult.success) {
-          const items = itemsResult.data || [];
-          favoritesWithItems = { ...favorites, items };
-        }
-      }
-
       set({
-        defaultLists: {
-          library: libraryWithItems,
-          favorites: favoritesWithItems,
+        listsById,
+        defaultListIds: {
+          library: libraryId,
+          favorites: favoritesId,
         },
-        customLists: custom,
-        loading: false,
+        customListIds,
       });
       return { success: true };
     } catch (err: any) {
       console.error('getLists error:', err);
-      set({ loading: false });
+
       return { success: false, error: 'An unexpected error ocurred while retrieving your lists.' };
     }
   },
 
   createList: async (userId, newList) => {
-    set({ loading: true });
     const result = await createList(userId, newList);
+
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
       };
     }
 
-    // Refresh lists after creation
-    await get().getLists(userId);
+    if (!result.data) {
+      return {
+        success: false,
+        error: 'Failed to create list.',
+      };
+    }
+
+    const createdList = result.data; // List
+
+    set((state) => ({
+      listsById: {
+        ...state.listsById,
+        [createdList.id]: createdList,
+      },
+      customListIds: [...state.customListIds, createdList.id],
+    }));
+
     return { success: true };
   },
 
   updateList: async (listId, updates) => {
-    set({ loading: true });
     const result = await updateList(listId, updates);
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
       };
     }
-    // Refresh locally
+
+    const updatedList = result.data;
     set((state) => {
-      const updatedDefaultLists = { ...state.defaultLists };
-
-      // Update library if it matches
-      if (updatedDefaultLists.library && updatedDefaultLists.library.id === listId) {
-        updatedDefaultLists.library = { ...updatedDefaultLists.library, ...updates };
-      }
-
-      // Update favorites if it matches
-      if (updatedDefaultLists.favorites && updatedDefaultLists.favorites.id === listId) {
-        updatedDefaultLists.favorites = { ...updatedDefaultLists.favorites, ...updates };
-      }
-
-      // Update custom lists
-      const updatedCustomLists = state.customLists.map((l) =>
-        l.id === listId ? { ...l, ...updates } : l
-      );
+      const existing = state.listsById[listId];
+      if (!existing) return state;
 
       return {
-        defaultLists: updatedDefaultLists,
-        customLists: updatedCustomLists,
-        loading: false,
+        listsById: {
+          ...state.listsById,
+          [listId]: {
+            ...existing,
+            ...(updatedList ?? updates),
+          },
+        },
       };
     });
+
     return { success: true };
   },
 
   deleteList: async (listId) => {
-    set({ loading: true });
     const result = await deleteList(listId);
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
       };
     }
-    set((state) => ({
-      customLists: state.customLists.filter((l) => l.id !== listId),
-    }));
+
+    set((state) => {
+      const { [listId]: _, ...remainingLists } = state.listsById;
+      const { [listId]: __, ...remainingItems } = state.listItems;
+
+      return {
+        // remove list metadata
+        listsById: remainingLists,
+
+        // remove cached items for this list
+        listItems: remainingItems,
+
+        // remove from custom list ordering
+        customListIds: state.customListIds.filter((id) => id !== listId),
+      };
+    });
+
     return { success: true };
   },
 
   likeList: async (listId, userId) => {
-    set({ loading: true });
     const result = await likeList(listId, userId);
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
@@ -181,10 +207,8 @@ export const useLists = create<ListState>((set, get) => ({
   },
 
   unlikeList: async (listId, userId) => {
-    set({ loading: true });
     const result = await unlikeList(listId, userId);
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
@@ -195,53 +219,120 @@ export const useLists = create<ListState>((set, get) => ({
 
   // ---- ITEM ACTIONS ----
   getListItems: async (listId) => {
-    set({ loading: true });
     const result = await getListItems(listId);
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
       };
     }
-    const items = result.data || [];
+
+    const items = result.data ?? [];
+
     set((state) => ({
-      listItems: { ...state.listItems, [listId]: items },
+      listItems: {
+        ...state.listItems,
+        [listId]: items,
+      },
+      listsById: {
+        ...state.listsById,
+        [listId]: {
+          ...state.listsById[listId],
+          item_count: items.length,
+        },
+      },
     }));
+
     return { success: true };
   },
 
   addItemToList: async (listId, mediaId, userId) => {
-    set({ loading: true });
     const result = await addListItem(listId, mediaId, userId);
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
       };
     }
-    // Refresh list items
-    await get().getListItems(listId);
+    const { listItems } = get();
+
+    if (listItems[listId]) {
+      await get().getListItems(listId);
+    }
+
+    set((state) => ({
+      listsById: {
+        ...state.listsById,
+        [listId]: {
+          ...state.listsById[listId],
+          item_count: (state.listsById[listId]?.item_count ?? 0) + 1,
+        },
+      },
+    }));
+
     return { success: true };
   },
 
   removeItemFromList: async (item) => {
-    set({ loading: true });
     const result = await removeListItem(item.id);
     if (!result.success) {
-      set({ loading: false });
       return {
         success: false,
         error: result.error,
       };
     }
-    set((state) => ({
-      listItems: {
-        ...state.listItems,
-        [item.list_id]: state.listItems[item.list_id]?.filter((i) => i.id !== item.id) || [],
-      },
-    }));
+    set((state) => {
+      const existingItems = state.listItems[item.list_id];
+
+      return {
+        // update items only if they exist in cache
+        listItems: existingItems
+          ? {
+              ...state.listItems,
+              [item.list_id]: existingItems.filter((i) => i.id !== item.id),
+            }
+          : state.listItems,
+
+        // always update list metadata
+        listsById: {
+          ...state.listsById,
+          [item.list_id]: {
+            ...state.listsById[item.list_id],
+            item_count: Math.max((state.listsById[item.list_id]?.item_count ?? 1) - 1, 0),
+          },
+        },
+      };
+    });
+
+    return { success: true };
+  },
+  updateItemStatus: async (item, status) => {
+    const result = await updateItemStatus(item.user_id, item.media_id, status);
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error,
+      };
+    }
+    set((state) => {
+      const items = state.listItems[item.list_id];
+      if (!items) return state;
+
+      return {
+        listItems: {
+          ...state.listItems,
+          [item.list_id]: items.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  status,
+                }
+              : i
+          ),
+        },
+      };
+    });
+
     return { success: true };
   },
 }));

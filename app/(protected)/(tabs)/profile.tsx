@@ -1,8 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, ScrollView } from 'react-native';
-import { useProfile } from '~/store/profileStore';
 import StatsSection from '~/components/StatsSection';
-import ListsSection from '~/components/ListsSection';
 import ProfileSection from '~/components/ProfileSection';
 
 export default function Profile() {
@@ -18,7 +16,6 @@ export default function Profile() {
         
         <ProfileSection />
         <StatsSection />
-        <ListsSection />
       </ScrollView>
     </SafeAreaView>
   );
