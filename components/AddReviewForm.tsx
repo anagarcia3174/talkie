@@ -97,7 +97,7 @@ export default function AddReviewForm({ onSubmitReview }: AddReviewFormProps) {
             onChangeText={setReviewText}
             multiline
             numberOfLines={3}
-            className="text-md mx-3 max-h-24 flex-1 rounded-full border border-primary-700 px-4 py-2 font-SpaceGrotesk-Light text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:text-primary-200 focus:dark:border-primary-50"
+            className="text-md mx-3 max-h-24 flex-1 rounded-xl border border-primary-700 px-4 py-2 font-SpaceGrotesk-Light text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:text-primary-200 focus:dark:border-primary-50"
             cursorColor={theme.primary[700]}
             selectionColor={theme.primary[700]}
             placeholderTextColor={theme.primary[500]}

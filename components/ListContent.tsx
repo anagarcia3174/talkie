@@ -91,7 +91,7 @@ export default function ListContent({ list, listItems, onBack, onUpdateStatus }:
         <TextInput
           value={search}
           onChangeText={setSearch}
-          className="text-md flex-1 rounded-full border border-primary-700 py-3 pl-4 font-SpaceGrotesk-Light text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:text-primary-200 focus:dark:border-primary-50"
+          className="text-md flex-1 rounded-xl border border-primary-700 py-3 px-4 font-SpaceGrotesk-Light text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:text-primary-200 focus:dark:border-primary-50"
           cursorColor={theme.primary[700]}
           selectionColor={theme.primary[700]}
           placeholder={`Search through ${list.name}`}

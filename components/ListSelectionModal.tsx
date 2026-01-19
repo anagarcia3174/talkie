@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Modal,
 } from 'react-native';
-import { X, Plus, Library, List, Star, Check } from 'lucide-react-native';
+import { X, Plus, Library, List, Star, Check, ScrollText } from 'lucide-react-native';
 import { useLists } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
@@ -31,18 +31,13 @@ export default function ListSelectionModal({
 
   const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
 
-
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType='slide'
-      onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       {/* Backdrop */}
       <Pressable className="flex-1 bg-primary-950/60" onPress={onClose} />
 
       {/* Bottom Sheet */}
-      <View className="absolute bottom-0 h-[60vh] w-full rounded-t-2xl  bg-primary-100 dark:bg-primary-900 shadow-2xl">
+      <View className="absolute bottom-0 h-[60vh] w-full rounded-t-2xl  bg-primary-100 shadow-2xl dark:bg-primary-900">
         {/* Header */}
         <View className="flex-row items-center justify-between border-b border-primary-200 px-6 py-4 dark:border-primary-800">
           <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
@@ -59,7 +54,7 @@ export default function ListSelectionModal({
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {/* ---- Default Lists ---- */}
           <View className="px-6 py-4">
-            <Text className="mb-3 font-SpaceGrotesk-Medium text-sm text-primary-600 dark:text-primary-400">
+            <Text className="mb-2 font-SpaceGrotesk-Medium text-sm text-primary-600 dark:text-primary-400">
               Default Lists
             </Text>
 
@@ -77,7 +72,7 @@ export default function ListSelectionModal({
                           ? 'bg-primary-800 dark:bg-primary-100'
                           : 'bg-primary-100 dark:bg-primary-800'
                       }`}>
-                      <View className="rounded-lg bg-primary-950 p-2 dark:bg-primary-50">
+                      <View className="rounded-lg bg-primary-800 p-2 dark:bg-primary-100">
                         {list.list_type === 'favorites' ? (
                           <Star size={20} color={theme.primary[50]} />
                         ) : (
@@ -94,7 +89,7 @@ export default function ListSelectionModal({
                           }`}>
                           {list.name}
                         </Text>
-                        <Text className="text-sm text-primary-600 dark:text-primary-400">
+                        <Text className="text-sm text-primary-400 dark:text-primary-400">
                           {list.item_count} items
                         </Text>
                       </View>
@@ -112,9 +107,9 @@ export default function ListSelectionModal({
 
           {/* ---- Custom Lists ---- */}
           {customListIds.length > 0 && (
-            <View className="border-t border-primary-200 px-6 py-4 dark:border-primary-800">
-              <Text className="mb-3 font-SpaceGrotesk-Medium text-sm text-primary-600 dark:text-primary-400">
-                My Lists
+            <View className="border-primary-200 px-6 py-4 dark:border-primary-800">
+              <Text className="mb-2 font-SpaceGrotesk-Medium text-sm text-primary-600 dark:text-primary-400">
+                Custom
               </Text>
 
               <View className="gap-2">
@@ -133,15 +128,20 @@ export default function ListSelectionModal({
                           ? 'bg-primary-800 dark:bg-primary-100'
                           : 'bg-primary-100 dark:bg-primary-800'
                       }`}>
-                      <View className="rounded-lg bg-primary-200 p-2 dark:bg-primary-700">
-                        <List size={20} color={theme.primary[950]} />
+                      <View className="rounded-lg bg-primary-800 p-2 dark:bg-primary-100">
+                        <ScrollText size={20} color={theme.primary[50]} />
                       </View>
 
                       <View className="flex-1">
-                        <Text className="font-SpaceGrotesk-Medium text-primary-950 dark:text-primary-50">
+                        <Text
+                          className={`font-SpaceGrotesk-Medium ${
+                            selectedList === list.id
+                              ? 'text-primary-50 dark:text-primary-950'
+                              : 'text-primary-950 dark:text-primary-50'
+                          }`}>
                           {list.name}
                         </Text>
-                        <Text className="text-sm text-primary-600 dark:text-primary-400">
+                        <Text className="text-sm text-primary-400 dark:text-primary-400">
                           {list.item_count} items
                         </Text>
                       </View>
@@ -162,13 +162,13 @@ export default function ListSelectionModal({
         {/* Footer */}
         <View className="mb-8 border-t border-primary-200 px-6 py-4 dark:border-primary-800">
           <TouchableOpacity
-            disabled={selectedList == null }
+            disabled={selectedList == null}
             onPress={() => selectedList && onConfirm(selectedList)}
             className="flex-row items-center justify-center gap-3 rounded-xl bg-primary-950 p-4 dark:bg-primary-50">
-                <Plus size={20} color={theme.primary[50]} />
-                <Text className="font-SpaceGrotesk-SemiBold text-primary-50 dark:text-primary-950">
-                  Add item to list
-                </Text>
+            <Plus size={20} color={theme.primary[50]} />
+            <Text className="font-SpaceGrotesk-SemiBold text-primary-50 dark:text-primary-950">
+              Add item to list
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

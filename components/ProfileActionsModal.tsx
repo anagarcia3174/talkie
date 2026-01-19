@@ -121,7 +121,7 @@ export default function ProfileActionsModal({
             )}
           </Pressable>
           <TextInput
-            className="text-md mb-4 rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+            className="text-md mb-4 rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
             value={name}
             onChangeText={setName}
             cursorColor={theme.primary[700]}
@@ -131,7 +131,7 @@ export default function ProfileActionsModal({
             maxLength={50}
           />
           <TextInput
-            className="text-md mb-4 rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+            className="text-md mb-4 rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
             value={userBio}
             onChangeText={setUserBio}
             cursorColor={theme.primary[700]}

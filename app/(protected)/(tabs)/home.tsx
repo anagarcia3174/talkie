@@ -10,18 +10,15 @@ import LibraryProgressChart from '~/components/LibraryProgressChart';
 import { useLists } from '~/store/listStore';
 import { Toast } from 'toastify-react-native';
 export default function Home() {
-  const { fetchHomeData, trending, hiddenGems } = useHomeStore();
+  const { fetchHomeData, trending } = useHomeStore();
   const tabBarHeight = useBottomTabBarHeight();
-  const { listsById, defaultListIds, addItemToList } = useLists();
+  const { listsById, defaultListIds, addItemToList, listItems } = useLists();
 
   useEffect(() => {
     fetchHomeData();
   }, []);
 
-  const library =
-    defaultListIds.library != null
-      ? listsById[defaultListIds.library]
-      : null;
+  const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
 
   const addMediaToLibrary = async (mediaId: number): Promise<void> => {
     if (!library) return;
@@ -36,11 +33,7 @@ export default function Home() {
     });
 
     try {
-      const result = await addItemToList(
-        library.id,
-        mediaId,
-        library.user_id
-      );
+      const result = await addItemToList(library.id, mediaId, library.user_id);
 
       if (!result.success) {
         Toast.show({
@@ -81,11 +74,7 @@ export default function Home() {
         showsVerticalScrollIndicator={false}>
         <View className="mt-2 gap-y-6">
           <TrendingSection movies={trending} onAddToLibrary={addMediaToLibrary} />
-          <MediaRowSection
-            title="Hidden Gems"
-            movies={hiddenGems}
-            onAddToLibrary={addMediaToLibrary}
-          />
+          {library && <LibraryProgressChart items={listItems[library.id] || []} />}
         </View>
       </ScrollView>
     </SafeAreaView>

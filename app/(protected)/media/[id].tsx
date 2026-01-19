@@ -15,7 +15,6 @@ import { Media, ReviewWithProfile } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
 import ReviewItem from '~/components/ReviewItem';
-import AddReviewForm from '~/components/AddReviewForm';
 import { useReviews } from '~/store/reviewStore';
 import { Toast } from 'toastify-react-native';
 import MediaTabs from '~/components/MediaTabs';
@@ -23,7 +22,7 @@ import MediaHeader from '~/components/MediaHeader';
 import { useLists } from '~/store/listStore';
 
 
-const CONTENT_OPTIONS = ['Reviews', 'Comments'];
+const CONTENT_OPTIONS = ['Comments'];
 
 export default function MediaScreen() {
   const router = useRouter();
@@ -157,11 +156,7 @@ export default function MediaScreen() {
                 <ArrowLeft className="text-primary-50 dark:text-primary-950" size={24} />
               </TouchableOpacity>
               <View className='flex-row gap-x-2'>
-              <TouchableOpacity
-                onPress={() => setListModalVisible(true)}
-                className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40">
-                <Eye className="text-primary-50 dark:text-primary-950" size={24} />
-              </TouchableOpacity>
+              
               <TouchableOpacity
                 onPress={() => setListModalVisible(true)}
                 className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40">
@@ -199,7 +194,7 @@ export default function MediaScreen() {
                   />
                 ))}
             </View>
-            {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />}
+            {/* {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />} */}
             <ListSelectionModal
               visible={listModalVisible}
               onClose={() => setListModalVisible(false)}

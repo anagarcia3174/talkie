@@ -5,16 +5,48 @@ import { useTheme } from '~/hooks/useTheme';
 import { ScrollView } from 'react-native-gesture-handler';
 import { ChevronRight, Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import CreateListModal from '~/components/CreateListModal';
+import { List } from '~/types/supabaseTypes';
+import { useAuth } from '~/context/AuthContext';
+import { Toast } from 'toastify-react-native';
 
 export default function Library() {
   const theme = useTheme();
   const router = useRouter();
-
-  const { listsById, defaultListIds, customListIds } = useLists();
+  const [createListModalVisible, setCreateListModalVisible] = useState(false);
+  const { listsById, defaultListIds, customListIds, createList } = useLists();
+  const { user } = useAuth();
 
   const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
 
   const favorites = defaultListIds.favorites != null ? listsById[defaultListIds.favorites] : null;
+
+  const handleCreateList = async (list: Partial<List>) => {
+    if (!user) return;
+    setCreateListModalVisible(false)
+    const result = await createList(user.id, list);
+
+    if (!result.success) {
+      Toast.show({
+        type: 'error',
+        text1: result.error || 'Failed to create your custom list',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+    } else {
+      Toast.show({
+        type: 'success',
+        text1: 'Your list was created',
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+    }
+  };
 
   const ListRow = ({
     title,
@@ -28,7 +60,7 @@ export default function Library() {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
-      className="mb-3 flex-row items-center justify-between rounded-2xl bg-primary-100 p-4 dark:bg-primary-900">
+      className="mb-3 flex-row items-center justify-between rounded-2xl bg-primary-200 p-4 dark:bg-primary-900">
       <View className="flex-1">
         <Text className="font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
           {title}
@@ -53,7 +85,9 @@ export default function Library() {
           </Text>
         </View>
         <View>
-          <TouchableOpacity className="rounded-full bg-primary-800 p-2">
+          <TouchableOpacity
+            onPress={() => setCreateListModalVisible(true)}
+            className="rounded-full bg-primary-200 p-2 dark:bg-primary-900">
             <Plus size={24} color={theme.primary[950]} />
           </TouchableOpacity>
         </View>
@@ -101,6 +135,11 @@ export default function Library() {
           );
         })}
       </ScrollView>
+      <CreateListModal
+        visible={createListModalVisible}
+        onClose={() => setCreateListModalVisible(false)}
+        onSubmit={handleCreateList}
+      />
     </SafeAreaView>
   );
 }

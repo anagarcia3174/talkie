@@ -35,7 +35,12 @@ export async function createList(userId: string, newList: Partial<List>): Promis
 
 export async function updateList(listId: number, updates: Partial<List>): Promise<Result<List>> {
   try {
-    const { data, error } = await supabase.from('lists').update(updates).eq('id', listId).select().single();
+    const { data, error } = await supabase
+      .from('lists')
+      .update(updates)
+      .eq('id', listId)
+      .select()
+      .single();
 
     if (error) throw error;
     return successResult(data);
@@ -122,13 +127,40 @@ export async function unlikeList(listId: number, userId: string): Promise<Result
   }
 }
 
-export async function updateItemStatus(user_id: string, mediaId: number, status: LibraryStatus ): Promise<Result<void>> {
+export async function updateItemStatus(
+  user_id: string,
+  mediaId: number,
+  status: LibraryStatus
+): Promise<Result<void>> {
   try {
-    const { error } = await supabase.from('user_media').update({status: status}).eq('user_id', user_id).eq('media_id', mediaId);
+    const { error } = await supabase
+      .from('user_media')
+      .update({ status: status })
+      .eq('user_id', user_id)
+      .eq('media_id', mediaId);
 
-    if(error) throw error;
+    if (error) throw error;
     return successResult(undefined);
-  }catch (err) {
+  } catch (err) {
+    return errorResult(err);
+  }
+}
+
+export async function searchLists(query: string): Promise<Result<List[]>> {
+  try {
+    const { data, error } = await supabase
+      .from('lists')
+      .select('*')
+      .eq('is_default', false)
+      .eq('visibility', 'public')
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+    if (!data) return errorResult('No lists found');
+    return successResult(data);
+  } catch (err) {
     return errorResult(err);
   }
 }

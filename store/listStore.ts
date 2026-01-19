@@ -1,9 +1,4 @@
-import {
-  List,
-  ListItem,
-  ListItemWithMedia,
-  LibraryStatus,
-} from '~/types/supabaseTypes';
+import { List, ListItem, ListItemWithMedia, LibraryStatus } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import {
   getAllLists,
@@ -16,9 +11,10 @@ import {
   likeList,
   unlikeList,
   updateItemStatus,
+  searchLists,
 } from '~/services/listService';
 
-type StoreResult<T = void> = { success: true } | { success: false; error: string };
+type StoreResult<T = void> = { success: true, data?: T } | { success: false; error: string };
 
 interface ListState {
   listsById: Record<number, List>;
@@ -41,6 +37,7 @@ interface ListState {
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
   deleteList: (listId: number) => Promise<StoreResult<void>>;
+  searchLists: (query: string) => Promise<StoreResult<List[]>>;
 
   likeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
   unlikeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
@@ -194,6 +191,17 @@ export const useLists = create<ListState>((set, get) => ({
 
     return { success: true };
   },
+  searchLists: async (query) => {
+    const result = await searchLists(query);
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error,
+      };
+    } else {
+      return { success: true, data: result.data };
+    }
+  },
 
   likeList: async (listId, userId) => {
     const result = await likeList(listId, userId);
@@ -258,17 +266,17 @@ export const useLists = create<ListState>((set, get) => ({
 
     if (listItems[listId]) {
       await get().getListItems(listId);
-    }
-
-    set((state) => ({
-      listsById: {
-        ...state.listsById,
-        [listId]: {
-          ...state.listsById[listId],
-          item_count: (state.listsById[listId]?.item_count ?? 0) + 1,
+    } else {
+      set((state) => ({
+        listsById: {
+          ...state.listsById,
+          [listId]: {
+            ...state.listsById[listId],
+            item_count: (state.listsById[listId]?.item_count ?? 0) + 1,
+          },
         },
-      },
-    }));
+      }));
+    }
 
     return { success: true };
   },
@@ -315,20 +323,25 @@ export const useLists = create<ListState>((set, get) => ({
       };
     }
     set((state) => {
-      const items = state.listItems[item.list_id];
-      if (!items) return state;
+      const updatedListItems: typeof state.listItems = {};
+
+      for (const [listId, items] of Object.entries(state.listItems)) {
+        if (!items) continue;
+
+        updatedListItems[Number(listId)] = items.map((i) =>
+          i.media_id === item.media_id
+            ? {
+                ...i,
+                status,
+              }
+            : i
+        );
+      }
 
       return {
         listItems: {
           ...state.listItems,
-          [item.list_id]: items.map((i) =>
-            i.id === item.id
-              ? {
-                  ...i,
-                  status,
-                }
-              : i
-          ),
+          ...updatedListItems,
         },
       };
     });
