@@ -14,7 +14,7 @@ import {
   searchLists,
 } from '~/services/listService';
 
-type StoreResult<T = void> = { success: true, data?: T } | { success: false; error: string };
+type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
 interface ListState {
   listsById: Record<number, List>;
@@ -34,6 +34,7 @@ interface ListState {
 
   // list actions
   getLists: (userId: string) => Promise<StoreResult<void>>;
+  hydrateDefaultLists: () => Promise<void>;
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
   deleteList: (listId: number) => Promise<StoreResult<void>>;
@@ -105,7 +106,20 @@ export const useLists = create<ListState>((set, get) => ({
       return { success: false, error: 'An unexpected error ocurred while retrieving your lists.' };
     }
   },
+  hydrateDefaultLists: async () => {
+    const { defaultListIds, listItems, getListItems } = get();
 
+    const libraryId = defaultListIds.library;
+    const favoritesId = defaultListIds.favorites;
+
+    if (libraryId && !listItems[libraryId]) {
+      getListItems(libraryId);
+    }
+
+    if (favoritesId && !listItems[favoritesId]) {
+      getListItems(favoritesId);
+    }
+  },
   createList: async (userId, newList) => {
     const result = await createList(userId, newList);
 

@@ -18,7 +18,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
   return (
     <View className="px-4">
       {/* Section Title */}
-      <Text className="mb-3 font-SpaceGrotesk-SemiBold text-2xl text-primary-950 dark:text-primary-50">
+      <Text className="mb-3 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
         {title}
       </Text>
 

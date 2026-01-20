@@ -11,16 +11,17 @@ const { width } = Dimensions.get('window');
 interface TrendingSectionProps {
   movies: Media[];
   onAddToLibrary: (mediaId: number) => Promise<void>;
+  title: string;
 }
 
-export default function TrendingSection({ movies, onAddToLibrary }: TrendingSectionProps) {
+export default function TrendingSection({ movies, onAddToLibrary, title }: TrendingSectionProps) {
   const router = useRouter();
   const [ isScrolling, setIsScrolling] = useState(false);
 
   return (
     <View className="px-4">
-      <Text className="font-SpaceGrotesk-SemiBold text-2xl text-primary-950 dark:text-primary-50">
-        Trending
+      <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+        {title}
       </Text>
 
       <Carousel

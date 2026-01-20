@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await Promise.allSettled([
         getProfile(userId),
         getStats(userId),
-        getLists(userId)
+        getLists(userId),
       ]);
     } catch (error) {
       console.error('Error loading user data:', error);

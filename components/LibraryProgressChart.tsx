@@ -52,7 +52,7 @@ const LibraryProgressChart = ({ items }: LibraryProgressChartProps) => {
 
   return (
     <View className="px-4">
-      <Text className="-mb-3 font-SpaceGrotesk-SemiBold text-2xl text-primary-950 dark:text-primary-50">
+      <Text className="-mb-3 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
         Library Progress
       </Text>
       <View className="flex-row items-center gap-x-10 ">

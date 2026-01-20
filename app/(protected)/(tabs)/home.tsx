@@ -10,13 +10,19 @@ import LibraryProgressChart from '~/components/LibraryProgressChart';
 import { useLists } from '~/store/listStore';
 import { Toast } from 'toastify-react-native';
 export default function Home() {
-  const { fetchHomeData, trending } = useHomeStore();
+  const { fetchHomeData, trendingMovies, trendingShows } = useHomeStore();
   const tabBarHeight = useBottomTabBarHeight();
-  const { listsById, defaultListIds, addItemToList, listItems } = useLists();
+  const { listsById, defaultListIds, addItemToList, listItems, hydrateDefaultLists } = useLists();
 
   useEffect(() => {
     fetchHomeData();
   }, []);
+
+  useEffect(() => {
+    if (defaultListIds.library) {
+      hydrateDefaultLists();
+    }
+  }, [defaultListIds.library, hydrateDefaultLists]);
 
   const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
 
@@ -70,11 +76,20 @@ export default function Home() {
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
       <Header />
       <ScrollView
-        contentContainerStyle={{ paddingBottom: tabBarHeight }}
+        contentContainerStyle={{ paddingBottom: tabBarHeight, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}>
-        <View className="mt-2 gap-y-6">
-          <TrendingSection movies={trending} onAddToLibrary={addMediaToLibrary} />
+        <View className="flex-1 justify-around px-0">
           {library && <LibraryProgressChart items={listItems[library.id] || []} />}
+          <TrendingSection
+            title="Trending Movies"
+            movies={trendingMovies}
+            onAddToLibrary={addMediaToLibrary}
+          />
+          <MediaRowSection
+            movies={trendingShows}
+            title="Trending Shows"
+            onAddToLibrary={addMediaToLibrary}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

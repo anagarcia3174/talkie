@@ -20,9 +20,11 @@ export async function getMediaById(id: number, mediaType: string): Promise<Resul
   }
 }
 
-async function getCollection(collection: 'trending' | 'hidden_gems'): Promise<Result<Media[]>> {
+async function getCollection(collection: 'trending', mediaType: 'movie' | 'tv'): Promise<Result<Media[]>> {
   try {
-    const { data, error } = await supabase.rpc(`get_${collection}_media`);
+    const { data, error } = await supabase.rpc(`get_${collection}_media`, {
+      p_media_type: mediaType
+    });
 
     if (error) return errorResult(error);
     if (!data) return errorResult('No data found');
@@ -51,5 +53,5 @@ export async function searchMedia(searchText: string): Promise<Result<Media[]>> 
 }
 
 // Usage
-export const getTrending = () => getCollection('trending');
-export const getHiddenGems = () => getCollection('hidden_gems');
+export const getTrendingMovies = () => getCollection('trending', 'movie');
+export const getTrendingShows = () => getCollection('trending', 'tv');
