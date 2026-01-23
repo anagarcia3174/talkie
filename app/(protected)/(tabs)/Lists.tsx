@@ -3,19 +3,20 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useLists } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { ScrollView } from 'react-native-gesture-handler';
-import { ChevronRight, Plus } from 'lucide-react-native';
+import { Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import CreateListModal from '~/components/CreateListModal';
 import { List } from '~/types/supabaseTypes';
 import { useAuth } from '~/context/AuthContext';
 import { Toast } from 'toastify-react-native';
+import ListRow from '~/components/ListRow';
 
-export default function Library() {
+export default function Lists() {
   const theme = useTheme();
   const router = useRouter();
   const [createListModalVisible, setCreateListModalVisible] = useState(false);
-  const { listsById, defaultListIds, customListIds, createList } = useLists();
+  const { listsById, defaultListIds, customListIds, createList, deleteList } = useLists();
   const { user } = useAuth();
 
   const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
@@ -24,7 +25,19 @@ export default function Library() {
 
   const handleCreateList = async (list: Partial<List>) => {
     if (!user) return;
-    setCreateListModalVisible(false)
+    if (customListIds.length >= 5) {
+      setCreateListModalVisible(false);
+      Toast.show({
+        type: 'error',
+        text1: 'You have reached the maximum number of custom lists.',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+      return;
+    }
+    setCreateListModalVisible(false);
     const result = await createList(user.id, list);
 
     if (!result.success) {
@@ -48,32 +61,44 @@ export default function Library() {
     }
   };
 
-  const ListRow = ({
-    title,
-    items,
-    onPress,
-  }: {
-    title: string;
-    items?: number;
-    onPress: () => void;
-  }) => (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.85}
-      className="mb-3 flex-row items-center justify-between rounded-2xl bg-primary-200 p-4 dark:bg-primary-900">
-      <View className="flex-1">
-        <Text className="font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
-          {title}
-        </Text>
-        {items != null && (
-          <Text className="font-SpaceGrotesk-Regular text-sm text-primary-600 dark:text-primary-400">
-            {items} items
-          </Text>
-        )}
-      </View>
-      <ChevronRight size={20} color={theme.primary[950]} />
-    </TouchableOpacity>
-  );
+  const handleDeleteList = async (listId: number) => {
+    if (!user) return;
+    if (
+      defaultListIds.library === listId ||
+      defaultListIds.favorites === listId ||
+      !customListIds.includes(listId)
+    ) {
+      Toast.show({
+        type: 'error',
+        text1: 'You cannot delete this list.',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+      return;
+    }
+    const result = await deleteList(listId);
+    if (!result.success) {
+      Toast.show({
+        type: 'error',
+        text1: result.error || 'Failed to delete your custom list',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+    } else {
+      Toast.show({
+        type: 'success',
+        text1: 'Your list was deleted',
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
@@ -85,11 +110,13 @@ export default function Library() {
           </Text>
         </View>
         <View>
-          <TouchableOpacity
-            onPress={() => setCreateListModalVisible(true)}
-            className="rounded-full bg-primary-200 p-2 dark:bg-primary-900">
-            <Plus size={24} color={theme.primary[950]} />
-          </TouchableOpacity>
+          {customListIds.length < 5 && (
+            <TouchableOpacity
+              onPress={() => setCreateListModalVisible(true)}
+              className="rounded-full bg-primary-200 p-2 dark:bg-primary-900">
+              <Plus size={24} color={theme.primary[950]} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       <ScrollView
@@ -104,6 +131,7 @@ export default function Library() {
             title={library.name}
             items={library.item_count}
             onPress={() => router.push(`/list/${library.id}`)}
+            deletable={false}
           />
         )}
 
@@ -112,6 +140,7 @@ export default function Library() {
             title={favorites.name}
             items={favorites.item_count}
             onPress={() => router.push(`/list/${favorites.id}`)}
+            deletable={false}
           />
         )}
         {/* Custom Lists */}
@@ -131,6 +160,8 @@ export default function Library() {
               title={list.name}
               items={list.item_count}
               onPress={() => router.push(`/list/${id}`)}
+              deletable
+              onDelete={() => handleDeleteList(list.id)}
             />
           );
         })}

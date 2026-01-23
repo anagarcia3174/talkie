@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Profile } from '~/types/supabaseTypes';
 import { Camera } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 interface ProfileActionsModalProps {
   visible: boolean;
@@ -25,6 +26,8 @@ interface ProfileActionsModalProps {
   onUploadPicture: (image: ImagePicker.ImagePickerAsset) => Promise<void>;
   onUpdateProfile: (data: Partial<Profile>) => Promise<void>;
 }
+
+const MAX_MB = 6;
 
 export default function ProfileActionsModal({
   visible,
@@ -49,24 +52,51 @@ export default function ProfileActionsModal({
     }
   }, [visible, avatar, displayName, bio]);
 
+  const getImageSizeMB = async (uri: string) => {
+    const blob = await fetch(uri).then((r) => r.blob());
+    return blob.size / (1024 * 1024);
+  };
+
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+      allowsEditing: false,
+      aspect: [1, 1],
+      quality: 0.8,
       allowsMultipleSelection: false,
     });
 
-    if (result.canceled || !result.assets || result.assets.length === 0) {
-      return;
-    }
+    if (result.canceled || !result.assets?.length) return;
+    const asset = result.assets[0];
 
-    if (!result.assets[0].uri) {
-      throw new Error('No image uri!');
+    try {
+      const manipulated = await ImageManipulator.manipulateAsync(
+        asset.uri,
+        [{ resize: { width: 512, height: 512 } }],
+        {
+          compress: 0.8,
+          format: ImageManipulator.SaveFormat.JPEG,
+        }
+      );
+
+      const sizeMB = await getImageSizeMB(manipulated.uri);
+      console.log(`Processed avatar: ${sizeMB.toFixed(2)} MB`);
+
+      if (sizeMB > MAX_MB) {
+        Alert.alert('Image too large', `Please choose an image under ${MAX_MB} MB`);
+        return;
+      }
+
+      setImage({
+        ...asset,
+        uri: manipulated.uri,
+        mimeType: 'image/jpeg',
+      });
+      setImageUri(manipulated.uri);
+    } catch (error) {
+      console.error('Image processing error:', error);
+      Alert.alert('Error', 'Failed to process image');
     }
-    setImage(result.assets[0]);
-    setImageUri(result.assets[0].uri);
   };
 
   const hasChanges =

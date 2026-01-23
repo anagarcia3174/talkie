@@ -11,11 +11,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Eye, Plus, Star } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useEffect, useState } from 'react';
-import { Media, ReviewWithProfile } from '~/types/supabaseTypes';
+import { Media } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
-import ReviewItem from '~/components/ReviewItem';
-import { useReviews } from '~/store/reviewStore';
 import { Toast } from 'toastify-react-native';
 import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
@@ -37,27 +35,27 @@ export default function MediaScreen() {
     : null;
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
   const [shrinkHeader, setShrinkHeader] = useState(false);
-  const { submitReview, fetchReviewsForMedia } = useReviews();
-  const [reviews, setReviews] = useState<ReviewWithProfile[]>([]);
-  const [loadingReviews, setLoadingReviews] = useState(true);
-  const userReview = reviews.find((r) => r.user_id === user?.id);
-  const otherReviews = reviews.filter((r) => r.user_id !== user?.id);
+  // const { submitReview, fetchReviewsForMedia } = useReviews();
+  // const [reviews, setReviews] = useState<ReviewWithProfile[]>([]);
+  // const [loadingReviews, setLoadingReviews] = useState(true);
+  // const userReview = reviews.find((r) => r.user_id === user?.id);
+  // const otherReviews = reviews.filter((r) => r.user_id !== user?.id);
   const { addItemToList } = useLists();
-  const sortedReviews = userReview ? [userReview, ...otherReviews] : reviews;
-  const hasReviewed = !!userReview;
+  // const sortedReviews = userReview ? [userReview, ...otherReviews] : reviews;
+  // const hasReviewed = !!userReview;
 
-  const loadReviews = async () => {
-    setLoadingReviews(true);
-    const result = await fetchReviewsForMedia(media.id);
-    if (result.success) {
-      setReviews(result.data || []);
-    }
-    setLoadingReviews(false);
-  };
+  // const loadReviews = async () => {
+  //   setLoadingReviews(true);
+  //   const result = await fetchReviewsForMedia(media.id);
+  //   if (result.success) {
+  //     setReviews(result.data || []);
+  //   }
+  //   setLoadingReviews(false);
+  // };
 
-  useEffect(() => {
-    loadReviews();
-  }, [media.id]);
+  // useEffect(() => {
+  //   loadReviews();
+  // }, [media.id]);
 
   const handleAddToList = async (listId: number) => {
     if(!listId || !user?.id) return;
@@ -95,47 +93,47 @@ export default function MediaScreen() {
     }
   }
 
-  const handleSubmitReview = async (rating: number, content: string) => {
-    if (user?.id) {
-      const result = await submitReview({
-        rating,
-        content,
-        user_id: user.id,
-        media_id: media.id,
-      });
+  // const handleSubmitReview = async (rating: number, content: string) => {
+  //   if (user?.id) {
+  //     const result = await submitReview({
+  //       rating,
+  //       content,
+  //       user_id: user.id,
+  //       media_id: media.id,
+  //     });
 
-      if (result.success) {
-        await loadReviews();
+  //     if (result.success) {
+  //       await loadReviews();
 
-        Toast.show({
-          type: 'success',
-          text1: 'Review Posted!',
-          position: 'top',
-          visibilityTime: 3000,
-          autoHide: true,
-          onPress: () => Toast.hide(),
-        });
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: result.error || 'Failed to post your review',
-          position: 'top',
-          visibilityTime: 4000,
-          autoHide: true,
-          onPress: () => Toast.hide(),
-        });
-      }
-    } else {
-      Toast.show({
-        type: 'error',
-        text1: 'An unexpected error ocurred while posting your review',
-        position: 'top',
-        visibilityTime: 4000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-    }
-  };
+  //       Toast.show({
+  //         type: 'success',
+  //         text1: 'Review Posted!',
+  //         position: 'top',
+  //         visibilityTime: 3000,
+  //         autoHide: true,
+  //         onPress: () => Toast.hide(),
+  //       });
+  //     } else {
+  //       Toast.show({
+  //         type: 'error',
+  //         text1: result.error || 'Failed to post your review',
+  //         position: 'top',
+  //         visibilityTime: 4000,
+  //         autoHide: true,
+  //         onPress: () => Toast.hide(),
+  //       });
+  //     }
+  //   } else {
+  //     Toast.show({
+  //       type: 'error',
+  //       text1: 'An unexpected error ocurred while posting your review',
+  //       position: 'top',
+  //       visibilityTime: 4000,
+  //       autoHide: true,
+  //       onPress: () => Toast.hide(),
+  //     });
+  //   }
+  // };
 
   return (
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
@@ -171,7 +169,7 @@ export default function MediaScreen() {
                 onChange={setSelectedSegment}
                 options={CONTENT_OPTIONS}
               />
-              {selectedSegment === 0 &&
+              {/* {selectedSegment === 0 &&
                 (loadingReviews ? (
                   <ActivityIndicator
                     className="flex-1 items-center justify-center"
@@ -192,7 +190,7 @@ export default function MediaScreen() {
                     }}
                     scrollEventThrottle={16}
                   />
-                ))}
+                ))} */}
             </View>
             {/* {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />} */}
             <ListSelectionModal

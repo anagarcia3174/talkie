@@ -7,7 +7,7 @@ import {
   getProfileById,
   getProfileStats,
   updateProfile,
-  uploadAvatar,
+  uploadAvatar as uploadAvatarService,
 } from '~/services/profileService';
 interface ProfileState {
   profile: Profile | null;
@@ -20,6 +20,10 @@ interface ProfileState {
   updateProfile: (userId: string, updates: Partial<Profile>) => Promise<Result<void>>;
   clearProfile: () => void;
 }
+
+const MAX_MB = 6;
+const MAX_BYTES = MAX_MB * 1024 * 1024;
+
 export const useProfile = create<ProfileState>((set, get) => ({
   profile: null,
   stats: {
@@ -69,11 +73,18 @@ export const useProfile = create<ProfileState>((set, get) => ({
   uploadAvatar: async (userId, image) => {
     try {
       const arrayBuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
-      const fileExt = image.uri?.split('.').pop()?.toLowerCase() ?? 'jpeg';
-      const filePath = `${userId}/avatar.${fileExt}`;
+
+      if (arrayBuffer.byteLength > MAX_BYTES) {
+        return {
+          success: false,
+          error: `Image too large. Max size is ${MAX_MB} MB.`,
+        };
+      }
+
+      const filePath = `${userId}/avatar.jpg`;
       const mimeType = image.mimeType ?? 'image/jpeg';
 
-      const result = await uploadAvatar(userId, filePath, arrayBuffer, mimeType);
+      const result = await uploadAvatarService(filePath, arrayBuffer, mimeType);
 
       if (!result.success) {
         return { success: false, error: result.error };

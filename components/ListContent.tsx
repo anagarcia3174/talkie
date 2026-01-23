@@ -121,6 +121,20 @@ export default function ListContent({ list, listItems, onBack, onUpdateStatus }:
           }}
         />
       </View>
+      {listItems.length === 0 && (
+        <View className="mt-20 items-center px-4">
+          <Text className="font-SpaceGrotesk-Medium text-primary-600 dark:text-primary-400">
+            This list is empty.
+          </Text>
+        </View>
+      )}
+      {listItems.length > 0 && sorted.length === 0 && (
+         <View className="mt-20 items-center px-4">
+          <Text className="font-SpaceGrotesk-Medium text-primary-600 dark:text-primary-400">
+            No items match your search/filter.
+          </Text>
+        </View>
+      )}
       <FlatList
         data={sorted}
         keyExtractor={(item) => item.id.toString()}

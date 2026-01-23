@@ -8,20 +8,23 @@ export default function Layout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: theme.primary[900],
-        tabBarInactiveTintColor: theme.primaryOpacity[700],
-        tabBarStyle: {
-          backgroundColor: theme.primary[50],
-          position: 'absolute',
-          borderTopWidth: 0,
-          elevation: 0,
-          height: 70,
-        },
-      }}>
+    headerShown: false,
+    tabBarShowLabel: true,
+    tabBarActiveTintColor: theme.primary[900],
+    tabBarInactiveTintColor: theme.primaryOpacity[700],
+    tabBarStyle: {
+      backgroundColor: theme.primary[50],
+      position: 'absolute',
+      borderTopWidth: 0,
+      elevation: 0,
+      height: 70,
+    },
+    tabBarIconStyle: {
+      marginTop: 2,
+    }
+  }}>
       <Tabs.Screen
-        name="home"
+        name="Home"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Home color={color} strokeWidth={focused ? 2 : 1.5} />
@@ -29,7 +32,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="Search"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Search color={color} strokeWidth={focused ? 2 : 1.5} />
@@ -37,7 +40,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="library"
+        name="Lists"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Library color={color} strokeWidth={focused ? 2 : 1.5} />
@@ -45,7 +48,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="Profile"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <User color={color} strokeWidth={focused ? 2 : 1.5} />

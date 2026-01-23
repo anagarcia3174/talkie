@@ -18,9 +18,15 @@ import { useRouter } from 'expo-router';
 import { Toast } from 'toastify-react-native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useLists } from '~/store/listStore';
+import SearchSortModal from '~/components/SearchSortModal';
 
 const SEARCH_OPTIONS = ['Media', 'Lists'];
 const ROW_GAP = 16;
+export type SearchSortType = 'relevance' | 'alpha' | 'release' | 'rating' | 'item_count';
+
+export type SortOrder = 'asc' | 'desc';
+
+export type SearchSortContext = 'media' | 'lists';
 
 export default function Search() {
   const [selected, setSelected] = useState(0);
@@ -31,14 +37,34 @@ export default function Search() {
   const { searchLists } = useLists();
   const theme = useTheme();
   const router = useRouter();
-  const tabBarHeight = useBottomTabBarHeight();
+  const bottomTabBarHeight = useBottomTabBarHeight();
   const activeResults = selected === 0 ? mediaResults : listResults;
+  const [sortModalVisible, setSortModalVisible] = useState(false);
 
+  const [mediaSort, setMediaSort] = useState<{
+    sort: SearchSortType;
+    order: SortOrder;
+  }>({
+    sort: 'relevance',
+    order: 'desc',
+  });
+
+  const [listSort, setListSort] = useState<{
+    sort: SearchSortType;
+    order: SortOrder;
+  }>({
+    sort: 'alpha',
+    order: 'asc',
+  });
   const onSegmentChange = (index: number) => {
     setSelected(index);
     setQuery('');
-    setMediaResults([]);
-    setListResults([]);
+
+    if (index === 0) {
+      setMediaSort({ sort: 'relevance', order: 'desc' });
+    } else {
+      setListSort({ sort: 'alpha', order: 'asc' });
+    }
   };
 
   const onSearchMedia = async () => {
@@ -106,6 +132,44 @@ export default function Search() {
     }
   };
 
+  const sortedMediaResults = [...mediaResults].sort((a, b) => {
+    const { sort, order } = mediaSort;
+    const dir = order === 'asc' ? 1 : -1;
+
+    switch (sort) {
+      case 'alpha':
+        return a.title.localeCompare(b.title) * dir;
+
+      case 'release':
+        return (
+          (new Date(a.release_date || 0).getTime() - new Date(b.release_date || 0).getTime()) * dir
+        );
+
+      case 'rating':
+        return ((a.vote_average ?? 0) - (b.vote_average ?? 0)) * dir;
+
+      case 'relevance':
+      default:
+        return 0; // TMDB already returns relevance-ranked results
+    }
+  });
+
+  const sortedListResults = [...listResults].sort((a, b) => {
+    const { sort, order } = listSort;
+    const dir = order === 'asc' ? 1 : -1;
+
+    switch (sort) {
+      case 'alpha':
+        return a.name.localeCompare(b.name) * dir;
+
+      case 'item_count':
+        return ((a.item_count ?? 0) - (b.item_count ?? 0)) * dir;
+
+      default:
+        return 0;
+    }
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
       {/* Header */}
@@ -127,10 +191,12 @@ export default function Search() {
           onChangeText={setQuery}
           onSubmitEditing={onSubmitSearch}
         />
-        <ArrowDownUp color={theme.primary[950]} />
+        <TouchableOpacity onPress={() => setSortModalVisible(true)}>
+          <ArrowDownUp color={theme.primary[950]} />
+        </TouchableOpacity>
       </View>
       {/* Filter Slider */}
-      <View className="mt-1 px-4">
+      <View className="mt-1 mb-2 px-4">
         <SegmentedControl
           values={SEARCH_OPTIONS}
           selectedIndex={selected}
@@ -165,10 +231,9 @@ export default function Search() {
       )}
       {!loading && selected === 0 && mediaResults.length > 0 && (
         <FlatList
-          data={mediaResults}
+          data={sortedMediaResults}
           keyExtractor={(item) => item.id.toString()}
           numColumns={3}
-          style={{ marginBottom: tabBarHeight }}
           columnWrapperStyle={{
             justifyContent: 'space-between',
             paddingHorizontal: 16,
@@ -212,26 +277,48 @@ export default function Search() {
       )}
       {!loading && selected === 1 && listResults.length > 0 && (
         <FlatList
-          data={listResults}
+          data={sortedListResults}
           keyExtractor={(item) => item.id.toString()}
-          style={{ marginBottom: tabBarHeight }}
+          style={{ marginBottom: bottomTabBarHeight }}
           contentContainerStyle={{ padding: 16, gap: 12 }}
           renderItem={({ item }) => (
             <TouchableOpacity
               activeOpacity={0.85}
-              className="rounded-xl bg-primary-100 p-4 dark:bg-primary-900">
-              <Text className="font-SpaceGrotesk-Medium text-lg text-primary-950 dark:text-primary-50">
-                {item.name}
-              </Text>
-              {!!item.description && (
-                <Text className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
-                  {item.description}
+              className="flex-row items-center justify-between rounded-xl bg-primary-100 p-4 dark:bg-primary-900">
+              <View className="">
+                <Text className="font-SpaceGrotesk-Medium text-lg text-primary-950 dark:text-primary-50">
+                  {item.name}
                 </Text>
-              )}
+                {!!item.description && (
+                  <Text className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
+                    {item.description}
+                  </Text>
+                )}
+              </View>
+              <View className="flex items-center justify-center">
+                <Text className="mt-2 font-SpaceGrotesk-Light text-xs text-primary-700 dark:text-primary-300">
+                  {item.item_count}
+                </Text>
+                <Text className="font-SpaceGrotesk-Light text-xs text-primary-700 dark:text-primary-300">
+                  {item.item_count <= 1 ? 'Item' : 'Items'}
+                </Text>
+              </View>
             </TouchableOpacity>
           )}
         />
       )}
+      <SearchSortModal
+        isVisible={sortModalVisible}
+        context={selected === 0 ? 'media' : 'lists'}
+        onClose={() => setSortModalVisible(false)}
+        onSelect={(sort, order) => {
+          if (selected === 0) {
+            setMediaSort({ sort, order });
+          } else {
+            setListSort({ sort, order });
+          }
+        }}
+      />
     </SafeAreaView>
   );
 }
