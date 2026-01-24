@@ -138,7 +138,7 @@ export default function MediaScreen() {
   return (
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
       <ImageBackground
-        source={{ uri: backdrop || poster || '' }}
+        source={{ uri: backdrop || poster || undefined }}
         resizeMode="cover"
         className="h-full w-full">
         <BlurView

@@ -189,3 +189,16 @@ export interface ApiResponse<T> {
   error?: string;
   success: boolean;
 }
+
+
+export type ListSearchResult = {
+  id: number;          // bigint
+  name: string;
+  description: string | null;
+  created_at: string;
+  likes_count: number;
+  item_count: number;  // int4
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+};

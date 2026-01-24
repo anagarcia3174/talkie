@@ -1,6 +1,6 @@
 import { Media } from '~/types/supabaseTypes';
 import { View, Text, Image } from 'react-native';
-import { Star } from 'lucide-react-native';
+import { ImageOff, Star } from 'lucide-react-native';
 import MediaOverview from './MediaOverview';
 import Animated, {
   useAnimatedStyle,
@@ -9,6 +9,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
+import { useTheme } from '~/hooks/useTheme';
 
 interface MediaHeaderProps {
   media: Media;
@@ -18,7 +19,7 @@ interface MediaHeaderProps {
 export default function MediaHeader({ media, shrinkHeader }: MediaHeaderProps) {
   const year = media.release_date?.slice(0, 4);
   const rating = media.vote_average?.toFixed(1);
-
+  const theme = useTheme();
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
 
   const shrinkProgress = useSharedValue(0);
@@ -62,19 +63,26 @@ export default function MediaHeader({ media, shrinkHeader }: MediaHeaderProps) {
   return (
     <Animated.View style={[containerStyle]} className="items-center px-4">
       {/* Poster */}
-      {poster && (
+      {poster ? (
         <Animated.Image
           source={{ uri: poster }}
           style={posterStyle}
           className="mb-2 rounded-xl"
           resizeMode="cover"
         />
+      ) : (
+        <Animated.View
+          style={[
+            posterStyle,
+          ]}
+          className="mb-2 items-center justify-center rounded-xl bg-primary-400 dark:bg-primary-800">
+          <ImageOff size={48} color={theme.primary[700]} /> 
+        </Animated.View>
       )}
 
       <Animated.Text
         style={titleStyle}
-        className="text-center font-SpaceGrotesk-SemiBold text-primary-900 dark:text-primary-50"
-      >
+        className="text-center font-SpaceGrotesk-SemiBold text-primary-900 dark:text-primary-50">
         {media.title}
       </Animated.Text>
 
@@ -93,9 +101,7 @@ export default function MediaHeader({ media, shrinkHeader }: MediaHeaderProps) {
         </Text>
       </Animated.View>
 
-      {!shrinkHeader && (
-        <MediaOverview synopsis={media.synopsis || 'No overview available.'} />
-      )}
+      {!shrinkHeader && <MediaOverview synopsis={media.synopsis || 'No overview available.'} />}
     </Animated.View>
   );
 }

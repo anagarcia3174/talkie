@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemWithMedia, LibraryStatus } from '~/types/supabaseTypes';
+import { List, ListItem, ListItemWithMedia, LibraryStatus, ListSearchResult } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import {
   getAllLists,
@@ -38,7 +38,7 @@ interface ListState {
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
   deleteList: (listId: number) => Promise<StoreResult<void>>;
-  searchLists: (query: string) => Promise<StoreResult<List[]>>;
+  searchLists: (query: string) => Promise<StoreResult<ListSearchResult[]>>;
 
   likeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
   unlikeList: (listId: number, userId: string) => Promise<StoreResult<void>>;

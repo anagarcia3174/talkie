@@ -8,17 +8,18 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { ArrowDownUp, ImageOff } from 'lucide-react-native';
+import { ArrowDownUp, ImageOff, Bookmark, UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { searchMedia } from '~/services/mediaService';
-import { List, Media } from '~/types/supabaseTypes';
+import { List, ListSearchResult, Media } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
 import { Toast } from 'toastify-react-native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useLists } from '~/store/listStore';
 import SearchSortModal from '~/components/SearchSortModal';
+import { getPublicUrl } from '~/utils/storageUrl';
 
 const SEARCH_OPTIONS = ['Media', 'Lists'];
 const ROW_GAP = 16;
@@ -32,7 +33,7 @@ export default function Search() {
   const [selected, setSelected] = useState(0);
   const [query, setQuery] = useState('');
   const [mediaResults, setMediaResults] = useState<Media[]>([]);
-  const [listResults, setListResults] = useState<List[]>([]);
+  const [listResults, setListResults] = useState<ListSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const { searchLists } = useLists();
   const theme = useTheme();
@@ -196,7 +197,7 @@ export default function Search() {
         </TouchableOpacity>
       </View>
       {/* Filter Slider */}
-      <View className="mt-1 mb-2 px-4">
+      <View className="mb-2 mt-1 px-4">
         <SegmentedControl
           values={SEARCH_OPTIONS}
           selectedIndex={selected}
@@ -241,6 +242,7 @@ export default function Search() {
           contentContainerStyle={{
             paddingTop: 16,
             gap: ROW_GAP,
+            paddingBottom: bottomTabBarHeight,
           }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
@@ -279,28 +281,57 @@ export default function Search() {
         <FlatList
           data={sortedListResults}
           keyExtractor={(item) => item.id.toString()}
-          style={{ marginBottom: bottomTabBarHeight }}
-          contentContainerStyle={{ padding: 16, gap: 12 }}
+          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: bottomTabBarHeight }}
           renderItem={({ item }) => (
             <TouchableOpacity
               activeOpacity={0.85}
-              className="flex-row items-center justify-between rounded-xl bg-primary-100 p-4 dark:bg-primary-900">
-              <View className="">
-                <Text className="font-SpaceGrotesk-Medium text-lg text-primary-950 dark:text-primary-50">
-                  {item.name}
-                </Text>
-                {!!item.description && (
-                  <Text className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
-                    {item.description}
+              className="rounded-xl bg-primary-100 p-4 dark:bg-primary-900">
+              {/* Top: title + likes */}
+              <View className="flex-row items-start justify-between">
+                <View className="mr-3 flex-1">
+                  <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+                    {item.name}
                   </Text>
-                )}
+
+                  {!!item.description && (
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
+                      {item.description}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Likes on top right */}
+                <View className="flex-row items-center justify-start gap-x-1">
+                  <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
+                    {item.likes_count}
+                  </Text>
+                  <Bookmark size={12} color={theme.primary[700]} />
+                </View>
               </View>
-              <View className="flex items-center justify-center">
-                <Text className="mt-2 font-SpaceGrotesk-Light text-xs text-primary-700 dark:text-primary-300">
-                  {item.item_count}
-                </Text>
-                <Text className="font-SpaceGrotesk-Light text-xs text-primary-700 dark:text-primary-300">
-                  {item.item_count <= 1 ? 'Item' : 'Items'}
+
+              {/* Bottom row: user left, item count right */}
+              <View className="mt-3 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-2">
+                  {item.avatar_url ? (
+                    <Image
+                      source={{ uri: getPublicUrl(item.avatar_url) }}
+                      className="h-6 w-6 rounded-full"
+                    />
+                  ) : (
+                    <View className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
+                      <UserRound size={12} color={theme.primary[900]} />
+                    </View>
+                  )}
+                  <Text className="font-SpaceGrotesk-Regular text-sm text-primary-700 dark:text-primary-300">
+                    {item.display_name}
+                  </Text>
+                </View>
+
+                <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
+                  {item.item_count} {item.item_count === 1 ? 'Item' : 'Items'}
                 </Text>
               </View>
             </TouchableOpacity>

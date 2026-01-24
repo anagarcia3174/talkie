@@ -1,5 +1,5 @@
 import { supabase } from '~/utils/supabase';
-import type { LibraryStatus, List, ListItemWithMedia, Media, Result } from '~/types/supabaseTypes';
+import type { LibraryStatus, List, ListItemWithMedia, ListSearchResult, Media, Result } from '~/types/supabaseTypes';
 import { errorResult, successResult } from '~/types/supabaseTypes';
 
 export async function getAllLists(userId: string): Promise<Result<List[]>> {
@@ -146,21 +146,18 @@ export async function updateItemStatus(
   }
 }
 
-export async function searchLists(query: string): Promise<Result<List[]>> {
+export async function searchLists(query: string): Promise<Result<ListSearchResult[]>> {
   try {
-    const { data, error } = await supabase
-      .from('lists')
-      .select('*')
-      .eq('is_default', false)
-      .eq('visibility', 'public')
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    const { data, error } = await supabase.rpc('search_public_lists', {
+      search_query: query,
+      result_limit: 20,
+    });
 
     if (error) throw error;
     if (!data) return errorResult('No lists found');
     return successResult(data);
   } catch (err) {
+    console.log(err);
     return errorResult(err);
   }
 }
