@@ -1,5 +1,5 @@
 import { Modal, View, Text, TouchableOpacity, Pressable } from 'react-native';
-import { Check, Eye, Clock } from 'lucide-react-native';
+import { Check, Eye, Clock, Trash2 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { LibraryStatus } from '~/types/supabaseTypes';
 
@@ -7,6 +7,7 @@ interface StatusPickerModalProps {
   visible: boolean;
   currentStatus: LibraryStatus;
   onConfirm: (status: LibraryStatus) => void;
+  onDelete: () => void;
   onClose: () => void;
 }
 
@@ -25,6 +26,7 @@ export default function StatusPickerModal({
   currentStatus,
   onConfirm,
   onClose,
+  onDelete
 }: StatusPickerModalProps) {
   const theme = useTheme();
 
@@ -67,6 +69,19 @@ export default function StatusPickerModal({
               </TouchableOpacity>
             );
           })}
+
+          {/* Divider */}
+          <View className="my-2 h-px bg-primary-200 dark:bg-primary-800" />
+
+          {/* Delete action */}
+          <TouchableOpacity         onPress={onDelete}
+ className="flex-row items-center gap-4 rounded-xl p-4 active:bg-red-50 dark:active:bg-red-900/20">
+            <Trash2 size={20} color="#dc2626" />
+
+            <Text className="flex-1 font-SpaceGrotesk-Medium text-red-600 dark:text-red-500">
+              Remove from list
+            </Text>
+          </TouchableOpacity>
         </Pressable>
       </Pressable>
     </Modal>
