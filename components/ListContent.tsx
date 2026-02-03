@@ -146,9 +146,7 @@ export default function ListContent({
         }}>
         <TouchableOpacity
           onPress={() => {
-            if (!list.is_default) {
-              setListInfoModalVisible(true);
-            }
+            setListInfoModalVisible(true);
           }}>
           <Text
             numberOfLines={1}

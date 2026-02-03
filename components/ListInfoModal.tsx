@@ -24,7 +24,7 @@ export default function ListInfoModal({
   const [listDescription, setListDescription] = useState(list.description || '');
   const [listVisibility, setListVisibility] = useState<Visibility>(list.visibility);
 
-  const nameChanged = listName.trim() !== list.name;
+  const nameChanged = !list.is_default && listName.trim() !== list.name;
   const descChanged = (listDescription || '') !== (list.description || '');
   const visibilityChanged = listVisibility !== list.visibility;
 
@@ -54,7 +54,12 @@ export default function ListInfoModal({
           <View className="mb-4">
             <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">Name</Text>
             <TextInput
-              className="rounded-xl border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+              editable={!list.is_default}
+              className={`rounded-xl border px-4 py-3 font-SpaceGrotesk-Regular ${
+                list.is_default
+                  ? 'border-primary-300 bg-primary-200 text-primary-500 dark:border-primary-700 dark:bg-primary-800 dark:text-primary-400'
+                  : 'border-primary-300 bg-primary-50 text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50'
+              }`}
               value={listName}
               onChangeText={setListName}
               cursorColor={theme.primary[700]}
@@ -150,9 +155,20 @@ export default function ListInfoModal({
           <View className="my-8 h-px bg-primary-200 dark:bg-primary-700" />
 
           {/* Delete */}
-          <TouchableOpacity activeOpacity={0.5}  onPress={onDelete} className="rounded-xl  bg-red-500 px-4 py-3">
-            <Text className="text-center font-SpaceGrotesk-SemiBold text-primary-100 ">Delete list</Text>
-          </TouchableOpacity >
+          <TouchableOpacity
+            disabled={list.is_default}
+            activeOpacity={0.5}
+            onPress={onDelete}
+            className={`rounded-xl px-4 py-3 ${
+              list.is_default ? 'bg-primary-200  dark:bg-primary-800' : 'bg-red-500'
+            }`}>
+            <Text
+              className={`text-center font-SpaceGrotesk-SemiBold ${
+                list.is_default ? 'text-primary-500 dark:text-primary-400' : 'text-primary-100'
+              }`}>
+              {list.is_default ? 'Cannot delete default list' : 'Delete List'}
+            </Text>
+          </TouchableOpacity>
         </Pressable>
       </Pressable>
     </Modal>
