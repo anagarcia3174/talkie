@@ -35,7 +35,7 @@ export default function Search() {
   const [mediaResults, setMediaResults] = useState<Media[]>([]);
   const [listResults, setListResults] = useState<ListSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const { searchLists } = useLists();
+  const { searchLists, addListToState } = useLists();
   const theme = useTheme();
   const router = useRouter();
   const bottomTabBarHeight = useBottomTabBarHeight();
@@ -161,15 +161,29 @@ export default function Search() {
 
     switch (sort) {
       case 'alpha':
-        return a.name.localeCompare(b.name) * dir;
+        return a.list.name.localeCompare(b.list.name) * dir;
 
       case 'item_count':
-        return ((a.item_count ?? 0) - (b.item_count ?? 0)) * dir;
+        return ((a.list.item_count ?? 0) - (b.list.item_count ?? 0)) * dir;
 
       default:
         return 0;
     }
   });
+
+  const handleListPress = (result: ListSearchResult) => {
+    addListToState(result.list);
+
+    router.push({
+      pathname: '/list/[id]',
+      params: {
+        id: result.list.id,
+        ownerId: result.list.user_id,
+        ownerName: result.display_name,
+        ownerAvatar: result.avatar_url ?? '',
+      },
+    });
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
@@ -280,25 +294,26 @@ export default function Search() {
       {!loading && selected === 1 && listResults.length > 0 && (
         <FlatList
           data={sortedListResults}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.list.id.toString()}
           contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: bottomTabBarHeight }}
           renderItem={({ item }) => (
             <TouchableOpacity
+              onPress={() => handleListPress(item)}
               activeOpacity={0.85}
               className="rounded-xl bg-primary-100 p-4 dark:bg-primary-900">
               {/* Top: title + likes */}
               <View className="flex-row items-start justify-between">
                 <View className="mr-3 flex-1">
                   <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
-                    {item.name}
+                    {item.list.name}
                   </Text>
 
-                  {!!item.description && (
+                  {!!item.list.description && (
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
                       className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
-                      {item.description}
+                      {item.list.description}
                     </Text>
                   )}
                 </View>
@@ -306,7 +321,7 @@ export default function Search() {
                 {/* Likes on top right */}
                 <View className="flex-row items-center justify-start gap-x-1">
                   <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
-                    {item.likes_count}
+                    {item.list.likes_count}
                   </Text>
                   <Bookmark size={12} color={theme.primary[700]} />
                 </View>
@@ -331,7 +346,7 @@ export default function Search() {
                 </View>
 
                 <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
-                  {item.item_count} {item.item_count === 1 ? 'Item' : 'Items'}
+                  {item.list.item_count} {item.list.item_count === 1 ? 'Item' : 'Items'}
                 </Text>
               </View>
             </TouchableOpacity>

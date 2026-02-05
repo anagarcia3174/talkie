@@ -1,14 +1,29 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, View, TextInput, TouchableOpacity, Image, Animated } from 'react-native';
-import { ArrowDownUp, ChevronLeft, Globe, Lock, Users } from 'lucide-react-native';
+import {
+  ArrowDownUp,
+  Bookmark,
+  ChevronLeft,
+  Globe,
+  Lock,
+  UserRound,
+  Users,
+} from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useRef, useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { useRouter } from 'expo-router';
 import SortByModal from '~/components/SortByModal';
-import { ListItemWithMedia, LibraryStatus, List, ListItem } from '~/types/supabaseTypes';
+import {
+  ListItemWithMedia,
+  LibraryStatus,
+  List,
+  ListItem,
+  ListOwnerInfo,
+} from '~/types/supabaseTypes';
 import StatusPickerModal from './StatusPickerModal';
 import ListInfoModal from './ListInfoModal';
+import { getPublicUrl } from '~/utils/storageUrl';
 
 interface ListContentProps {
   list: List;
@@ -17,6 +32,8 @@ interface ListContentProps {
   onDeleteItem: (itemId: ListItemWithMedia) => void;
   onUpdateList: (updates: Partial<List>) => void;
   onDeleteList: () => void;
+  isOwner: boolean;
+  owner?: ListOwnerInfo;
 }
 
 const FILTERS = ['All', 'Watching', 'Watched', 'Pending'];
@@ -32,6 +49,8 @@ export default function ListContent({
   onDeleteItem,
   onUpdateList,
   onDeleteList,
+  isOwner,
+  owner,
 }: ListContentProps) {
   const theme = useTheme();
   const [selected, setSelected] = useState<FilterIndex>(0);
@@ -44,7 +63,7 @@ export default function ListContent({
   const [listInfoModalVisible, setListInfoModalVisible] = useState(false);
   const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
-  const HEADER_MAX_HEIGHT = list.description ? 130 : 60;
+  const HEADER_MAX_HEIGHT = list.description ? 110 : 60;
   const HEADER_MIN_HEIGHT = 0;
   const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT;
 
@@ -121,12 +140,14 @@ export default function ListContent({
     }
   };
 
+  const DotSeparator = () => <Text className="mx-1 text-primary-400 dark:text-primary-600">•</Text>;
+
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
       {/* Collapsing Header */}
-      <View className="flex-row items-center p-4 ">
+      <View className="flex-row items-center justify-between p-4 ">
         <TouchableOpacity className="mr-4" onPress={() => router.back()}>
-          <ChevronLeft color={theme.primary[950]} size={24} strokeWidth={3} />
+          <ChevronLeft color={theme.primary[950]} size={24} />
         </TouchableOpacity>
         <Animated.View style={{ opacity: headerNameOpacity }}>
           <Text
@@ -136,6 +157,9 @@ export default function ListContent({
             {list.name}
           </Text>
         </Animated.View>
+        <TouchableOpacity disabled={isOwner}>
+          <Bookmark color={isOwner ? theme.primary[50] : theme.primary[950]} size={22} />
+        </TouchableOpacity>
       </View>
       <Animated.View
         style={{
@@ -145,8 +169,11 @@ export default function ListContent({
           paddingHorizontal: 16,
         }}>
         <TouchableOpacity
+          disabled={!isOwner}
           onPress={() => {
-            setListInfoModalVisible(true);
+            if (isOwner) {
+              setListInfoModalVisible(true);
+            }
           }}>
           <Text
             numberOfLines={1}
@@ -154,9 +181,31 @@ export default function ListContent({
             className="mb-2 font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
             {list.name}
           </Text>
-
           {/* Metadata Row */}
-          <View className="mb-2 flex-row items-center gap-x-4">
+          <View className="mb-2 flex-row items-center">
+            {/* Owner */}
+            {!isOwner && owner && (
+              <>
+                <View className="flex-row items-center gap-1">
+                  {owner.avatar_url ? (
+                    <Image
+                      source={{ uri: getPublicUrl(owner.avatar_url) }}
+                      className="h-6 w-6 rounded-full"
+                    />
+                  ) : (
+                    <View className="h-6 w-6 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
+                      <UserRound size={12} color={theme.primary[900]} />
+                    </View>
+                  )}
+                  <Text className="font-SpaceGrotesk-Regular text-sm text-primary-700 dark:text-primary-300">
+                    {owner.display_name}
+                  </Text>
+                </View>
+
+                <DotSeparator />
+              </>
+            )}
+
             {/* Item Count */}
             <View className="flex-row items-center gap-x-1">
               <Text className="font-SpaceGrotesk-Medium text-sm text-primary-600 dark:text-primary-400">
@@ -166,6 +215,9 @@ export default function ListContent({
                 {list.item_count === 1 ? 'item' : 'items'}
               </Text>
             </View>
+
+            <DotSeparator />
+
             {/* Visibility */}
             <View className="flex-row items-center gap-x-1">
               {getVisibilityIcon()}
@@ -178,9 +230,6 @@ export default function ListContent({
           {/* Description */}
           {list.description && (
             <>
-              <Text className="text-md font-SpaceGrotesk-Regular text-primary-900 dark:text-primary-50">
-                Description
-              </Text>
               <Text
                 className="font-SpaceGrotesk-Light text-base text-primary-700 dark:text-primary-300"
                 numberOfLines={2}
@@ -208,26 +257,28 @@ export default function ListContent({
       </View>
 
       {/* Filter Slider */}
-      <View className="mt-1 px-4 pb-4">
-        <SegmentedControl
-          values={FILTERS}
-          selectedIndex={selected}
-          onChange={(event) => {
-            setSelected(event.nativeEvent.selectedSegmentIndex as FilterIndex);
-          }}
-          tintColor={theme.primaryOpacity[950]}
-          fontStyle={{
-            color: theme.primary[600],
-            fontSize: 15,
-            fontFamily: 'SpaceGrotesk-Light',
-          }}
-          activeFontStyle={{
-            color: theme.primary[950],
-            fontSize: 15,
-            fontFamily: 'SpaceGrotesk-Medium',
-          }}
-        />
-      </View>
+      {isOwner && (
+        <View className="mt-1 px-4 pb-4">
+          <SegmentedControl
+            values={FILTERS}
+            selectedIndex={selected}
+            onChange={(event) => {
+              setSelected(event.nativeEvent.selectedSegmentIndex as FilterIndex);
+            }}
+            tintColor={theme.primaryOpacity[950]}
+            fontStyle={{
+              color: theme.primary[600],
+              fontSize: 15,
+              fontFamily: 'SpaceGrotesk-Light',
+            }}
+            activeFontStyle={{
+              color: theme.primary[950],
+              fontSize: 15,
+              fontFamily: 'SpaceGrotesk-Medium',
+            }}
+          />
+        </View>
+      )}
 
       {listItems.length === 0 && (
         <View className="mt-20 items-center px-4">
@@ -274,8 +325,10 @@ export default function ListContent({
                 });
               }}
               onLongPress={() => {
-                setActiveItem(item);
-                setStatusPickerModalVisible(true);
+                if (isOwner) {
+                  setActiveItem(item);
+                  setStatusPickerModalVisible(true);
+                }
               }}
               delayLongPress={300}
               activeOpacity={0.85}

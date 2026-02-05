@@ -5,11 +5,23 @@ import { Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ListContent from '~/components/ListContent';
 import LoadingScreen from '~/components/LoadingScreen';
-import { LibraryStatus, ListItemWithMedia, ListItem, List } from '~/types/supabaseTypes';
+import {
+  LibraryStatus,
+  ListItemWithMedia,
+  ListItem,
+  List,
+  ListOwnerInfo,
+} from '~/types/supabaseTypes';
 import { Toast } from 'toastify-react-native';
+import { useAuth } from '~/context/AuthContext';
 
 export default function ListScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, ownerId, ownerName, ownerAvatar } = useLocalSearchParams<{
+    id: string;
+    ownerId: string;
+    ownerName: string;
+    ownerAvatar?: string;
+  }>();
   const listId = Number(id);
   const router = useRouter();
   const {
@@ -21,7 +33,7 @@ export default function ListScreen() {
     updateList,
     deleteList,
   } = useLists();
-
+  const { user } = useAuth();
   const list = listsById[listId];
   const items = listItems[listId];
   const isLoadingItems = !items;
@@ -141,6 +153,13 @@ export default function ListScreen() {
     );
   }
 
+  const isOwner = list.user_id === user?.id;
+  const owner: ListOwnerInfo = {
+    id: ownerId,
+    display_name: ownerName,
+    avatar_url: ownerAvatar,
+  };
+
   if (isLoadingItems) {
     return <LoadingScreen fullScreen={true} />;
   }
@@ -153,6 +172,8 @@ export default function ListScreen() {
       onDeleteItem={deleteListItem}
       onUpdateList={handleUpdateList}
       onDeleteList={handleDeleteList}
+      isOwner={isOwner}
+      owner={owner}
     />
   );
 }

@@ -1,4 +1,10 @@
-import { List, ListItem, ListItemWithMedia, LibraryStatus, ListSearchResult } from '~/types/supabaseTypes';
+import {
+  List,
+  ListItem,
+  ListItemWithMedia,
+  LibraryStatus,
+  ListSearchResult,
+} from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import {
   getAllLists,
@@ -35,6 +41,7 @@ interface ListState {
   // list actions
   getLists: (userId: string) => Promise<StoreResult<void>>;
   hydrateDefaultLists: () => Promise<void>;
+  addListToState: (list: List) => void;
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
   deleteList: (listId: number) => Promise<StoreResult<void>>;
@@ -119,6 +126,14 @@ export const useLists = create<ListState>((set, get) => ({
     if (favoritesId && !listItems[favoritesId]) {
       getListItems(favoritesId);
     }
+  },
+  addListToState: (list) => {
+    set((state) => ({
+      listsById: {
+        ...state.listsById,
+        [list.id]: list,
+      },
+    }));
   },
   createList: async (userId, newList) => {
     const result = await createList(userId, newList);

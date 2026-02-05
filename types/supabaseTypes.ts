@@ -102,16 +102,7 @@ export interface ListLike extends BaseRecord {
   list_id: number;
 }
 
-export interface List extends BaseRecord {
-  user_id: string;
-  name: string;
-  description?: string;
-  list_type: ListType;
-  is_default: boolean;
-  visibility: Visibility;
-  item_count: number;
-  updated_at: string;
-}
+
 
 // ✅ Generic ListWithItems type (works for both basic + media-enriched items)
 export interface ListWithItems<T extends ListItem = ListItem> extends List {
@@ -189,16 +180,27 @@ export interface ApiResponse<T> {
   error?: string;
   success: boolean;
 }
-
-
-export type ListSearchResult = {
-  id: number;          // bigint
+export interface List extends BaseRecord {
+  user_id: string;
   name: string;
   description: string | null;
-  created_at: string;
+  list_type: ListType;
+  is_default: boolean;
+  visibility: Visibility;
+  item_count: number;
   likes_count: number;
-  item_count: number;  // int4
-  user_id: string;
+  updated_at: string;
+}
+
+export type ListSearchResult = {
+  list: List;
   display_name: string;
   avatar_url: string | null;
+  rank: number;
 };
+
+export type ListOwnerInfo = {
+  id: string;
+  display_name: string;
+  avatar_url?: string;
+}
