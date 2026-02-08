@@ -25,13 +25,19 @@ import StatusPickerModal from './StatusPickerModal';
 import ListInfoModal from './ListInfoModal';
 import { getPublicUrl } from '~/utils/storageUrl';
 
+interface ListActions {
+  updateItemStatus: (item: ListItemWithMedia, status: LibraryStatus) => void;
+  deleteItem: (item: ListItemWithMedia) => void;
+  updateList: (updates: Partial<List>) => void;
+  deleteList: () => void;
+  like: () => void;
+  unlike: () => void;
+}
+
 interface ListContentProps {
   list: List;
   listItems: ListItemWithMedia[];
-  onUpdateStatus: (item: ListItemWithMedia, status: LibraryStatus) => void;
-  onDeleteItem: (itemId: ListItemWithMedia) => void;
-  onUpdateList: (updates: Partial<List>) => void;
-  onDeleteList: () => void;
+  actions: ListActions;
   isOwner: boolean;
   owner?: ListOwnerInfo;
 }
@@ -45,10 +51,7 @@ export type SortOrder = 'asc' | 'desc';
 export default function ListContent({
   list,
   listItems,
-  onUpdateStatus,
-  onDeleteItem,
-  onUpdateList,
-  onDeleteList,
+  actions,
   isOwner,
   owner,
 }: ListContentProps) {
@@ -157,8 +160,26 @@ export default function ListContent({
             {list.name}
           </Text>
         </Animated.View>
-        <TouchableOpacity disabled={isOwner}>
-          <Bookmark color={isOwner ? theme.primary[50] : theme.primary[950]} size={22} />
+        <TouchableOpacity
+          disabled={isOwner}
+          onPress={async () => {
+            if (!actions) return;
+            try {
+              if (list.is_liked) {
+                await actions.unlike();
+              } else {
+                await actions.like();
+              }
+            } catch (err) {
+              console.error('Failed to toggle like:', err);
+            }
+          }}>
+          <Bookmark
+            color={isOwner ? theme.primary[50] : theme.primary[950]}
+            fill={isOwner ? theme.primary[50] : theme.primary[950]}
+            fillOpacity={list.is_liked ? 1 : 0}
+            size={22}
+          />
         </TouchableOpacity>
       </View>
       <Animated.View
@@ -360,11 +381,11 @@ export default function ListContent({
           onClose={() => setStatusPickerModalVisible(false)}
           onConfirm={(newStatus) => {
             setStatusPickerModalVisible(false);
-            onUpdateStatus(activeItem, newStatus);
+            actions.updateItemStatus(activeItem, newStatus);
           }}
           onDelete={() => {
             setStatusPickerModalVisible(false);
-            onDeleteItem(activeItem);
+            actions.deleteItem(activeItem);
           }}
         />
       )}
@@ -374,11 +395,11 @@ export default function ListContent({
         onClose={() => setListInfoModalVisible(false)}
         onConfirm={(updates: Partial<List>) => {
           setListInfoModalVisible(false);
-          onUpdateList(updates);
+          actions.updateList(updates);
         }}
         onDelete={() => {
           setListInfoModalVisible(false);
-          onDeleteList();
+          actions.deleteList();
         }}
       />
     </SafeAreaView>

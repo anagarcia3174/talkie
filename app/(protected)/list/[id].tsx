@@ -14,6 +14,7 @@ import {
 } from '~/types/supabaseTypes';
 import { Toast } from 'toastify-react-native';
 import { useAuth } from '~/context/AuthContext';
+import useListScreenActions from './useListScreenActions';
 
 export default function ListScreen() {
   const { id, ownerId, ownerName, ownerAvatar } = useLocalSearchParams<{
@@ -22,126 +23,24 @@ export default function ListScreen() {
     ownerName: string;
     ownerAvatar?: string;
   }>();
+
   const listId = Number(id);
-  const router = useRouter();
-  const {
-    listsById,
-    listItems,
-    getListItems,
-    updateItemStatus,
-    removeItemFromList,
-    updateList,
-    deleteList,
-  } = useLists();
+  const isValidListId = Number.isFinite(listId);
+
+  const { listsById, listItems, getListItems } = useLists();
+
   const { user } = useAuth();
-  const list = listsById[listId];
-  const items = listItems[listId];
-  const isLoadingItems = !items;
 
-  const updateListItemStatus = async (
-    item: ListItem | ListItemWithMedia,
-    status: LibraryStatus
-  ) => {
-    const result = await updateItemStatus(item, status);
-    if (!result.success) {
-      Toast.show({
-        type: 'error',
-        text1: result.error || "Failed to change the item's status.",
-        position: 'top',
-        visibilityTime: 4000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-    } else {
-      Toast.show({
-        type: 'success',
-        text1: "The item's status was updated!",
-        position: 'top',
-        visibilityTime: 3000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-    }
-  };
+  const actions = useListScreenActions(listId);
 
-  const deleteListItem = async (item: ListItemWithMedia) => {
-    const result = await removeItemFromList(item);
-    if (!result.success) {
-      Toast.show({
-        type: 'error',
-        text1: result.error || 'Failed to remove the item.',
-        position: 'top',
-        visibilityTime: 4000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-    } else {
-      Toast.show({
-        type: 'success',
-        text1: 'The item was removed!',
-        position: 'top',
-        visibilityTime: 3000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-    }
-  };
-
-  const handleUpdateList = async (updates: Partial<List>) => {
-    const result = await updateList(listId, updates);
-    if (!result.success) {
-      Toast.show({
-        type: 'error',
-        text1: result.error || 'Failed to update the list.',
-        position: 'top',
-        visibilityTime: 4000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-    } else {
-      Toast.show({
-        type: 'success',
-        text1: 'The list was updated!',
-        position: 'top',
-        visibilityTime: 3000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-    }
-  };
-
-  const handleDeleteList = async () => {
-    const result = await deleteList(listId);
-
-    if (!result.success) {
-      Toast.show({
-        type: 'error',
-        text1: result.error || 'Failed to delete the list.',
-        position: 'top',
-        visibilityTime: 4000,
-        autoHide: true,
-        onPress: () => Toast.hide(),
-      });
-      return;
-    }
-
-    Toast.show({
-      type: 'success',
-      text1: 'The list was deleted!',
-      position: 'top',
-      visibilityTime: 3000,
-      autoHide: true,
-      onPress: () => Toast.hide(),
-    });
-
-    router.back();
-  };
+  const list = isValidListId ? listsById[listId] : undefined;
+  const items = isValidListId ? listItems[listId] : undefined;
+  const isLoadingItems = !!list && !items;
 
   useEffect(() => {
-    if (!listId || items) return;
-
+    if (!isValidListId || items) return;
     getListItems(listId);
-  }, [listId, items, getListItems]);
+  }, [isValidListId, items, listId, getListItems]);
 
   if (!list) {
     return (
@@ -153,27 +52,23 @@ export default function ListScreen() {
     );
   }
 
+  if (isLoadingItems) {
+    return <LoadingScreen fullScreen />;
+  }
+
+  if (!items) {
+    return <LoadingScreen fullScreen />;
+  }
+  
   const isOwner = list.user_id === user?.id;
+
   const owner: ListOwnerInfo = {
     id: ownerId,
     display_name: ownerName,
     avatar_url: ownerAvatar,
   };
 
-  if (isLoadingItems) {
-    return <LoadingScreen fullScreen={true} />;
-  }
-
   return (
-    <ListContent
-      list={list}
-      listItems={items}
-      onUpdateStatus={updateListItemStatus}
-      onDeleteItem={deleteListItem}
-      onUpdateList={handleUpdateList}
-      onDeleteList={handleDeleteList}
-      isOwner={isOwner}
-      owner={owner}
-    />
+    <ListContent list={list} listItems={items} actions={actions} isOwner={isOwner} owner={owner} />
   );
 }

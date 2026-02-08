@@ -7,7 +7,7 @@ import {
 } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import {
-  getAllLists,
+  getOwnedLists,
   createList,
   updateList,
   deleteList,
@@ -18,6 +18,7 @@ import {
   unlikeList,
   updateItemStatus,
   searchLists,
+  getLikedLists,
 } from '~/services/listService';
 
 type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
@@ -72,12 +73,17 @@ export const useLists = create<ListState>((set, get) => ({
   // ---- LIST ACTIONS ----
   getLists: async (userId) => {
     try {
-      const result = await getAllLists(userId);
-      if (!result.success) {
-        return { success: false, error: result.error };
+      const [ownedResult, likedResult] = await Promise.all([
+        getOwnedLists(userId),
+        getLikedLists(userId),
+      ]);
+
+      if (!ownedResult.success) {
+        return { success: false, error: ownedResult.error };
       }
 
-      const lists = result.data ?? [];
+      const ownedLists = ownedResult.data ?? [];
+      const likedLists = likedResult.success ? (likedResult.data ?? []) : [];
 
       const listsById: Record<number, List> = {};
       const customListIds: number[] = [];
@@ -85,8 +91,11 @@ export const useLists = create<ListState>((set, get) => ({
       let libraryId: number | null = null;
       let favoritesId: number | null = null;
 
-      for (const list of lists) {
-        listsById[list.id] = list;
+      for (const list of ownedLists) {
+        listsById[list.id] = {
+          ...list,
+          is_liked: false,
+        };
 
         if (list.is_default) {
           if (list.list_type === 'library') {
@@ -98,6 +107,15 @@ export const useLists = create<ListState>((set, get) => ({
           customListIds.push(list.id);
         }
       }
+
+      for (const list of likedLists) {
+        const existing = listsById[list.id];
+
+        listsById[list.id] = {
+          ...existing,
+          ...list,
+        };
+      }
       set({
         listsById,
         defaultListIds: {
@@ -106,6 +124,7 @@ export const useLists = create<ListState>((set, get) => ({
         },
         customListIds,
       });
+
       return { success: true };
     } catch (err: any) {
       console.error('getLists error:', err);
@@ -128,12 +147,18 @@ export const useLists = create<ListState>((set, get) => ({
     }
   },
   addListToState: (list) => {
-    set((state) => ({
-      listsById: {
-        ...state.listsById,
-        [list.id]: list,
-      },
-    }));
+    set((state) => {
+      const existing = state.listsById[list.id];
+      return {
+        listsById: {
+          ...state.listsById,
+          [list.id]: {
+            ...list,
+            is_liked: existing?.is_liked ?? false, // preserve previous liked status
+          },
+        },
+      };
+    });
   },
   createList: async (userId, newList) => {
     const result = await createList(userId, newList);
@@ -240,6 +265,14 @@ export const useLists = create<ListState>((set, get) => ({
         error: result.error,
       };
     }
+
+    set((state) => ({
+      ...state,
+      listsById: {
+        ...state.listsById,
+        [listId]: { ...state.listsById[listId], is_liked: true },
+      },
+    }));
     return { success: true };
   },
 
@@ -251,6 +284,13 @@ export const useLists = create<ListState>((set, get) => ({
         error: result.error,
       };
     }
+    set((state) => ({
+      ...state,
+      listsById: {
+        ...state.listsById,
+        [listId]: { ...state.listsById[listId], is_liked: false },
+      },
+    }));
     return { success: true };
   },
 

@@ -190,6 +190,7 @@ export interface List extends BaseRecord {
   item_count: number;
   likes_count: number;
   updated_at: string;
+  is_liked?: boolean;
 }
 
 export type ListSearchResult = {
@@ -204,3 +205,8 @@ export type ListOwnerInfo = {
   display_name: string;
   avatar_url?: string;
 }
+
+export type LikedListRow = {
+  lists: List | null;
+};
+
