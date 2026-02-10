@@ -1,7 +1,8 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, View, TextInput, TouchableOpacity, Image, Animated } from 'react-native';
+import { Text, View, TextInput, TouchableOpacity, Image, FlatList } from 'react-native';
 import {
   ArrowDownUp,
+  Book,
   Bookmark,
   ChevronLeft,
   Globe,
@@ -10,7 +11,7 @@ import {
   Users,
 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { useRouter } from 'expo-router';
 import SortByModal from '~/components/SortByModal';
@@ -24,6 +25,7 @@ import {
 import StatusPickerModal from './StatusPickerModal';
 import ListInfoModal from './ListInfoModal';
 import { getPublicUrl } from '~/utils/storageUrl';
+import { ScrollView } from 'react-native-gesture-handler';
 
 interface ListActions {
   updateItemStatus: (item: ListItemWithMedia, status: LibraryStatus) => void;
@@ -64,31 +66,8 @@ export default function ListContent({
   const [modalVisible, setModalVisible] = useState(false);
   const [activeItem, setActiveItem] = useState<ListItem | null>(null);
   const [listInfoModalVisible, setListInfoModalVisible] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
   const router = useRouter();
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const HEADER_MAX_HEIGHT = list.description ? 110 : 60;
-  const HEADER_MIN_HEIGHT = 0;
-  const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT;
-
-  // Animated header height - collapses to 0
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
-    extrapolate: 'clamp',
-  });
-
-  // Fade out entire header
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
-
-  const headerNameOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
 
   const statusMap: Record<FilterIndex, LibraryStatus | null> = {
     0: null,
@@ -146,32 +125,22 @@ export default function ListContent({
   const DotSeparator = () => <Text className="mx-1 text-primary-400 dark:text-primary-600">•</Text>;
 
   return (
-    <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
+    <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950" edges={['top']}>
       {/* Collapsing Header */}
-      <View className="flex-row items-center justify-between p-4 ">
-        <TouchableOpacity className="mr-4" onPress={() => router.back()}>
+      <View className="flex-row items-center justify-between px-4 py-3">
+        <TouchableOpacity onPress={() => router.back()}>
           <ChevronLeft color={theme.primary[950]} size={24} />
         </TouchableOpacity>
-        <Animated.View style={{ opacity: headerNameOpacity }}>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            className="font-SpaceGrotesk-Medium text-2xl text-primary-900 dark:text-primary-50">
-            {list.name}
-          </Text>
-        </Animated.View>
+        <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+          List
+        </Text>
         <TouchableOpacity
           disabled={isOwner}
           onPress={async () => {
-            if (!actions) return;
-            try {
-              if (list.is_liked) {
-                await actions.unlike();
-              } else {
-                await actions.like();
-              }
-            } catch (err) {
-              console.error('Failed to toggle like:', err);
+            if (list.is_liked) {
+              await actions.unlike();
+            } else {
+              await actions.like();
             }
           }}>
           <Bookmark
@@ -182,169 +151,171 @@ export default function ListContent({
           />
         </TouchableOpacity>
       </View>
-      <Animated.View
-        style={{
-          height: headerHeight,
-          opacity: headerOpacity,
-          overflow: 'hidden',
-          paddingHorizontal: 16,
-        }}>
-        <TouchableOpacity
-          disabled={!isOwner}
-          onPress={() => {
-            if (isOwner) {
-              setListInfoModalVisible(true);
-            }
-          }}>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            className="mb-2 font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
-            {list.name}
-          </Text>
-          {/* Metadata Row */}
-          <View className="mb-2 flex-row items-center">
-            {/* Owner */}
-            {!isOwner && owner && (
-              <>
+      <ScrollView stickyHeaderIndices={[1]}>
+        <View>
+          <View className="px-4 pb-2">
+            <TouchableOpacity
+              disabled={!isOwner}
+              onPress={() => isOwner && setListInfoModalVisible(true)}
+              activeOpacity={0.8}>
+              <Text className="mb-2 font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
+                {list.name}
+              </Text>
+
+              {/* Stats row */}
+              <View className="mb-2 flex-row flex-wrap items-center">
+                <Text className="text-sm text-primary-600 dark:text-primary-400">
+                  {list.item_count} {list.item_count === 1 ? 'item' : 'items'}
+                </Text>
+
+                <DotSeparator />
+
                 <View className="flex-row items-center gap-1">
-                  {owner.avatar_url ? (
-                    <Image
-                      source={{ uri: getPublicUrl(owner.avatar_url) }}
-                      className="h-6 w-6 rounded-full"
-                    />
-                  ) : (
-                    <View className="h-6 w-6 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
-                      <UserRound size={12} color={theme.primary[900]} />
-                    </View>
-                  )}
-                  <Text className="font-SpaceGrotesk-Regular text-sm text-primary-700 dark:text-primary-300">
-                    {owner.display_name}
+                  {getVisibilityIcon()}
+                  <Text className="text-sm capitalize text-primary-600 dark:text-primary-400">
+                    {list.visibility}
                   </Text>
                 </View>
 
                 <DotSeparator />
-              </>
-            )}
 
-            {/* Item Count */}
-            <View className="flex-row items-center gap-x-1">
-              <Text className="font-SpaceGrotesk-Medium text-sm text-primary-600 dark:text-primary-400">
-                {list.item_count}
-              </Text>
-              <Text className="font-SpaceGrotesk-Light text-sm text-primary-600 dark:text-primary-400">
-                {list.item_count === 1 ? 'item' : 'items'}
-              </Text>
-            </View>
+                <View className="flex-row items-center gap-1">
+                  <Text className="text-sm text-primary-600 dark:text-primary-400">
+                    {list.likes_count}
+                  </Text>
+                  <Bookmark size={12} color={theme.primary[600]} />
+                </View>
+              </View>
 
-            <DotSeparator />
+              {/* Description */}
+              {list.description && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setDescExpanded((prev) => !prev)}>
+                  <Text
+                    numberOfLines={descExpanded ? undefined : 2}
+                    ellipsizeMode={descExpanded ? undefined : 'tail'}
+                    className="text-base text-primary-700 dark:text-primary-300">
+                    {list.description}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+          </View>
+          {!isOwner && owner && (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              className="mx-4 mb-2 rounded-xl border border-primary-200 bg-primary-100 p-3 dark:border-primary-800 dark:bg-primary-900">
+              <View className="flex-row items-center justify-between">
+                {/* Left: avatar + name */}
+                <View className="flex-row items-center gap-3">
+                  {owner.avatar_url ? (
+                    <Image
+                      source={{ uri: getPublicUrl(owner.avatar_url) }}
+                      className="h-10 w-10 rounded-full"
+                    />
+                  ) : (
+                    <View className="h-10 w-10 items-center justify-center rounded-full bg-primary-300 dark:bg-primary-700">
+                      <UserRound size={16} color={theme.primary[900]} />
+                    </View>
+                  )}
 
-            {/* Visibility */}
-            <View className="flex-row items-center gap-x-1">
-              {getVisibilityIcon()}
-              <Text className="font-SpaceGrotesk-Light text-sm capitalize text-primary-600 dark:text-primary-400">
-                {list.visibility}
-              </Text>
-            </View>
+                  <View>
+                    <Text className="font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-100">
+                      {owner.display_name}
+                    </Text>
+                    <Text className="text-sm text-primary-600 dark:text-primary-400">
+                      List creator
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Right: action */}
+                <View className="rounded-full border border-primary-300 px-3 py-1.5 dark:border-primary-700">
+                  <Text className="font-SpaceGrotesk-Medium text-sm text-primary-900 dark:text-primary-100">
+                    View
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+        <View className=" bg-primary-50 px-4 pb-3 pt-2 dark:bg-primary-950">
+          <View className="flex-row items-center gap-x-2">
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              className="flex-1 rounded-xl border border-primary-700 px-4 py-3 text-primary-950 dark:border-primary-400 dark:text-primary-200"
+              placeholder={`Search through ${list.name}`}
+              placeholderTextColor={theme.primary[500]}
+            />
+            <ArrowDownUp
+              size={22}
+              onPress={() => setModalVisible(true)}
+              color={theme.primary[950]}
+            />
           </View>
 
-          {/* Description */}
-          {list.description && (
-            <>
-              <Text
-                className="font-SpaceGrotesk-Light text-base text-primary-700 dark:text-primary-300"
-                numberOfLines={2}
-                ellipsizeMode="tail">
-                {list.description}
-              </Text>
-            </>
+          {isOwner && (
+            <View className="mt-3">
+              <SegmentedControl
+                values={FILTERS}
+                selectedIndex={selected}
+                onChange={(e) => setSelected(e.nativeEvent.selectedSegmentIndex as FilterIndex)}
+                tintColor={theme.primaryOpacity[950]}
+                fontStyle={{
+                  color: theme.primary[600],
+                  fontSize: 15,
+                  fontFamily: 'SpaceGrotesk-Light',
+                }}
+                activeFontStyle={{
+                  color: theme.primary[950],
+                  fontSize: 15,
+                  fontFamily: 'SpaceGrotesk-Medium',
+                }}
+              />
+            </View>
           )}
-        </TouchableOpacity>
-        {/* List Title */}
-      </Animated.View>
-
-      {/* Search + Sort */}
-      <View className="flex-row items-center justify-between gap-x-2 px-4 py-2">
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          className="text-md flex-1 rounded-xl border border-primary-700 px-4 py-3 font-SpaceGrotesk-Light text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:text-primary-200 focus:dark:border-primary-50"
-          cursorColor={theme.primary[700]}
-          selectionColor={theme.primary[700]}
-          placeholder={`Search through ${list.name}`}
-          placeholderTextColor={theme.primary[500]}
-        />
-        <ArrowDownUp size={22} onPress={() => setModalVisible(true)} color={theme.primary[950]} />
-      </View>
-
-      {/* Filter Slider */}
-      {isOwner && (
-        <View className="mt-1 px-4 pb-4">
-          <SegmentedControl
-            values={FILTERS}
-            selectedIndex={selected}
-            onChange={(event) => {
-              setSelected(event.nativeEvent.selectedSegmentIndex as FilterIndex);
-            }}
-            tintColor={theme.primaryOpacity[950]}
-            fontStyle={{
-              color: theme.primary[600],
-              fontSize: 15,
-              fontFamily: 'SpaceGrotesk-Light',
-            }}
-            activeFontStyle={{
-              color: theme.primary[950],
-              fontSize: 15,
-              fontFamily: 'SpaceGrotesk-Medium',
-            }}
-          />
         </View>
-      )}
+        {listItems.length === 0 && (
+          <View className="mt-20 items-center px-4">
+            <Text className="font-SpaceGrotesk-Medium text-primary-600 dark:text-primary-400">
+              This list is empty.
+            </Text>
+          </View>
+        )}
 
-      {listItems.length === 0 && (
-        <View className="mt-20 items-center px-4">
-          <Text className="font-SpaceGrotesk-Medium text-primary-600 dark:text-primary-400">
-            This list is empty.
-          </Text>
-        </View>
-      )}
-
-      {listItems.length > 0 && sorted.length === 0 && (
-        <View className="mt-20 items-center px-4">
-          <Text className="font-SpaceGrotesk-Medium text-primary-600 dark:text-primary-400">
-            No items match your search/filter.
-          </Text>
-        </View>
-      )}
-
-      <Animated.FlatList
-        data={sorted}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={3}
-        columnWrapperStyle={{
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
-        }}
-        contentContainerStyle={{
-          gap: ROW_GAP,
-        }}
-        showsVerticalScrollIndicator={false}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
-          useNativeDriver: false,
-        })}
-        scrollEventThrottle={16}
-        renderItem={({ item }) => {
-          return (
+        {listItems.length > 0 && sorted.length === 0 && (
+          <View className="mt-20 items-center px-4">
+            <Text className="font-SpaceGrotesk-Medium text-primary-600 dark:text-primary-400">
+              No items match your search/filter.
+            </Text>
+          </View>
+        )}
+        <FlatList
+          data={sorted}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={3}
+          scrollEnabled={false}
+          columnWrapperStyle={{
+            justifyContent: 'space-between',
+            paddingHorizontal: 16,
+          }}
+          contentContainerStyle={{
+            paddingBottom: 24,
+            gap: ROW_GAP,
+          }}
+          renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => {
+              onPress={() =>
                 router.push({
                   pathname: '/media/[id]',
                   params: {
                     id: item.media_id.toString(),
                     mediaData: JSON.stringify(item.media),
                   },
-                });
-              }}
+                })
+              }
               onLongPress={() => {
                 if (isOwner) {
                   setActiveItem(item);
@@ -352,19 +323,17 @@ export default function ListContent({
                 }
               }}
               delayLongPress={300}
-              activeOpacity={0.85}
               style={{ flex: 1, maxWidth: '31%' }}>
-              <View className="relative w-full overflow-hidden rounded-xl">
+              <View className="overflow-hidden rounded-xl">
                 <Image
                   source={{ uri: `https://image.tmdb.org/t/p/w342${item.media?.poster_path}` }}
                   className="h-56 w-full"
-                  resizeMode="cover"
                 />
               </View>
             </TouchableOpacity>
-          );
-        }}
-      />
+          )}
+        />
+      </ScrollView>
 
       <SortByModal
         isVisible={modalVisible}

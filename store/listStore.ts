@@ -270,7 +270,11 @@ export const useLists = create<ListState>((set, get) => ({
       ...state,
       listsById: {
         ...state.listsById,
-        [listId]: { ...state.listsById[listId], is_liked: true },
+        [listId]: {
+          ...state.listsById[listId],
+          is_liked: true,
+          likes_count: (state.listsById[listId]?.likes_count ?? 0) + 1,
+        },
       },
     }));
     return { success: true };
@@ -288,7 +292,11 @@ export const useLists = create<ListState>((set, get) => ({
       ...state,
       listsById: {
         ...state.listsById,
-        [listId]: { ...state.listsById[listId], is_liked: false },
+        [listId]: {
+          ...state.listsById[listId],
+          is_liked: false,
+          likes_count: Math.max((state.listsById[listId]?.likes_count ?? 1) - 1, 0),
+        },
       },
     }));
     return { success: true };
