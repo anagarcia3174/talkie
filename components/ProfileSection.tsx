@@ -14,7 +14,6 @@ interface ProfileSectionProps {
   bio?: string;
   subtitle?: string; // email or "Member since"
   editable?: boolean;
-
   onEditPress?: () => void;
 }
 

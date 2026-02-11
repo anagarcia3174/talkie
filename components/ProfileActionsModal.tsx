@@ -24,6 +24,7 @@ interface ProfileActionsModalProps {
   avatar: string | null;
   displayName: string | undefined;
   bio: string | undefined;
+  isPrivate: boolean;
   onUpdateProfile: (image?: ImagePicker.ImagePickerAsset, data?: Partial<Profile>) => Promise<void>;
 }
 
@@ -35,12 +36,14 @@ export default function ProfileActionsModal({
   avatar,
   displayName,
   bio,
+  isPrivate,
   onUpdateProfile,
 }: ProfileActionsModalProps) {
   const [imageUri, setImageUri] = useState<string | null>(avatar ?? '');
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset>();
   const [name, setName] = useState(displayName ?? '');
   const [userBio, setUserBio] = useState(bio ?? '');
+  const [userIsPrivate, setUserIsPrivate] = useState(isPrivate);
   const theme = useTheme();
 
   useEffect(() => {
@@ -99,7 +102,10 @@ export default function ProfileActionsModal({
   };
 
   const hasChanges =
-    (imageUri !== (avatar ?? null) || name !== (displayName ?? '') || userBio !== (bio ?? '')) &&
+    (imageUri !== (avatar ?? null) ||
+      name !== (displayName ?? '') ||
+      userBio !== (bio ?? '') ||
+      userIsPrivate !== isPrivate) &&
     name.trim().length > 0;
 
   const handleSubmit = async () => {
@@ -111,7 +117,7 @@ export default function ProfileActionsModal({
     const updates: Partial<Profile> = {};
     if (name !== displayName) updates.display_name = name;
     if (userBio !== bio) updates.bio = userBio;
-
+    if (userIsPrivate != isPrivate) updates.is_private = userIsPrivate;
     const hasImage = image && imageUri && imageUri !== avatar;
     const hasUpdates = Object.keys(updates).length > 0;
 
@@ -167,10 +173,8 @@ export default function ProfileActionsModal({
             />
             <Text className="mt-1 text-right text-xs text-primary-500">{name.length}/50</Text>
           </View>
-          <View className='mb-2'>
-             <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">
-              Bio
-            </Text>
+          <View className="mb-2">
+            <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">Bio</Text>
             <TextInput
               className="text-md rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
               value={userBio}
@@ -183,6 +187,35 @@ export default function ProfileActionsModal({
               maxLength={300}
             />
             <Text className="mt-1 text-right text-xs text-primary-500">{userBio.length}/300</Text>
+          </View>
+          <View className="mb-6">
+            <Text className="mb-2 text-sm text-primary-700 dark:text-primary-300">Visibility</Text>
+
+            <View className="flex-row gap-2">
+              {[true, false].map((option) => {
+                const selected = userIsPrivate === option;
+
+                return (
+                  <Pressable
+                    key={option ? 'private' : 'public'}
+                    onPress={() => setUserIsPrivate(option)}
+                    className={`flex-1 rounded-xl border px-3 py-2 ${
+                      selected
+                        ? 'border-primary-900 bg-primary-900 dark:border-primary-50 dark:bg-primary-50'
+                        : 'border-primary-300 bg-primary-50 dark:border-primary-700 dark:bg-primary-900'
+                    }`}>
+                    <Text
+                      className={`text-center capitalize ${
+                        selected
+                          ? 'font-SpaceGrotesk-SemiBold text-primary-50 dark:text-primary-900'
+                          : 'text-primary-700 dark:text-primary-300'
+                      }`}>
+                      {option ? 'private' : 'public'}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           {/* Button */}

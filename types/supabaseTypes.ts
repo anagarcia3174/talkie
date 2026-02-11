@@ -5,13 +5,9 @@ export type MediaType = 'movie' | 'tv';
 export type ListType = 'library' | 'favorites' | 'custom';
 export type LibraryStatus = 'watched' | 'watching' | 'pending';
 
-export type DataResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+export type DataResult<T> = { success: true; data: T } | { success: false; error: string };
 
-export type VoidResult =
-  | { success: true }
-  | { success: false; error: string };
+export type VoidResult = { success: true } | { success: false; error: string };
 
 export function successData<T>(data: T): DataResult<T> {
   return { success: true, data };
@@ -49,7 +45,6 @@ export interface ProfileStats {
   comments: number;
   lists: number;
   totalLogged: number;
-
 }
 
 // Core table types
@@ -111,8 +106,6 @@ export interface ListLike extends BaseRecord {
   list_id: number;
 }
 
-
-
 // ✅ Generic ListWithItems type (works for both basic + media-enriched items)
 export interface ListWithItems<T extends ListItem = ListItem> extends List {
   items: T[];
@@ -137,7 +130,7 @@ export interface ReviewLike extends BaseRecord {
   review_id: number;
 }
 
-export interface Review  {
+export interface Review {
   user_id: string;
   media_id: number;
   rating: number; // 0-10
@@ -215,9 +208,17 @@ export type ListOwnerInfo = {
   display_name: string;
   avatar_url?: string;
   is_private: boolean;
-}
+};
 
 export type LikedListRow = {
   lists: List | null;
 };
 
+export type ListWithOwner = List & {
+  owner: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    is_private: boolean;
+  } | null;
+}

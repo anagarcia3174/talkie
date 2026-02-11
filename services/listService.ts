@@ -1,13 +1,12 @@
 import { supabase } from '~/utils/supabase';
 import type {
   LibraryStatus,
-  LikedListRow,
   List,
   ListItemWithMedia,
   ListSearchResult,
-  Media,
   DataResult,
-  VoidResult
+  VoidResult,
+  ListWithOwner,
 } from '~/types/supabaseTypes';
 import { errorData, errorVoid, successData, successVoid } from '~/types/supabaseTypes';
 
@@ -21,6 +20,23 @@ export async function getOwnedLists(userId: string): Promise<DataResult<List[]>>
 
     if (error) return errorData(error);
     if (!data) return errorData('Lists not found');
+    return successData(data ?? []);
+  } catch (err) {
+    return errorData(err);
+  }
+}
+
+export async function getPublicListsByUserId(userId: string): Promise<DataResult<List[]>> {
+  try {
+    const { data, error } = await supabase
+      .from('lists')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_private', false)
+      .order('updated_at', { ascending: false });
+
+    if (error) return errorData(error);
+
     return successData(data ?? []);
   } catch (err) {
     return errorData(err);
@@ -42,7 +58,37 @@ export async function getLikedLists(userId: string): Promise<DataResult<List[]>>
   }
 }
 
-export async function createList(userId: string, newList: Partial<List>): Promise<DataResult<List>> {
+export async function getListWithProfile(listId: number): Promise<DataResult<ListWithOwner>> {
+  try {
+    const { data, error } = await supabase
+      .from('lists')
+      .select(
+        `
+        *,
+        owner:user_id (
+          id,
+          display_name,
+          avatar_url,
+          is_private
+        )
+      `
+      )
+      .eq('id', listId)
+      .single();
+
+    if (error) return errorData(error);
+    if (!data) return errorData('List not found');
+
+    return successData(data);
+  } catch (err) {
+    return errorData(err);
+  }
+}
+
+export async function createList(
+  userId: string,
+  newList: Partial<List>
+): Promise<DataResult<List>> {
   try {
     const { data, error } = await supabase
       .from('lists')
@@ -57,7 +103,10 @@ export async function createList(userId: string, newList: Partial<List>): Promis
   }
 }
 
-export async function updateList(listId: number, updates: Partial<List>): Promise<DataResult<List>> {
+export async function updateList(
+  listId: number,
+  updates: Partial<List>
+): Promise<DataResult<List>> {
   try {
     const { data, error } = await supabase
       .from('lists')

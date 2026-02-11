@@ -2,15 +2,17 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import LoadingScreen from '~/components/LoadingScreen';
 import { getProfileById, getProfileStats } from '~/services/profileService';
-import { Profile, ProfileStats } from '~/types/supabaseTypes';
+import { List, Profile, ProfileStats } from '~/types/supabaseTypes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity, View } from 'react-native';
 import ProfileSection from '~/components/ProfileSection';
 import ErrorScreen from '~/components/ErrorScreen';
 import StatsSection from '~/components/StatsSection';
-import { ScrollView } from 'react-native-gesture-handler';
-import { ChevronLeft } from 'lucide-react-native';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { Bookmark, ChevronLeft } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
+import { getPublicListsByUserId } from '~/services/listService';
+import { useLists } from '~/store/listStore';
 
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
@@ -18,10 +20,11 @@ export default function ProfileScreen() {
   }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
+  const [profileLists, setProfileLists] = useState<List[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addListToState } = useLists();
   const router = useRouter();
   const theme = useTheme();
-
   useEffect(() => {
     let mounted = true;
 
@@ -37,8 +40,13 @@ export default function ProfileScreen() {
         if (!mounted) return;
         if (!statsRes.success) return;
 
+        const listsRes = await getPublicListsByUserId(id);
+        if (!mounted) return;
+        if (!listsRes.success) return;
+
         setProfile(profileRes.data);
         setProfileStats(statsRes.data);
+        setProfileLists(listsRes.data);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -87,6 +95,64 @@ export default function ProfileScreen() {
           subtitle={`Member since ${new Date(profile.created_at).toLocaleDateString()}`}
         />
         {profileStats && <StatsSection stats={profileStats} />}
+        <Text className="mb-2 font-SpaceGrotesk-Regular text-lg text-primary-950 dark:text-primary-50">
+          Lists
+        </Text>
+        <FlatList
+          data={profileLists}
+          scrollEnabled={false}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ gap: 12 }}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                addListToState(item);
+                router.push({
+                  pathname: '/list/[id]',
+                  params: {
+                    id: item.id,
+                    ownerId: profile.id,
+                    ownerName: profile.display_name,
+                    ownerAvatar: profile.avatar_url ?? '',
+                    isOwnerPrivate: profile.is_private.toString(),
+                  },
+                });
+              }}
+              activeOpacity={0.85}
+              className="rounded-xl bg-primary-100 p-4 dark:bg-primary-900">
+              {/* Top: title + likes */}
+              <View className="flex-row items-start justify-between">
+                <View className="mr-3 flex-1">
+                  <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+                    {item.name}
+                  </Text>
+
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
+                    {item.description || 'No description'}
+                  </Text>
+                </View>
+
+                {/* Likes on top right */}
+                <View className="flex-row items-center justify-start gap-x-1">
+                  <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
+                    {item.likes_count}
+                  </Text>
+                  <Bookmark size={12} color={theme.primary[700]} />
+                </View>
+              </View>
+
+              {/* Bottom row: user left, item count right */}
+              <View className="mt-1 flex-row items-center justify-end">
+                <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
+                  {item.item_count} {item.item_count === 1 ? 'Item' : 'Items'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
       </ScrollView>
     </SafeAreaView>
   );

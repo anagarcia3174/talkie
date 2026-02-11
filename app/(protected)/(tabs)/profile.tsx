@@ -53,6 +53,7 @@ export default function Profile() {
         avatar={profile.avatar_url}
         displayName={profile.display_name}
         bio={profile.bio}
+        isPrivate={profile.is_private}
         onClose={() => setShowProfileModal(false)}
         onUpdateProfile={async (image, data) => {
           if (!user) return;
