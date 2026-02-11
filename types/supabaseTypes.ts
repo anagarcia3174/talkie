@@ -3,23 +3,30 @@ import { getErrorMessage } from '~/utils/errorHandler';
 // Enum types
 export type MediaType = 'movie' | 'tv';
 export type ListType = 'library' | 'favorites' | 'custom';
-export type Visibility = 'private' | 'followers' | 'public';
 export type LibraryStatus = 'watched' | 'watching' | 'pending';
 
-export type Result<T = void> = { success: true; data?: T } | { success: false; error: string };
+export type DataResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
 
-export function successResult<T>(data: T): Result<T> {
-  return {
-    success: true,
-    data,
-  };
+export type VoidResult =
+  | { success: true }
+  | { success: false; error: string };
+
+export function successData<T>(data: T): DataResult<T> {
+  return { success: true, data };
 }
 
-export function errorResult<T = void>(error: unknown): Result<T> {
-  return {
-    success: false,
-    error: getErrorMessage(error),
-  };
+export function successVoid(): VoidResult {
+  return { success: true };
+}
+
+export function errorData<T>(error: unknown): DataResult<T> {
+  return { success: false, error: getErrorMessage(error) };
+}
+
+export function errorVoid(error: unknown): VoidResult {
+  return { success: false, error: getErrorMessage(error) };
 }
 
 // Base database record interface
@@ -30,17 +37,19 @@ interface BaseRecord {
 
 export interface Profile extends BaseRecord {
   display_name: string;
-  avatar_url: string;
+  avatar_url: string | null;
   bio: string;
   updated_at: string;
+  is_private: boolean;
 }
 
 export interface ProfileStats {
   followers: number;
   following: number;
-  reviews: number;
+  comments: number;
+  lists: number;
   totalLogged: number;
-  avgRating: number;
+
 }
 
 // Core table types
@@ -159,7 +168,7 @@ export type CreateReviewInput = Omit<Review, 'id' | 'created_at' | 'updated_at' 
 
 // Update types (all fields optional except id)
 export type UpdateCommentInput = Partial<Pick<Comment, 'content' | 'is_spoiler'>> & { id: number };
-export type UpdateListInput = Partial<Pick<List, 'name' | 'description' | 'visibility'>> & {
+export type UpdateListInput = Partial<Pick<List, 'name' | 'description' | 'is_private'>> & {
   id: number;
 };
 export type UpdateReviewInput = Partial<Pick<Review, 'rating' | 'content' | 'is_spoiler'>> & {
@@ -186,7 +195,7 @@ export interface List extends BaseRecord {
   description: string | null;
   list_type: ListType;
   is_default: boolean;
-  visibility: Visibility;
+  is_private: boolean;
   item_count: number;
   likes_count: number;
   updated_at: string;
@@ -198,12 +207,14 @@ export type ListSearchResult = {
   display_name: string;
   avatar_url: string | null;
   rank: number;
+  is_private: boolean;
 };
 
 export type ListOwnerInfo = {
   id: string;
   display_name: string;
   avatar_url?: string;
+  is_private: boolean;
 }
 
 export type LikedListRow = {

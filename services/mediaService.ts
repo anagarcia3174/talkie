@@ -1,8 +1,8 @@
 import { supabase } from '~/utils/supabase';
-import type { Media, Result } from '~/types/supabaseTypes';
-import { errorResult, successResult } from '~/types/supabaseTypes';
+import type { Media, DataResult, VoidResult } from '~/types/supabaseTypes';
+import { errorData, errorVoid, successData, successVoid } from '~/types/supabaseTypes';
 
-export async function getMediaById(id: number, mediaType: string): Promise<Result<Media>> {
+export async function getMediaById(id: number, mediaType: string): Promise<DataResult<Media>> {
   try {
     const { data, error } = await supabase
       .from('media')
@@ -11,31 +11,31 @@ export async function getMediaById(id: number, mediaType: string): Promise<Resul
       .eq('media_type', mediaType)
       .single();
 
-    if (error) return errorResult(error);
-    if (!data) return errorResult('Media not found');
+    if (error) return errorData(error);
+    if (!data) return errorData('Media not found');
 
-    return successResult(data);
+    return successData(data);
   } catch (err) {
-    return errorResult(err);
+    return errorData(err);
   }
 }
 
-async function getCollection(collection: 'trending', mediaType: 'movie' | 'tv'): Promise<Result<Media[]>> {
+async function getCollection(collection: 'trending', mediaType: 'movie' | 'tv'): Promise<DataResult<Media[]>> {
   try {
     const { data, error } = await supabase.rpc(`get_${collection}_media`, {
       p_media_type: mediaType
     });
 
-    if (error) return errorResult(error);
-    if (!data) return errorResult('No data found');
+    if (error) return errorData(error);
+    if (!data) return errorData('No data found');
 
-    return successResult(data);
+    return successData(data);
   } catch (err) {
-    return errorResult(err);
+    return errorData(err);
   }
 }
 
-export async function searchMedia(searchText: string): Promise<Result<Media[]>> {
+export async function searchMedia(searchText: string): Promise<DataResult<Media[]>> {
   try {
     const { data, error } = await supabase.functions.invoke('search-media', {
       body: { query: searchText },
@@ -43,12 +43,12 @@ export async function searchMedia(searchText: string): Promise<Result<Media[]>> 
 
     if(error) {
       console.log('Error invoking search-media function:', error);
-      return errorResult(error)};
-    if(!data) return errorResult('No data found');
-    return successResult(data.results as Media[]);
+      return errorData(error)};
+    if(!data) return errorData('No data found');
+    return successData(data.results as Media[]);
   } catch (err) {
     console.log(err)
-    return errorResult(err);
+    return errorData(err);
   }
 }
 

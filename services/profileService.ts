@@ -1,31 +1,32 @@
 import { supabase } from '~/utils/supabase';
-import type { Profile, ProfileStats, Result } from '~/types/supabaseTypes';
-import { errorResult, successResult } from '~/types/supabaseTypes';
-import { ImagePickerAsset } from 'expo-image-picker';
+import type { Profile, ProfileStats, DataResult, VoidResult } from '~/types/supabaseTypes';
+import { errorData, errorVoid, successData, successVoid } from '~/types/supabaseTypes';
+import { withPublicUrl } from '~/utils/storageUrl';
 
-export async function getProfileById(id: string): Promise<Result<Profile>> {
+
+export async function getProfileById(id: string): Promise<DataResult<Profile>> {
   try {
     const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
-    if (error) return errorResult(error);
-    if (!data) return errorResult('Profile not found');
+    if (error) return errorData(error);
+    if (!data) return errorData('Profile not found');
 
-    return successResult(data);
+    return successData(withPublicUrl(data));
   } catch (err) {
-    return errorResult(err);
+    return errorData(err);
   }
 }
 
-export async function getProfileStats(id: string): Promise<Result<ProfileStats>> {
+export async function getProfileStats(id: string): Promise<DataResult<ProfileStats>> {
   try {
     const { data, error } = await supabase.rpc('get_profile_stats', {
       user_id: id,
     });
-    if (error) return errorResult(error);
-    if (!data) return errorResult('Profile Stats not found');
+    if (error) return errorData(error);
+    if (!data) return errorData('Profile Stats not found');
 
-    return successResult(data);
+    return successData(data);
   } catch (err) {
-    return errorResult(err);
+    return errorData(err);
   }
 }
 
@@ -33,24 +34,24 @@ export async function uploadAvatar(
   filePath: string,
   arrayBuffer: ArrayBuffer,
   mimeType: string
-): Promise<Result<void>> {
+): Promise<VoidResult> {
   try {
     const { error } = await supabase.storage.from('avatars').upload(filePath, arrayBuffer, {
       upsert: true,
       contentType: mimeType,
     });
     if(error) console.log('Upload error:', error);
-    if (error) return errorResult(error);
-    return successResult(undefined);
+    if (error) return errorVoid(error);
+    return successVoid();
   } catch (err) {
-    return errorResult(err);
+    return errorVoid(err);
   }
 }
 
 export async function updateProfile(
   id: string,
   updates: Partial<Profile>
-): Promise<Result<Profile>> {
+): Promise<DataResult<Profile>> {
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -62,11 +63,11 @@ export async function updateProfile(
       .select()
       .single();
 
-    if (error) return errorResult(error);
-    if (!data) return errorResult('Profile not found');
+    if (error) return errorData(error);
+    if (!data) return errorData('Profile not found');
 
-    return successResult(data);
+    return successData(data);
   } catch (err) {
-    return errorResult(err);
+    return errorData(err);
   }
 }

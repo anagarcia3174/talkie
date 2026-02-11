@@ -109,14 +109,12 @@ export default function ListContent({
     return sortOrder === 'asc' ? comparison : comparison * -1;
   });
 
-  const getVisibilityIcon = () => {
-    switch (list.visibility) {
-      case 'private':
+  const getIsPrivateIcon = () => {
+    switch (list.is_private) {
+      case true:
         return <Lock size={14} color={theme.primary[600]} />;
-      case 'public':
+      case false:
         return <Globe size={14} color={theme.primary[600]} />;
-      case 'followers':
-        return <Users size={14} color={theme.primary[600]} />;
       default:
         return null;
     }
@@ -171,9 +169,9 @@ export default function ListContent({
                 <DotSeparator />
 
                 <View className="flex-row items-center gap-1">
-                  {getVisibilityIcon()}
+                  {getIsPrivateIcon()}
                   <Text className="text-sm capitalize text-primary-600 dark:text-primary-400">
-                    {list.visibility}
+                    {list.is_private ? 'Private' : 'Public'}
                   </Text>
                 </View>
 
@@ -204,6 +202,17 @@ export default function ListContent({
           </View>
           {!isOwner && owner && (
             <TouchableOpacity
+              disabled={owner.is_private}
+              onPress={() => {
+                if (!owner.is_private) {
+                  router.push({
+                    pathname: '/profile/[id]',
+                    params: {
+                      id: owner.id,
+                    },
+                  });
+                }
+              }}
               activeOpacity={0.85}
               className="mx-4 mb-2 rounded-xl border border-primary-200 bg-primary-100 p-3 dark:border-primary-800 dark:bg-primary-900">
               <View className="flex-row items-center justify-between">
@@ -232,9 +241,13 @@ export default function ListContent({
 
                 {/* Right: action */}
                 <View className="rounded-full border border-primary-300 px-3 py-1.5 dark:border-primary-700">
-                  <Text className="font-SpaceGrotesk-Medium text-sm text-primary-900 dark:text-primary-100">
-                    View
-                  </Text>
+                  {owner.is_private ? (
+                    <Lock size={14} color={theme.primary[600]} />
+                  ) : (
+                    <Text className="font-SpaceGrotesk-Medium text-sm text-primary-900 dark:text-primary-100">
+                      View
+                    </Text>
+                  )}
                 </View>
               </View>
             </TouchableOpacity>

@@ -17,16 +17,17 @@ import { useAuth } from '~/context/AuthContext';
 import useListScreenActions from './useListScreenActions';
 
 export default function ListScreen() {
-  const { id, ownerId, ownerName, ownerAvatar } = useLocalSearchParams<{
+  const { id, ownerId, ownerName, ownerAvatar, isOwnerPrivate } = useLocalSearchParams<{
     id: string;
     ownerId: string;
     ownerName: string;
     ownerAvatar?: string;
+    isOwnerPrivate: string;
   }>();
 
   const listId = Number(id);
   const isValidListId = Number.isFinite(listId);
-
+  const isPrivate = isOwnerPrivate === 'true';
   const { listsById, listItems, getListItems } = useLists();
 
   const { user } = useAuth();
@@ -66,6 +67,7 @@ export default function ListScreen() {
     id: ownerId,
     display_name: ownerName,
     avatar_url: ownerAvatar,
+    is_private: isPrivate
   };
 
   return (

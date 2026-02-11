@@ -1,4 +1,4 @@
-import { Profile, ProfileStats, Result } from '~/types/supabaseTypes';
+import { Profile, ProfileStats, VoidResult } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import { getErrorMessage } from '~/utils/errorHandler';
 import { ImagePickerAsset } from 'expo-image-picker';
@@ -14,10 +14,10 @@ interface ProfileState {
   stats: ProfileStats;
   loading: boolean;
 
-  getProfile: (userId: string) => Promise<Result<void>>;
-  getStats: (userId: string) => Promise<Result<void>>;
-  uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<Result<void>>;
-  updateProfile: (userId: string, updates: Partial<Profile>) => Promise<Result<void>>;
+  getProfile: (userId: string) => Promise<VoidResult>;
+  getStats: (userId: string) => Promise<VoidResult>;
+  uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<VoidResult>;
+  updateProfile: (userId: string, updates: Partial<Profile>) => Promise<VoidResult>;
   clearProfile: () => void;
 }
 
@@ -29,9 +29,9 @@ export const useProfile = create<ProfileState>((set, get) => ({
   stats: {
     followers: 0,
     following: 0,
-    reviews: 0,
+    comments: 0,
     totalLogged: 0,
-    avgRating: 0,
+    lists: 0,
   },
   loading: false,
 
@@ -45,8 +45,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
       return { success: false, error: result.error };
     }
 
-    const normalized = withPublicUrl(result.data!);
-    set({ profile: normalized, loading: false });
+    set({ profile: result.data, loading: false });
     return { success: true };
   },
 
@@ -61,8 +60,8 @@ export const useProfile = create<ProfileState>((set, get) => ({
     const stats: ProfileStats = {
       followers: data.followers,
       following: data.following,
-      reviews: data.reviews,
-      avgRating: data.avgRating,
+      comments: data.comments,
+      lists: data.lists,
       totalLogged: data.totalLogged,
     };
 

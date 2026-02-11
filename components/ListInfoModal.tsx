@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
-import { List, Visibility } from '~/types/supabaseTypes';
+import { List } from '~/types/supabaseTypes';
 import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 
 interface ListInfoModalProps {
@@ -23,7 +23,7 @@ export default function ListInfoModal({
   const theme = useTheme();
   const [listName, setListName] = useState(list.name);
   const [listDescription, setListDescription] = useState(list.description || '');
-  const [listVisibility, setListVisibility] = useState<Visibility>(list.visibility);
+  const [listIsPrivate, setListIsPrivate] = useState<boolean>(list.is_private);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
@@ -38,15 +38,14 @@ export default function ListInfoModal({
 
   const nameChanged = !list.is_default && listName.trim() !== list.name;
   const descChanged = (listDescription || '') !== (list.description || '');
-  const visibilityChanged = listVisibility !== list.visibility;
+  const isPrivateChanged = listIsPrivate !== list.is_private;
 
-  const hasChanges = nameChanged || descChanged || visibilityChanged;
+  const hasChanges = nameChanged || descChanged || isPrivateChanged;
 
   const isValid =
     listName.trim().length > 0 &&
     listName.length <= 50 &&
-    listDescription.length <= 500 &&
-    ['private', 'followers', 'public'].includes(listVisibility);
+    listDescription.length <= 500;
 
   const canSubmit = hasChanges && isValid;
 
@@ -126,13 +125,13 @@ export default function ListInfoModal({
               </Text>
 
               <View className="flex-row gap-2">
-                {(['private', 'followers', 'public'] as Visibility[]).map((option) => {
-                  const selected = listVisibility === option;
+                {([true, false] ).map((option) => {
+                  const selected = listIsPrivate === option 
 
                   return (
                     <Pressable
-                      key={option}
-                      onPress={() => setListVisibility(option)}
+                      key={option ? 'private' : 'public'}
+                      onPress={() => setListIsPrivate(option)}
                       className={`flex-1 rounded-xl border px-3 py-2 ${
                         selected
                           ? 'border-primary-900 bg-primary-900 dark:border-primary-50 dark:bg-primary-50'
@@ -144,7 +143,7 @@ export default function ListInfoModal({
                             ? 'font-SpaceGrotesk-SemiBold text-primary-50 dark:text-primary-900'
                             : 'text-primary-700 dark:text-primary-300'
                         }`}>
-                        {option}
+                        {option ? 'private' : 'public'}
                       </Text>
                     </Pressable>
                   );
@@ -165,7 +164,7 @@ export default function ListInfoModal({
 
                   if (nameChanged) updates.name = listName.trim();
                   if (descChanged) updates.description = listDescription.trim();
-                  if (visibilityChanged) updates.visibility = listVisibility;
+                  if (isPrivateChanged) updates.is_private = listIsPrivate;
 
                   onConfirm(updates);
                 }}

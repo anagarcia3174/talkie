@@ -1,24 +1,24 @@
 import { supabase } from '~/utils/supabase';
-import type { Review, Result, ReviewWithProfile } from '~/types/supabaseTypes';
-import { successResult, errorResult } from '~/types/supabaseTypes';
+import type { Review, DataResult, VoidResult, ReviewWithProfile } from '~/types/supabaseTypes';
+import { successData, successVoid, errorData, errorVoid } from '~/types/supabaseTypes';
 
-export async function getReviewsForMedia(mediaId: number): Promise<Result<ReviewWithProfile[]>> {
+export async function getReviewsForMedia(mediaId: number): Promise<DataResult<ReviewWithProfile[]>> {
   try {
     const { data, error } = await supabase.rpc('get_reviews_for_media', {
       p_media_id: mediaId,
     });
 
-    if (error) return errorResult(error);
+    if (error) return errorData(error);
 
-    return successResult(data as ReviewWithProfile[]);
+    return successData(data as ReviewWithProfile[]);
   } catch (err) {
-    return errorResult(err);
+    return errorData(err);
   }
 }
 
 export async function postReview(
   review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'>
-): Promise<Result<ReviewWithProfile>> {
+): Promise<DataResult<ReviewWithProfile>> {
   try {
     const { data, error } = await supabase
       .from('reviews')
@@ -34,7 +34,7 @@ export async function postReview(
       )
       .single();
 
-    if (error) return errorResult(error);
+    if (error) return errorData(error);
 
     const flattened: ReviewWithProfile = {
       ...data,
@@ -44,19 +44,19 @@ export async function postReview(
 
     delete (flattened as any).profiles;
 
-    return successResult(flattened);
+    return successData(flattened);
   } catch (err) {
-    return errorResult(err);
+    return errorData(err);
   }
 }
 
-export async function deleteReview(reviewId: number): Promise<Result<null>> {
+export async function deleteReview(reviewId: number): Promise<VoidResult> {
   try {
     const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
 
-    if (error) return errorResult(error);
-    return successResult(null);
+    if (error) return errorVoid(error);
+    return successVoid();
   } catch (err) {
-    return errorResult(err);
+    return errorVoid(err);
   }
 }

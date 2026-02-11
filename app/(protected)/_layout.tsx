@@ -8,6 +8,7 @@ export default function Layout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="media/[id]" />
         <Stack.Screen name="list/[id]" />
+        <Stack.Screen name="profile/[id]" />
       </Stack>
     </GestureHandlerRootView>
   );

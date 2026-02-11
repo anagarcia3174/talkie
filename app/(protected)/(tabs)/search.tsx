@@ -181,6 +181,7 @@ export default function Search() {
         ownerId: result.list.user_id,
         ownerName: result.display_name,
         ownerAvatar: result.avatar_url ?? '',
+        isOwnerPrivate: result.is_private.toString(),
       },
     });
   };

@@ -16,15 +16,15 @@ import { Profile } from '~/types/supabaseTypes';
 import { Camera } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { Toast } from 'toastify-react-native';
 
 interface ProfileActionsModalProps {
   visible: boolean;
   onClose: () => void;
-  avatar: string | undefined;
+  avatar: string | null;
   displayName: string | undefined;
   bio: string | undefined;
-  onUploadPicture: (image: ImagePicker.ImagePickerAsset) => Promise<void>;
-  onUpdateProfile: (data: Partial<Profile>) => Promise<void>;
+  onUpdateProfile: (image?: ImagePicker.ImagePickerAsset, data?: Partial<Profile>) => Promise<void>;
 }
 
 const MAX_MB = 6;
@@ -35,7 +35,6 @@ export default function ProfileActionsModal({
   avatar,
   displayName,
   bio,
-  onUploadPicture,
   onUpdateProfile,
 }: ProfileActionsModalProps) {
   const [imageUri, setImageUri] = useState<string | null>(avatar ?? '');
@@ -109,19 +108,21 @@ export default function ProfileActionsModal({
       return;
     }
 
-    if (image && imageUri && imageUri !== avatar) {
-      await onUploadPicture(image);
-    }
-
     const updates: Partial<Profile> = {};
     if (name !== displayName) updates.display_name = name;
     if (userBio !== bio) updates.bio = userBio;
 
-    if (Object.keys(updates).length > 0) {
-      await onUpdateProfile(updates);
+    const hasImage = image && imageUri && imageUri !== avatar;
+    const hasUpdates = Object.keys(updates).length > 0;
+
+    if (!hasImage && !hasUpdates) {
+      onClose();
+      return;
     }
 
     onClose();
+
+    onUpdateProfile(hasImage ? image : undefined, hasUpdates ? updates : undefined);
   };
 
   return (
@@ -150,27 +151,39 @@ export default function ProfileActionsModal({
               </View>
             )}
           </Pressable>
-          <TextInput
-            className="text-md mb-4 rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
-            value={name}
-            onChangeText={setName}
-            cursorColor={theme.primary[700]}
-            selectionColor={theme.primary[700]}
-            placeholder="Display Name"
-            placeholderTextColor={theme.primary[500]}
-            maxLength={50}
-          />
-          <TextInput
-            className="text-md mb-4 rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
-            value={userBio}
-            onChangeText={setUserBio}
-            cursorColor={theme.primary[700]}
-            selectionColor={theme.primary[700]}
-            placeholder="Bio"
-            placeholderTextColor={theme.primary[500]}
-            multiline
-            maxLength={300}
-          />
+          <View className="mb-2">
+            <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">
+              Display Name
+            </Text>
+            <TextInput
+              className="text-md rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
+              value={name}
+              onChangeText={setName}
+              cursorColor={theme.primary[700]}
+              selectionColor={theme.primary[700]}
+              placeholder="Display Name"
+              placeholderTextColor={theme.primary[500]}
+              maxLength={50}
+            />
+            <Text className="mt-1 text-right text-xs text-primary-500">{name.length}/50</Text>
+          </View>
+          <View className='mb-2'>
+             <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">
+              Bio
+            </Text>
+            <TextInput
+              className="text-md rounded-xl border border-primary-300 bg-primary-50 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
+              value={userBio}
+              onChangeText={setUserBio}
+              cursorColor={theme.primary[700]}
+              selectionColor={theme.primary[700]}
+              placeholder="Bio"
+              placeholderTextColor={theme.primary[500]}
+              multiline
+              maxLength={300}
+            />
+            <Text className="mt-1 text-right text-xs text-primary-500">{userBio.length}/300</Text>
+          </View>
 
           {/* Button */}
           <Pressable
