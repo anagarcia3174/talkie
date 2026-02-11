@@ -23,6 +23,14 @@ export default function Lists() {
 
   const favorites = defaultListIds.favorites != null ? listsById[defaultListIds.favorites] : null;
 
+  const likedLists = Object.values(listsById).filter(
+    (list) =>
+      list.is_liked &&
+      !customListIds.includes(list.id) &&
+      list.id !== defaultListIds.library &&
+      list.id !== defaultListIds.favorites
+  );
+
   const handleCreateList = async (list: Partial<List>) => {
     if (!user) return;
     if (customListIds.length >= 5) {
@@ -165,6 +173,36 @@ export default function Lists() {
             />
           );
         })}
+
+        {/* Liked Lists */}
+        {likedLists.length > 0 && (
+          <>
+            <Text className="mb-2 mt-6 font-SpaceGrotesk-Medium text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
+              Liked
+            </Text>
+
+            {likedLists.map((list) => (
+              <ListRow
+                key={list.id}
+                title={list.name}
+                items={list.item_count}
+                onPress={() =>
+                  router.push({
+                    pathname: '/list/[id]',
+                    params: {
+                      id: list.id,
+                      ownerId: list.owner?.id,
+                      ownerName: list.owner?.display_name,
+                      ownerAvatar: list.owner?.avatar_url ?? '',
+                      isOwnerPrivate: list.owner?.is_private.toString(),
+                    },
+                  })
+                }
+                deletable={false}
+              />
+            ))}
+          </>
+        )}
       </ScrollView>
       <CreateListModal
         visible={createListModalVisible}

@@ -50,8 +50,15 @@ export async function getLikedLists(userId: string): Promise<DataResult<List[]>>
     if (error) {
       return errorData(error);
     }
-    const lists: List[] = (data ?? []) as List[];
-
+    const lists: List[] = data.map((row: any) => ({
+      ...row,
+      owner: {
+        id: row.owner_id,
+        display_name: row.owner_display_name,
+        avatar_url: row.owner_avatar_url,
+        is_private: row.owner_is_private,
+      },
+    }));
     return successData(lists);
   } catch (err) {
     return errorData(err);

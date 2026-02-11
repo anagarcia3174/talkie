@@ -193,6 +193,12 @@ export interface List extends BaseRecord {
   likes_count: number;
   updated_at: string;
   is_liked?: boolean;
+  owner?: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    is_private: boolean;
+  };
 }
 
 export type ListSearchResult = {
@@ -221,4 +227,4 @@ export type ListWithOwner = List & {
     avatar_url: string | null;
     is_private: boolean;
   } | null;
-}
+};
