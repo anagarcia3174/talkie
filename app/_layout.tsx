@@ -6,10 +6,11 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '~/context/AuthContext';
 import LoadingScreen from '~/components/LoadingScreen';
-import ToastManager from 'toastify-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { toastConfig } from '~/components/ToastConfig';
+import {  toastConfig } from '~/components/ToastConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
+
 SplashScreen.preventAutoHideAsync();
 
 // SplashScreen.setOptions({
@@ -60,7 +61,8 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <InitialLayout />
-      <ToastManager config={toastConfig} topOffset={insets.top + 10} />
+      {/* <ToastManager config={toastConfig} topOffset={insets.top + 10} /> */}
+      <Toast config={toastConfig} position='top' topOffset={insets.top + 10} onPress={() => Toast.hide()}/>
     </AuthProvider>
   );
 }

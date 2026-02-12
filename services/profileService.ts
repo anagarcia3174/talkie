@@ -40,7 +40,6 @@ export async function uploadAvatar(
       upsert: true,
       contentType: mimeType,
     });
-    if(error) console.log('Upload error:', error);
     if (error) return errorVoid(error);
     return successVoid();
   } catch (err) {

@@ -1,12 +1,7 @@
 import { View, Text, Image, Pressable } from 'react-native';
 import { UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import ProfileActionsModal from '~/components/ProfileActionsModal';
-import { useState } from 'react';
-import { ImagePickerAsset } from 'expo-image-picker';
-import { useAuth } from '~/context/AuthContext';
-import { useProfile } from '~/store/profileStore';
-import { Toast } from 'toastify-react-native';
+
 
 interface ProfileSectionProps {
   avatar: string | null;

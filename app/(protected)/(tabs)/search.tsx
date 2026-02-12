@@ -15,7 +15,7 @@ import SegmentedControl from '@react-native-segmented-control/segmented-control'
 import { searchMedia } from '~/services/mediaService';
 import { List, ListSearchResult, Media } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
-import { Toast } from 'toastify-react-native';
+import Toast from 'react-native-toast-message';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useLists } from '~/store/listStore';
 import SearchSortModal from '~/components/SearchSortModal';

@@ -1,16 +1,16 @@
 import { View, Text, Dimensions, TouchableOpacity } from 'react-native';
-import { ToastConfigParams } from 'toastify-react-native/utils/interfaces';
+import { BaseToastProps } from 'react-native-toast-message';
 
 const screenWidth = Dimensions.get('window').width;
 
 export const toastConfig = {
-  info: (props: ToastConfigParams) => (
+  info: (props: BaseToastProps) => (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={props.onPress}
       className="mx-3 rounded-2xl bg-primary-800 px-5 py-3 shadow-lg dark:bg-primary-200"
       style={{
-        width: screenWidth - 24, // full width minus small horizontal margin
+        width: screenWidth - 24,
         alignSelf: 'center',
       }}>
       <Text className="font-SpaceGrotesk-SemiBold text-lg text-primary-50 dark:text-primary-950">
@@ -24,7 +24,7 @@ export const toastConfig = {
     </TouchableOpacity>
   ),
 
-  success: (props: ToastConfigParams) => (
+  success: (props: BaseToastProps) => (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={props.onPress}
@@ -42,7 +42,7 @@ export const toastConfig = {
     </TouchableOpacity>
   ),
 
-  error: (props: ToastConfigParams) => (
+  error: (props: BaseToastProps) => (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={props.onPress}

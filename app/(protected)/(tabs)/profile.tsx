@@ -6,7 +6,7 @@ import { useProfile } from '~/store/profileStore';
 import { useState } from 'react';
 import { useAuth } from '~/context/AuthContext';
 import ProfileActionsModal from '~/components/ProfileActionsModal';
-import { Toast } from 'toastify-react-native';
+import Toast from 'react-native-toast-message';
 import ErrorScreen from '~/components/ErrorScreen';
 
 export default function Profile() {

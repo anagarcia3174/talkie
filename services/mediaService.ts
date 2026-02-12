@@ -42,12 +42,10 @@ export async function searchMedia(searchText: string): Promise<DataResult<Media[
     });
 
     if(error) {
-      console.log('Error invoking search-media function:', error);
       return errorData(error)};
     if(!data) return errorData('No data found');
     return successData(data.results as Media[]);
   } catch (err) {
-    console.log(err)
     return errorData(err);
   }
 }

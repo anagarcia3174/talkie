@@ -229,7 +229,6 @@ export async function searchLists(query: string): Promise<DataResult<ListSearchR
     if (!data) return errorData('No lists found');
     return successData(data);
   } catch (err) {
-    console.log(err);
     return errorData(err);
   }
 }

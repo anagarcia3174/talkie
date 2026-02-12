@@ -64,7 +64,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // If the credential is revoked or not found, the session is invalid
         if (credentialState !== AppleAuthentication.AppleAuthenticationCredentialState.AUTHORIZED) {
-          console.log('Apple credential state changed:', credentialState);
           return false;
         }
 

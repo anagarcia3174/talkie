@@ -14,7 +14,7 @@ import { SendHorizonal, Star } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { Toast } from 'toastify-react-native';
+import Toast from 'react-native-toast-message';
 interface AddReviewFormProps {
   onSubmitReview: (rating: number, content: string) => Promise<void>;
 }

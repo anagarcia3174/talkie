@@ -9,14 +9,15 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Profile } from '~/types/supabaseTypes';
 import { Camera } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { Toast } from 'toastify-react-native';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from './ToastConfig';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ProfileActionsModalProps {
   visible: boolean;
@@ -45,6 +46,7 @@ export default function ProfileActionsModal({
   const [userBio, setUserBio] = useState(bio ?? '');
   const [userIsPrivate, setUserIsPrivate] = useState(isPrivate);
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (visible) {
@@ -82,10 +84,15 @@ export default function ProfileActionsModal({
       );
 
       const sizeMB = await getImageSizeMB(manipulated.uri);
-      console.log(`Processed avatar: ${sizeMB.toFixed(2)} MB`);
 
       if (sizeMB > MAX_MB) {
-        Alert.alert('Image too large', `Please choose an image under ${MAX_MB} MB`);
+        Toast.show({
+          type: 'error',
+          text1: `The image chosen is too large. Please choose an image under ${MAX_MB} MB.`,
+          position: 'top',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
         return;
       }
 
@@ -96,8 +103,13 @@ export default function ProfileActionsModal({
       });
       setImageUri(manipulated.uri);
     } catch (error) {
-      console.error('Image processing error:', error);
-      Alert.alert('Error', 'Failed to process image');
+      Toast.show({
+        type: 'error',
+        text1: 'There was an error proccessing your image.',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
     }
   };
 
@@ -110,7 +122,13 @@ export default function ProfileActionsModal({
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert('Invalid Name', 'Display name cannot be empty');
+      Toast.show({
+        type: 'error',
+        text1: 'Your display name cannot be empty',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
       return;
     }
 
@@ -229,6 +247,12 @@ export default function ProfileActionsModal({
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+      <Toast
+        config={toastConfig}
+        position="top"
+        topOffset={insets.top + 10}
+        onPress={() => Toast.hide()}
+      />
     </Modal>
   );
 }

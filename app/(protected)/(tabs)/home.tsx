@@ -8,7 +8,9 @@ import MediaRowSection from '~/components/MediaRowSection';
 import { useEffect } from 'react';
 import LibraryProgressChart from '~/components/LibraryProgressChart';
 import { useLists } from '~/store/listStore';
-import { Toast } from 'toastify-react-native';
+
+import Toast from 'react-native-toast-message';
+
 export default function Home() {
   const { fetchHomeData, trendingMovies, trendingShows } = useHomeStore();
   const tabBarHeight = useBottomTabBarHeight();
@@ -35,7 +37,6 @@ export default function Home() {
       position: 'top',
       visibilityTime: 3000,
       autoHide: true,
-      onPress: () => Toast.hide(),
     });
 
     try {
@@ -48,7 +49,7 @@ export default function Home() {
           position: 'top',
           visibilityTime: 4000,
           autoHide: true,
-          onPress: () => Toast.hide(),
+
         });
       } else {
         Toast.show({
@@ -57,7 +58,7 @@ export default function Home() {
           position: 'top',
           visibilityTime: 3000,
           autoHide: true,
-          onPress: () => Toast.hide(),
+
         });
       }
     } catch (error) {
@@ -67,7 +68,6 @@ export default function Home() {
         position: 'top',
         visibilityTime: 4000,
         autoHide: true,
-        onPress: () => Toast.hide(),
       });
     }
   };

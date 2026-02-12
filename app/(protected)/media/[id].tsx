@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { Media } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
-import { Toast } from 'toastify-react-native';
+import Toast from 'react-native-toast-message';
 import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
 import { useLists } from '~/store/listStore';

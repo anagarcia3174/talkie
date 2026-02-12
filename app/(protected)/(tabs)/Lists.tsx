@@ -9,7 +9,7 @@ import { useState } from 'react';
 import CreateListModal from '~/components/CreateListModal';
 import { List } from '~/types/supabaseTypes';
 import { useAuth } from '~/context/AuthContext';
-import { Toast } from 'toastify-react-native';
+import Toast from 'react-native-toast-message';
 import ListRow from '~/components/ListRow';
 
 export default function Lists() {
