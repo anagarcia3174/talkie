@@ -1,4 +1,4 @@
-import { getErrorMessage } from '~/utils/errorHandler';
+import { ErrorContext, getErrorMessage } from '~/utils/errorHandler';
 
 // Enum types
 export type MediaType = 'movie' | 'tv';
@@ -17,12 +17,12 @@ export function successVoid(): VoidResult {
   return { success: true };
 }
 
-export function errorData<T>(error: unknown): DataResult<T> {
-  return { success: false, error: getErrorMessage(error) };
+export function errorData<T>(error: unknown, context?: ErrorContext): DataResult<T> {
+  return { success: false, error: getErrorMessage(error, context) };
 }
 
-export function errorVoid(error: unknown): VoidResult {
-  return { success: false, error: getErrorMessage(error) };
+export function errorVoid(error: unknown, context?: ErrorContext): VoidResult {
+  return { success: false, error: getErrorMessage(error, context) };
 }
 
 // Base database record interface

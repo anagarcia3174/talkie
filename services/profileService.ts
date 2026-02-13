@@ -3,16 +3,21 @@ import type { Profile, ProfileStats, DataResult, VoidResult } from '~/types/supa
 import { errorData, errorVoid, successData, successVoid } from '~/types/supabaseTypes';
 import { withPublicUrl } from '~/utils/storageUrl';
 
-
 export async function getProfileById(id: string): Promise<DataResult<Profile>> {
   try {
     const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
-    if (error) return errorData(error);
-    if (!data) return errorData('Profile not found');
+    if (error)
+      return errorData(error, {
+        operation: 'get_profile',
+        table: 'profiles',
+      });
 
     return successData(withPublicUrl(data));
   } catch (err) {
-    return errorData(err);
+    return errorData(err, {
+      operation: 'get_profile',
+      table: 'profiles',
+    });
   }
 }
 
@@ -21,12 +26,18 @@ export async function getProfileStats(id: string): Promise<DataResult<ProfileSta
     const { data, error } = await supabase.rpc('get_profile_stats', {
       user_id: id,
     });
-    if (error) return errorData(error);
-    if (!data) return errorData('Profile Stats not found');
+    if (error)
+      return errorData(error, {
+        operation: 'get_profile_stats',
+        rpc: 'get_profile_stats',
+      });
 
     return successData(data);
   } catch (err) {
-    return errorData(err);
+    return errorData(err, {
+      operation: 'get_profile_stats',
+      rpc: 'get_profile_stats',
+    });
   }
 }
 
@@ -40,7 +51,11 @@ export async function uploadAvatar(
       upsert: true,
       contentType: mimeType,
     });
-    if (error) return errorVoid(error);
+    if (error)
+      return errorVoid(error, {
+        operation: 'upload_avatar',
+        isWrite: true,
+      });
     return successVoid();
   } catch (err) {
     return errorVoid(err);
@@ -62,11 +77,19 @@ export async function updateProfile(
       .select()
       .single();
 
-    if (error) return errorData(error);
-    if (!data) return errorData('Profile not found');
+    if (error)
+      return errorData(error, {
+        operation: 'update_profile',
+        table: 'profiles',
+        isWrite: true,
+      });
 
     return successData(data);
   } catch (err) {
-    return errorData(err);
+    return errorData(err, {
+      operation: 'update_profile',
+      table: 'profiles',
+      isWrite: true,
+    });
   }
 }

@@ -2,17 +2,26 @@ import { supabase } from '~/utils/supabase';
 import type { Review, DataResult, VoidResult, ReviewWithProfile } from '~/types/supabaseTypes';
 import { successData, successVoid, errorData, errorVoid } from '~/types/supabaseTypes';
 
-export async function getReviewsForMedia(mediaId: number): Promise<DataResult<ReviewWithProfile[]>> {
+export async function getReviewsForMedia(
+  mediaId: number
+): Promise<DataResult<ReviewWithProfile[]>> {
   try {
     const { data, error } = await supabase.rpc('get_reviews_for_media', {
       p_media_id: mediaId,
     });
 
-    if (error) return errorData(error);
+    if (error)
+      return errorData(error, {
+        operation: 'get_reviews',
+        rpc: 'get_reviews_for_media',
+      });
 
     return successData(data as ReviewWithProfile[]);
   } catch (err) {
-    return errorData(err);
+    return errorData(err, {
+      operation: 'get_reviews',
+      rpc: 'get_reviews_for_media',
+    });
   }
 }
 
@@ -34,7 +43,12 @@ export async function postReview(
       )
       .single();
 
-    if (error) return errorData(error);
+    if (error)
+      return errorData(error, {
+        operation: 'post_review',
+        table: 'reviews',
+        isWrite: true,
+      });
 
     const flattened: ReviewWithProfile = {
       ...data,
@@ -54,9 +68,17 @@ export async function deleteReview(reviewId: number): Promise<VoidResult> {
   try {
     const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
 
-    if (error) return errorVoid(error);
+    if (error)
+      return errorVoid(error, {
+        operation: 'delete_review',
+        table: 'reviews',
+        isWrite: true,
+      });
     return successVoid();
   } catch (err) {
-    return errorVoid(err);
-  }
+return errorVoid(err, {
+        operation: 'delete_review',
+        table: 'reviews',
+        isWrite: true,
+      });  }
 }

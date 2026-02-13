@@ -34,8 +34,6 @@ export default function Home() {
     Toast.show({
       type: 'info',
       text1: 'Adding to library...',
-      position: 'top',
-      visibilityTime: 3000,
       autoHide: true,
     });
 
@@ -46,8 +44,7 @@ export default function Home() {
         Toast.show({
           type: 'error',
           text1: result.error || 'Failed to add item to your library',
-          position: 'top',
-          visibilityTime: 4000,
+              visibilityTime: 4000,
           autoHide: true,
 
         });
@@ -55,9 +52,7 @@ export default function Home() {
         Toast.show({
           type: 'success',
           text1: 'Added to Library!',
-          position: 'top',
-          visibilityTime: 3000,
-          autoHide: true,
+                  autoHide: true,
 
         });
       }
@@ -65,8 +60,7 @@ export default function Home() {
       Toast.show({
         type: 'error',
         text1: 'An unexpected error ocurred while adding the item to your library',
-        position: 'top',
-        visibilityTime: 4000,
+          visibilityTime: 4000,
         autoHide: true,
       });
     }

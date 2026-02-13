@@ -62,7 +62,6 @@ export default function Profile() {
             text1: 'Updating Profile...',
             position: 'top',
             visibilityTime: 3000,
-            autoHide: true,
             onPress: () => Toast.hide(),
           });
           try {
@@ -74,9 +73,9 @@ export default function Profile() {
                   text1: res.error || 'Failed to update your profile',
                   position: 'top',
                   visibilityTime: 4000,
-                  autoHide: true,
-                  onPress: () => Toast.hide(),
+                      onPress: () => Toast.hide(),
                 });
+                return;
               }
             }
             if (data && Object.keys(data).length > 0) {
@@ -87,9 +86,9 @@ export default function Profile() {
                   text1: res.error || 'Failed to update your profile',
                   position: 'top',
                   visibilityTime: 4000,
-                  autoHide: true,
-                  onPress: () => Toast.hide(),
+                      onPress: () => Toast.hide(),
                 });
+                return;
               }
             }
             Toast.show({
@@ -97,8 +96,6 @@ export default function Profile() {
               text1: 'Updated Profile!',
               position: 'top',
               visibilityTime: 3000,
-              autoHide: true,
-              onPress: () => Toast.hide(),
             });
           } catch (e: any) {
             Toast.show({
@@ -106,7 +103,6 @@ export default function Profile() {
               text1: 'Failed to update your profile',
               position: 'top',
               visibilityTime: 4000,
-              autoHide: true,
               onPress: () => Toast.hide(),
             });
           }

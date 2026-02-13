@@ -93,7 +93,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
       await get().getProfile(userId);
       return { success: true };
     } catch (err: any) {
-      const message = getErrorMessage(err);
+      const message = getErrorMessage(err, 'upload_image');
       return { success: false, error: message };
     }
   },

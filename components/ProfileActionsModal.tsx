@@ -104,12 +104,12 @@ export default function ProfileActionsModal({
       setImageUri(manipulated.uri);
     } catch (error) {
       Toast.show({
-        type: 'error',
-        text1: 'There was an error proccessing your image.',
-        position: 'top',
-        visibilityTime: 4000,
-        autoHide: true,
-      });
+          type: 'error',
+          text1: 'There was an error proccessing your image.',
+          position: 'top',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
     }
   };
 
@@ -123,12 +123,12 @@ export default function ProfileActionsModal({
   const handleSubmit = async () => {
     if (!name.trim()) {
       Toast.show({
-        type: 'error',
-        text1: 'Your display name cannot be empty',
-        position: 'top',
-        visibilityTime: 4000,
-        autoHide: true,
-      });
+          type: 'error',
+          text1: 'Your display name cannot be empty',
+          position: 'top',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
       return;
     }
 
@@ -247,12 +247,12 @@ export default function ProfileActionsModal({
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-      <Toast
+     {visible &&  <Toast
         config={toastConfig}
         position="top"
         topOffset={insets.top + 10}
         onPress={() => Toast.hide()}
-      />
+      />}
     </Modal>
   );
 }

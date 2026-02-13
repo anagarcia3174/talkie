@@ -11,27 +11,42 @@ export async function getMediaById(id: number, mediaType: string): Promise<DataR
       .eq('media_type', mediaType)
       .single();
 
-    if (error) return errorData(error);
-    if (!data) return errorData('Media not found');
+    if (error)
+      return errorData(error, {
+        operation: 'get_media_by_id',
+        table: 'media',
+      });
 
     return successData(data);
   } catch (err) {
-    return errorData(err);
+    return errorData(err, {
+      operation: 'get_media_by_id',
+      table: 'media',
+    });
   }
 }
 
-async function getCollection(collection: 'trending', mediaType: 'movie' | 'tv'): Promise<DataResult<Media[]>> {
+async function getCollection(
+  collection: 'trending',
+  mediaType: 'movie' | 'tv'
+): Promise<DataResult<Media[]>> {
   try {
     const { data, error } = await supabase.rpc(`get_${collection}_media`, {
-      p_media_type: mediaType
+      p_media_type: mediaType,
     });
 
-    if (error) return errorData(error);
-    if (!data) return errorData('No data found');
+    if (error)
+      return errorData(error, {
+        operation: 'get_collection',
+        rpc: `get_${collection}_media`,
+      });
 
     return successData(data);
   } catch (err) {
-    return errorData(err);
+    return errorData(err, {
+      operation: 'get_collection',
+      rpc: `get_${collection}_media`,
+    });
   }
 }
 
@@ -41,9 +56,12 @@ export async function searchMedia(searchText: string): Promise<DataResult<Media[
       body: { query: searchText },
     });
 
-    if(error) {
-      return errorData(error)};
-    if(!data) return errorData('No data found');
+    if (error) {
+      return errorData(error, {
+        operation: 'search_media',
+      });
+    }
+    if (!data) return errorData('No data found');
     return successData(data.results as Media[]);
   } catch (err) {
     return errorData(err);
