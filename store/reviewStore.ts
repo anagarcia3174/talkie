@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Review, ReviewWithProfile } from '~/types/supabaseTypes';
 import { getReviewsForMedia, postReview, deleteReview } from '~/services/reviewService';
 
-export type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
+type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
 interface ReviewsState {
   fetchedReviews: Record<number, ReviewWithProfile[]>;

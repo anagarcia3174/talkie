@@ -1,6 +1,6 @@
 import { supabase } from '~/utils/supabase';
-import type { Media, DataResult, VoidResult } from '~/types/supabaseTypes';
-import { errorData, errorVoid, successData, successVoid } from '~/types/supabaseTypes';
+import type { Media, DataResult } from '~/types/supabaseTypes';
+import { errorData, successData } from '~/types/supabaseTypes';
 
 export async function getMediaById(id: number, mediaType: string): Promise<DataResult<Media>> {
   try {

@@ -257,7 +257,7 @@ export async function removeListItem(itemId: number): Promise<VoidResult> {
 
 export async function likeList(listId: number, userId: string): Promise<VoidResult> {
   try {
-    const { error } = await supabase.rpc('like_list', { p_user_id: userId, p_list_id: listId });
+    const { error } = await supabase.rpc('like_list', {p_list_id: listId });
     if (error)
       return errorVoid(error, {
         operation: 'like_list',
@@ -276,7 +276,7 @@ export async function likeList(listId: number, userId: string): Promise<VoidResu
 
 export async function unlikeList(listId: number, userId: string): Promise<VoidResult> {
   try {
-    const { error } = await supabase.rpc('unlike_list', { p_user_id: userId, p_list_id: listId });
+    const { error } = await supabase.rpc('unlike_list', { p_list_id: listId });
     if (error)
       return errorVoid(error, {
         operation: 'unlike_list',
@@ -328,11 +328,12 @@ export async function searchLists(query: string): Promise<DataResult<ListSearchR
       result_limit: 20,
     });
 
-    if (error)
+    if (error){
       return errorData(error, {
         operation: 'search_lists',
         rpc: 'search_public_lists',
       });
+    }
     return successData(data ?? []);
   } catch (err) {
     return errorData(err, {

@@ -9,15 +9,18 @@ import {
   updateProfile,
   uploadAvatar as uploadAvatarService,
 } from '~/services/profileService';
+
+type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
+
 interface ProfileState {
   profile: Profile | null;
   stats: ProfileStats;
   loading: boolean;
 
-  getProfile: (userId: string) => Promise<VoidResult>;
-  getStats: (userId: string) => Promise<VoidResult>;
-  uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<VoidResult>;
-  updateProfile: (userId: string, updates: Partial<Profile>) => Promise<VoidResult>;
+  getProfile: (userId: string) => Promise<StoreResult<void>>;
+  getStats: (userId: string) => Promise<StoreResult<void>>;
+  uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
+  updateProfile: (userId: string, updates: Partial<Profile>) => Promise<StoreResult<void>>;
   clearProfile: () => void;
 }
 
@@ -93,8 +96,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
       await get().getProfile(userId);
       return { success: true };
     } catch (err: any) {
-      const message = getErrorMessage(err, 'upload_image');
-      return { success: false, error: message };
+      return { success: false, error: 'There was an error uploading your profile picture.' };
     }
   },
 
