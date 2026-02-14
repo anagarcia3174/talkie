@@ -5,12 +5,23 @@ import { useProfile } from '~/store/profileStore';
 import { useLists } from '~/store/listStore';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
+import { restoreUser } from '~/services/profileService';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  accountDeleted: boolean;
   signOut: () => Promise<void>;
+  restoreAccount: () => Promise<
+    | {
+        success: true;
+      }
+    | {
+        success: false;
+        error: string;
+      }
+  >;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accountDeleted, setAccountDeleted] = useState(false);
   const isInitializedRef = useRef(false);
 
   const validateAppleCredential = useCallback(
@@ -79,14 +91,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Load user data function with proper error handling
   const loadUserData = useCallback(async (userId: string) => {
-    try {
-      const { getProfile, getStats } = useProfile.getState();
-      const { getLists } = useLists.getState();
+    const { getProfile, getStats } = useProfile.getState();
+    const { getLists } = useLists.getState();
 
-      await Promise.allSettled([getProfile(userId), getStats(userId), getLists(userId)]);
-    } catch (error) {
-      console.error('Error loading user data:', error);
+    const profileResult = await getProfile(userId);
+
+    if (!profileResult.success) {
+      if (profileResult.error === 'ACCOUNT_DELETED') {
+        return { accountDeleted: true };
+      }
+      return { accountDeleted: false };
     }
+
+    // Only load additional data if active
+    await Promise.allSettled([getStats(userId), getLists(userId)]);
+
+    return { accountDeleted: false };
   }, []);
 
   // Handle session updates
@@ -96,10 +116,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(newSession?.user ?? null);
 
       if (newSession?.user?.id) {
-        await loadUserData(newSession.user.id);
+        const result = await loadUserData(newSession.user.id);
+
+        if (result.accountDeleted) {
+          setAccountDeleted(true);
+          return;
+        }
+
+        setAccountDeleted(false);
       } else {
-        // Clear user data on sign out
         useProfile.getState().clearProfile();
+        setAccountDeleted(false);
       }
     },
     [loadUserData]
@@ -170,11 +197,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const restoreAccount = async (): Promise<
+    | {
+        success: true;
+      }
+    | {
+        success: false;
+        error: string;
+      }
+  > => {
+    if (!user) return { success: false, error: 'Not authenticated' };
+
+    const result = await restoreUser();
+
+    if (!result.success) {
+      return result;
+    }
+
+    setLoading(true)
+    setAccountDeleted(false);
+    await loadUserData(user.id);
+
+    return { success: true };
+  };
+
   const value = {
     user,
     session,
     loading,
+    accountDeleted,
     signOut,
+    restoreAccount,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

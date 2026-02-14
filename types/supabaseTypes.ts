@@ -37,6 +37,7 @@ export interface Profile extends BaseRecord {
   bio: string;
   updated_at: string;
   is_private: boolean;
+  is_deleted: boolean;
 }
 
 export interface ProfileStats {
@@ -206,7 +207,7 @@ export type ListSearchResult = {
   display_name: string;
   avatar_url: string | null;
   rank: number;
-  is_private: boolean;
+  is_profile_clickable: boolean;
 };
 
 export type ListOwnerInfo = {

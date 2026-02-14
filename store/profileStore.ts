@@ -6,6 +6,7 @@ import { withPublicUrl } from '~/utils/storageUrl';
 import {
   getProfileById,
   getProfileStats,
+  softDeleteAccount,
   updateProfile,
   uploadAvatar as uploadAvatarService,
 } from '~/services/profileService';
@@ -22,6 +23,7 @@ interface ProfileState {
   uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
   updateProfile: (userId: string, updates: Partial<Profile>) => Promise<StoreResult<void>>;
   clearProfile: () => void;
+  deleteAccount: () => Promise<StoreResult<void>>;
 }
 
 const MAX_MB = 6;
@@ -46,6 +48,11 @@ export const useProfile = create<ProfileState>((set, get) => ({
     if (!result.success) {
       set({ loading: false });
       return { success: false, error: result.error };
+    }
+
+    if (result.data.is_deleted) {
+      set({ profile: null, loading: false });
+      return { success: false, error: 'ACCOUNT_DELETED' };
     }
 
     set({ profile: result.data, loading: false });
@@ -114,4 +121,29 @@ export const useProfile = create<ProfileState>((set, get) => ({
   },
 
   clearProfile: () => set({ profile: null }),
+  deleteAccount: async () => {
+    set({ loading: true });
+
+    const result = await softDeleteAccount();
+
+    if (!result.success) {
+      set({ loading: false });
+      return { success: false, error: result.error };
+    }
+
+    // Clear local state immediately
+    set({
+      profile: null,
+      stats: {
+        followers: 0,
+        following: 0,
+        comments: 0,
+        totalLogged: 0,
+        lists: 0,
+      },
+      loading: false,
+    });
+
+    return { success: true };
+  },
 }));

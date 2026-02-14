@@ -7,9 +7,10 @@ import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '~/context/AuthContext';
 import LoadingScreen from '~/components/LoadingScreen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {  toastConfig } from '~/components/ToastConfig';
+import { toastConfig } from '~/components/ToastConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import ErrorScreen from '~/components/ErrorScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,19 +20,23 @@ SplashScreen.preventAutoHideAsync();
 // });
 
 const InitialLayout = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, accountDeleted } = useAuth();
 
   if (loading) {
     return <LoadingScreen fullScreen={true} />;
   }
+
   return (
     <SafeAreaProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={!user}>
           <Stack.Screen name="index" />
         </Stack.Protected>
-        <Stack.Protected guard={!!user}>
+        <Stack.Protected guard={!!user && !accountDeleted}>
           <Stack.Screen name="(protected)" />
+        </Stack.Protected>
+        <Stack.Protected guard={!!user && accountDeleted}>
+          <Stack.Screen name="account-deleted" />
         </Stack.Protected>
       </Stack>
     </SafeAreaProvider>
@@ -62,7 +67,12 @@ export default function RootLayout() {
     <AuthProvider>
       <InitialLayout />
       {/* <ToastManager config={toastConfig} topOffset={insets.top + 10} /> */}
-      <Toast config={toastConfig} position='top' topOffset={insets.top + 10} onPress={() => Toast.hide()}/>
+      <Toast
+        config={toastConfig}
+        position="top"
+        topOffset={insets.top + 10}
+        onPress={() => Toast.hide()}
+      />
     </AuthProvider>
   );
 }

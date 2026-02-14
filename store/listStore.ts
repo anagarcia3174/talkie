@@ -127,8 +127,6 @@ export const useLists = create<ListState>((set, get) => ({
 
       return { success: true };
     } catch (err: any) {
-      console.error('getLists error:', err);
-
       return { success: false, error: 'An unexpected error ocurred while retrieving your lists.' };
     }
   },

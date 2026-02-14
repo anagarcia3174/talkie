@@ -93,3 +93,48 @@ export async function updateProfile(
     });
   }
 }
+
+export async function softDeleteAccount(): Promise<VoidResult> {
+  try {
+    const { error } = await supabase.rpc('soft_delete_account');
+
+    if (error) {
+      return errorVoid(error, {
+        operation: 'soft_delete_account',
+        rpc: 'soft_delete_account',
+        isWrite: true,
+      });
+    }
+
+    return successVoid();
+  } catch (err) {
+    return errorVoid(err, {
+      operation: 'soft_delete_account',
+      rpc: 'soft_delete_account',
+      isWrite: true,
+    });
+  }
+}
+
+
+export async function restoreUser(): Promise<VoidResult> {
+  try {
+    const { error } = await supabase.rpc('restore_user');
+
+    if (error) {
+      return errorVoid(error, {
+        operation: 'restore_user',
+        rpc: 'restore_user',
+        isWrite: true,
+      });
+    }
+
+    return successVoid();
+  } catch (err) {
+    return errorVoid(err, {
+      operation: 'restore_user',
+      rpc: 'restore_user',
+      isWrite: true,
+    });
+  }
+}

@@ -14,6 +14,7 @@ import { useTheme } from '~/hooks/useTheme';
 import { getPublicListsByUserId } from '~/services/listService';
 import { useLists } from '~/store/listStore';
 
+
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
     id: string;
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
   const { addListToState } = useLists();
   const router = useRouter();
   const theme = useTheme();
+
   useEffect(() => {
     let mounted = true;
 

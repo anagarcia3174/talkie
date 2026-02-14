@@ -172,16 +172,25 @@ export default function Search() {
   });
 
   const handleListPress = (result: ListSearchResult) => {
-    addListToState(result.list);
+    const listWithOwner: List = {
+      ...result.list,
+      owner: {
+        id: result.list.user_id,
+        display_name: result.display_name,
+        avatar_url: result.avatar_url,
+        is_private: !result.is_profile_clickable,
+      },
+    };
+    addListToState(listWithOwner);
 
-    router.push({
+    router.push({ 
       pathname: '/list/[id]',
       params: {
         id: result.list.id,
         ownerId: result.list.user_id,
         ownerName: result.display_name,
         ownerAvatar: result.avatar_url ?? '',
-        isOwnerPrivate: result.is_private.toString(),
+        isProfileClickable: result.is_profile_clickable.toString(),
       },
     });
   };

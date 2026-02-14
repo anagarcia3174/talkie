@@ -186,7 +186,7 @@ export default function Lists() {
                 key={list.id}
                 title={list.name}
                 items={list.item_count}
-                onPress={() =>
+                onPress={() =>{
                   router.push({
                     pathname: '/list/[id]',
                     params: {
@@ -194,9 +194,9 @@ export default function Lists() {
                       ownerId: list.owner?.id,
                       ownerName: list.owner?.display_name,
                       ownerAvatar: list.owner?.avatar_url ?? '',
-                      isOwnerPrivate: list.owner?.is_private.toString(),
+                      isProfileClickable: (!list.owner?.is_private).toString(),
                     },
-                  })
+                  })}
                 }
                 deletable={false}
               />

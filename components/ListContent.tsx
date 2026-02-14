@@ -13,7 +13,7 @@ import {
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
-import { useGlobalSearchParams, usePathname, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import SortByModal from '~/components/SortByModal';
 import {
   ListItemWithMedia,
