@@ -1,10 +1,10 @@
 import { supabase } from '~/utils/supabase';
-import type { Review, DataResult, VoidResult, ReviewWithProfile } from '~/types/supabaseTypes';
+import type { Review, DataResult, VoidResult, ReviewWithUser } from '~/types/supabaseTypes';
 import { successData, successVoid, errorData, errorVoid } from '~/types/supabaseTypes';
 
 export async function getReviewsForMedia(
   mediaId: number
-): Promise<DataResult<ReviewWithProfile[]>> {
+): Promise<DataResult<ReviewWithUser[]>> {
   try {
     const { data, error } = await supabase.rpc('get_reviews_for_media', {
       p_media_id: mediaId,
@@ -16,7 +16,7 @@ export async function getReviewsForMedia(
         rpc: 'get_reviews_for_media',
       });
 
-    return successData(data as ReviewWithProfile[]);
+    return successData(data as ReviewWithUser[]);
   } catch (err) {
     return errorData(err, {
       operation: 'get_reviews',
@@ -27,7 +27,7 @@ export async function getReviewsForMedia(
 
 export async function postReview(
   review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'>
-): Promise<DataResult<ReviewWithProfile>> {
+): Promise<DataResult<ReviewWithUser>> {
   try {
     const { data, error } = await supabase
       .from('reviews')
@@ -50,7 +50,7 @@ export async function postReview(
         isWrite: true,
       });
 
-    const flattened: ReviewWithProfile = {
+    const flattened: ReviewWithUser = {
       ...data,
       display_name: data.profiles.display_name,
       avatar_url: data.profiles.avatar_url,

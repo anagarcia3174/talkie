@@ -2,8 +2,10 @@ import {
   List,
   ListItem,
   ListItemWithMedia,
-  LibraryStatus,
-  ListSearchResult,
+  Status,
+  SearchPublicListResult,
+  StoreList,
+  ListWithMeta,
 } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import {
@@ -24,7 +26,7 @@ import {
 type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
 interface ListState {
-  listsById: Record<number, List>;
+  listsById: Record<number, ListWithMeta>;
 
   // ids for convenience / ordering
   defaultListIds: {
@@ -42,11 +44,11 @@ interface ListState {
   // list actions
   getLists: (userId: string) => Promise<StoreResult<void>>;
   hydrateDefaultLists: () => Promise<void>;
-  addListToState: (list: List) => void;
+  addListToState: (list: ListWithMeta) => void;
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
   deleteList: (listId: number) => Promise<StoreResult<void>>;
-  searchLists: (query: string) => Promise<StoreResult<ListSearchResult[]>>;
+  searchLists: (query: string) => Promise<StoreResult<SearchPublicListResult[]>>;
 
   likeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
   unlikeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
@@ -57,7 +59,7 @@ interface ListState {
   removeItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
   updateItemStatus: (
     item: ListItem | ListItemWithMedia,
-    status: LibraryStatus
+    status: Status
   ) => Promise<StoreResult<void>>;
 }
 
@@ -68,6 +70,7 @@ export const useLists = create<ListState>((set, get) => ({
     favorites: null,
   },
   customListIds: [],
+  likedListIds: [],
   listItems: {},
 
   // ---- LIST ACTIONS ----
@@ -85,7 +88,7 @@ export const useLists = create<ListState>((set, get) => ({
       const ownedLists = ownedResult.data ?? [];
       const likedLists = likedResult.success ? (likedResult.data ?? []) : [];
 
-      const listsById: Record<number, List> = {};
+      const listsById: Record<number, ListWithMeta> = {};
       const customListIds: number[] = [];
 
       let libraryId: number | null = null;
@@ -94,6 +97,7 @@ export const useLists = create<ListState>((set, get) => ({
       for (const list of ownedLists) {
         listsById[list.id] = {
           ...list,
+          owner: null,
           is_liked: false,
         };
 
@@ -108,14 +112,10 @@ export const useLists = create<ListState>((set, get) => ({
         }
       }
 
-      for (const list of likedLists) {
-        const existing = listsById[list.id];
-
-        listsById[list.id] = {
-          ...existing,
-          ...list,
-        };
+      for (const liked of likedLists) {
+        listsById[liked.id] = liked;
       }
+
       set({
         listsById,
         defaultListIds: {
@@ -146,13 +146,11 @@ export const useLists = create<ListState>((set, get) => ({
   },
   addListToState: (list) => {
     set((state) => {
-      const existing = state.listsById[list.id];
       return {
         listsById: {
           ...state.listsById,
           [list.id]: {
             ...list,
-            is_liked: existing?.is_liked ?? false, // preserve previous liked status
           },
         },
       };
@@ -180,7 +178,11 @@ export const useLists = create<ListState>((set, get) => ({
     set((state) => ({
       listsById: {
         ...state.listsById,
-        [createdList.id]: createdList,
+        [createdList.id]: {
+          ...createdList,
+          owner: null,
+          is_liked: false,
+        },
       },
       customListIds: [...state.customListIds, createdList.id],
     }));

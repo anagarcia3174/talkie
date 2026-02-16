@@ -1,7 +1,6 @@
 import { View, Text } from 'react-native';
-import { Star, Film, Users, MessageSquareText, Library } from 'lucide-react-native';
+import { Film, Users, MessageSquareText, Library } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useProfile } from '~/store/profileStore';
 import { ProfileStats } from '~/types/supabaseTypes';
 
 interface StatsSectionProps {

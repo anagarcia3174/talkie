@@ -13,7 +13,7 @@ import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { searchMedia } from '~/services/mediaService';
-import { List, ListSearchResult, Media } from '~/types/supabaseTypes';
+import { List, Media, SearchPublicListResult } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -33,7 +33,7 @@ export default function Search() {
   const [selected, setSelected] = useState(0);
   const [query, setQuery] = useState('');
   const [mediaResults, setMediaResults] = useState<Media[]>([]);
-  const [listResults, setListResults] = useState<ListSearchResult[]>([]);
+  const [listResults, setListResults] = useState<SearchPublicListResult[]>([]);
   const [loading, setLoading] = useState(false);
   const { searchLists, addListToState } = useLists();
   const theme = useTheme();
@@ -161,36 +161,23 @@ export default function Search() {
 
     switch (sort) {
       case 'alpha':
-        return a.list.name.localeCompare(b.list.name) * dir;
+        return a.name.localeCompare(b.name) * dir;
 
       case 'item_count':
-        return ((a.list.item_count ?? 0) - (b.list.item_count ?? 0)) * dir;
+        return ((a.item_count ?? 0) - (b.item_count ?? 0)) * dir;
 
       default:
         return 0;
     }
   });
 
-  const handleListPress = (result: ListSearchResult) => {
-    const listWithOwner: List = {
-      ...result.list,
-      owner: {
-        id: result.list.user_id,
-        display_name: result.display_name,
-        avatar_url: result.avatar_url,
-        is_private: !result.is_profile_clickable,
-      },
-    };
-    addListToState(listWithOwner);
+  const handleListPress = (result: SearchPublicListResult) => {
+    addListToState(result);
 
-    router.push({ 
+    router.push({
       pathname: '/list/[id]',
       params: {
-        id: result.list.id,
-        ownerId: result.list.user_id,
-        ownerName: result.display_name,
-        ownerAvatar: result.avatar_url ?? '',
-        isProfileClickable: result.is_profile_clickable.toString(),
+        id: result.id,
       },
     });
   };
@@ -304,7 +291,7 @@ export default function Search() {
       {!loading && selected === 1 && listResults.length > 0 && (
         <FlatList
           data={sortedListResults}
-          keyExtractor={(item) => item.list.id.toString()}
+          keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: bottomTabBarHeight }}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -315,15 +302,15 @@ export default function Search() {
               <View className="flex-row items-start justify-between">
                 <View className="mr-3 flex-1">
                   <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
-                    {item.list.name}
+                    {item.name}
                   </Text>
 
-                  {!!item.list.description && (
+                  {!!item.description && (
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
                       className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
-                      {item.list.description}
+                      {item.description}
                     </Text>
                   )}
                 </View>
@@ -331,32 +318,34 @@ export default function Search() {
                 {/* Likes on top right */}
                 <View className="flex-row items-center justify-start gap-x-1">
                   <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
-                    {item.list.likes_count}
+                    {item.likes_count}
                   </Text>
-                  <Bookmark size={12} color={theme.primary[700]} />
+                  <Bookmark size={12} color={theme.primary[700]} fill={ item.is_liked ? theme.primary[700] : theme.primary[100]}/>
                 </View>
               </View>
 
               {/* Bottom row: user left, item count right */}
               <View className="mt-3 flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
-                  {item.avatar_url ? (
-                    <Image
-                      source={{ uri: getPublicUrl(item.avatar_url) }}
-                      className="h-6 w-6 rounded-full"
-                    />
-                  ) : (
-                    <View className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
-                      <UserRound size={12} color={theme.primary[900]} />
-                    </View>
-                  )}
-                  <Text className="font-SpaceGrotesk-Regular text-sm text-primary-700 dark:text-primary-300">
-                    {item.display_name}
-                  </Text>
-                </View>
+                {item.owner && (
+                  <View className="flex-row items-center gap-2">
+                    {item.owner.avatar_url ? (
+                      <Image
+                        source={{ uri: getPublicUrl(item.owner.avatar_url) }}
+                        className="h-6 w-6 rounded-full"
+                      />
+                    ) : (
+                      <View className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
+                        <UserRound size={12} color={theme.primary[900]} />
+                      </View>
+                    )}
+                    <Text className="font-SpaceGrotesk-Regular text-sm text-primary-700 dark:text-primary-300">
+                      {item.owner.display_name}
+                    </Text>
+                  </View>
+                )}
 
                 <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
-                  {item.list.item_count} {item.list.item_count === 1 ? 'Item' : 'Items'}
+                  {item.item_count} {item.item_count === 1 ? 'Item' : 'Items'}
                 </Text>
               </View>
             </TouchableOpacity>

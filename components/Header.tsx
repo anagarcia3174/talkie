@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, Image } from "react-native";
-import { Bell, MessageCircle, Popcorn, Star } from "lucide-react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import {  Popcorn } from "lucide-react-native";
 import { useTheme } from "~/hooks/useTheme";
 
 

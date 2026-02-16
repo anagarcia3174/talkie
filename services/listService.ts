@@ -1,14 +1,17 @@
 import { supabase } from '~/utils/supabase';
-import type {
-  LibraryStatus,
+import {
+  VoidResult,
+  DataResult,
+  errorData,
+  errorVoid,
+  successData,
+  successVoid,
   List,
   ListItemWithMedia,
-  ListSearchResult,
-  DataResult,
-  VoidResult,
-  ListWithOwner,
+  Status,
+  SearchPublicListResult,
+  ListWithMeta,
 } from '~/types/supabaseTypes';
-import { errorData, errorVoid, successData, successVoid } from '~/types/supabaseTypes';
 
 export async function getOwnedLists(userId: string): Promise<DataResult<List[]>> {
   try {
@@ -33,31 +36,28 @@ export async function getOwnedLists(userId: string): Promise<DataResult<List[]>>
   }
 }
 
-export async function getPublicListsByUserId(userId: string): Promise<DataResult<List[]>> {
+export async function getPublicListsByUserId(userId: string): Promise<DataResult<ListWithMeta[]>> {
   try {
-    const { data, error } = await supabase
-      .from('lists')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('is_private', false)
-      .order('updated_at', { ascending: false });
+    const { data, error } = await supabase.rpc('get_public_lists_by_user', {
+      profile_user_id: userId,
+    });
 
     if (error)
       return errorData(error, {
         operation: 'get_public_lists_by_user',
-        table: 'lists',
+        rpc: 'get_public_lists_by_user',
       });
 
     return successData(data ?? []);
   } catch (err) {
     return errorData(err, {
       operation: 'get_public_lists_by_user',
-      table: 'lists',
+      rpc: 'get_public_lists_by_user',
     });
   }
 }
 
-export async function getLikedLists(userId: string): Promise<DataResult<List[]>> {
+export async function getLikedLists(userId: string): Promise<DataResult<ListWithMeta[]>> {
   try {
     const { data, error } = await supabase.rpc('get_liked_lists', { p_user_id: userId });
 
@@ -66,53 +66,12 @@ export async function getLikedLists(userId: string): Promise<DataResult<List[]>>
         operation: 'get_liked_lists',
         rpc: 'get_liked_lists',
       });
-    const lists: List[] = data.map((row: any) => ({
-      ...row,
-      owner: {
-        id: row.owner_id,
-        display_name: row.owner_display_name,
-        avatar_url: row.owner_avatar_url,
-        is_private: row.owner_is_private,
-      },
-    }));
-    return successData(lists);
-  } catch (err) {
-    return errorData(err, {
-      operation: 'get_liked_lists',
-      rpc: 'get_liked_lists',
-    });
-  }
-}
-
-export async function getListWithProfile(listId: number): Promise<DataResult<ListWithOwner>> {
-  try {
-    const { data, error } = await supabase
-      .from('lists')
-      .select(
-        `
-        *,
-        owner:user_id (
-          id,
-          display_name,
-          avatar_url,
-          is_private
-        )
-      `
-      )
-      .eq('id', listId)
-      .single();
-
-    if (error)
-      return errorData(error, {
-        operation: 'get_list_with_profile',
-        table: 'lists',
-      });
 
     return successData(data);
   } catch (err) {
     return errorData(err, {
-      operation: 'get_list_with_profile',
-      table: 'lists',
+      operation: 'get_liked_lists',
+      rpc: 'get_liked_lists',
     });
   }
 }
@@ -257,7 +216,7 @@ export async function removeListItem(itemId: number): Promise<VoidResult> {
 
 export async function likeList(listId: number, userId: string): Promise<VoidResult> {
   try {
-    const { error } = await supabase.rpc('like_list', {p_list_id: listId });
+    const { error } = await supabase.rpc('like_list', { p_list_id: listId });
     if (error)
       return errorVoid(error, {
         operation: 'like_list',
@@ -296,7 +255,7 @@ export async function unlikeList(listId: number, userId: string): Promise<VoidRe
 export async function updateItemStatus(
   user_id: string,
   mediaId: number,
-  status: LibraryStatus
+  status: Status
 ): Promise<VoidResult> {
   try {
     const { error } = await supabase
@@ -321,14 +280,14 @@ export async function updateItemStatus(
   }
 }
 
-export async function searchLists(query: string): Promise<DataResult<ListSearchResult[]>> {
+export async function searchLists(query: string): Promise<DataResult<SearchPublicListResult[]>> {
   try {
     const { data, error } = await supabase.rpc('search_public_lists', {
       search_query: query,
       result_limit: 20,
     });
 
-    if (error){
+    if (error) {
       return errorData(error, {
         operation: 'search_lists',
         rpc: 'search_public_lists',

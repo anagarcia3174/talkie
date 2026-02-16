@@ -1,6 +1,5 @@
-import { Profile, ProfileStats, VoidResult } from '~/types/supabaseTypes';
+import { Profile, ProfileStats } from '~/types/supabaseTypes';
 import { create } from 'zustand';
-import { getErrorMessage } from '~/utils/errorHandler';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { withPublicUrl } from '~/utils/storageUrl';
 import {

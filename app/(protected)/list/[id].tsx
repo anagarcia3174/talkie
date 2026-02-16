@@ -1,33 +1,23 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { useLists } from '~/store/listStore';
 import { Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ListContent from '~/components/ListContent';
 import LoadingScreen from '~/components/LoadingScreen';
-import {
-  LibraryStatus,
-  ListItemWithMedia,
-  ListItem,
-  List,
-  ListOwnerInfo,
-} from '~/types/supabaseTypes';
+import { Status } from '~/types/supabaseTypes';
 
 import { useAuth } from '~/context/AuthContext';
 import useListScreenActions from './useListScreenActions';
 
 export default function ListScreen() {
-  const { id, ownerId, ownerName, ownerAvatar, isProfileClickable } = useLocalSearchParams<{
+  const { id } = useLocalSearchParams<{
     id: string;
-    ownerId: string;
-    ownerName: string;
-    ownerAvatar?: string;
-    isProfileClickable: string;
   }>();
 
   const listId = Number(id);
   const isValidListId = Number.isFinite(listId);
-  const isClickable = isProfileClickable === 'true';
+
   const { listsById, listItems, getListItems } = useLists();
 
   const { user } = useAuth();
@@ -60,17 +50,8 @@ export default function ListScreen() {
   if (!items) {
     return <LoadingScreen fullScreen />;
   }
-  
+
   const isOwner = list.user_id === user?.id;
 
-  const owner: ListOwnerInfo = {
-    id: ownerId,
-    display_name: ownerName,
-    avatar_url: ownerAvatar,
-    is_private: !isClickable
-  };
-
-  return (
-    <ListContent list={list} listItems={items} actions={actions} isOwner={isOwner} owner={owner} />
-  );
+  return <ListContent list={list} listItems={items} actions={actions} isOwner={isOwner} />;
 }

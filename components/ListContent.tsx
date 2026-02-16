@@ -17,10 +17,10 @@ import { useRouter } from 'expo-router';
 import SortByModal from '~/components/SortByModal';
 import {
   ListItemWithMedia,
-  LibraryStatus,
   List,
   ListItem,
-  ListOwnerInfo,
+  Status,
+  ListWithMeta,
 } from '~/types/supabaseTypes';
 import StatusPickerModal from './StatusPickerModal';
 import ListInfoModal from './ListInfoModal';
@@ -28,7 +28,7 @@ import { getPublicUrl } from '~/utils/storageUrl';
 import { ScrollView } from 'react-native-gesture-handler';
 
 interface ListActions {
-  updateItemStatus: (item: ListItemWithMedia, status: LibraryStatus) => void;
+  updateItemStatus: (item: ListItemWithMedia, status: Status) => void;
   deleteItem: (item: ListItemWithMedia) => void;
   updateList: (updates: Partial<List>) => void;
   deleteList: () => void;
@@ -37,11 +37,10 @@ interface ListActions {
 }
 
 interface ListContentProps {
-  list: List;
+  list: ListWithMeta;
   listItems: ListItemWithMedia[];
   actions: ListActions;
   isOwner: boolean;
-  owner?: ListOwnerInfo;
 }
 
 const FILTERS = ['All', 'Watching', 'Watched', 'Pending'];
@@ -55,7 +54,6 @@ export default function ListContent({
   listItems,
   actions,
   isOwner,
-  owner,
 }: ListContentProps) {
   const theme = useTheme();
   const [selected, setSelected] = useState<FilterIndex>(0);
@@ -64,12 +62,12 @@ export default function ListContent({
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [statusPickerModalVisible, setStatusPickerModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [activeItem, setActiveItem] = useState<ListItem | null>(null);
+  const [activeItem, setActiveItem] = useState<ListItemWithMedia | null>(null);
   const [listInfoModalVisible, setListInfoModalVisible] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const router = useRouter();
 
-  const statusMap: Record<FilterIndex, LibraryStatus | null> = {
+  const statusMap: Record<FilterIndex, Status | null> = {
     0: null,
     1: 'watching',
     2: 'watched',
@@ -200,15 +198,15 @@ export default function ListContent({
               )}
             </TouchableOpacity>
           </View>
-          {!isOwner && owner && (
+          {!isOwner && list.owner && (
             <TouchableOpacity
-              disabled={owner.is_private}
+              disabled={list.owner.is_private}
               onPress={() => {
-                if (!owner.is_private) {
+                if (list.owner && !list.owner.is_private) {
                   router.push({
                     pathname: '/profile/[id]',
                     params: {
-                      id: owner.id,
+                      id: list.owner.id,
                     },
                   });
                 }
@@ -218,9 +216,9 @@ export default function ListContent({
               <View className="flex-row items-center justify-between">
                 {/* Left: avatar + name */}
                 <View className="flex-row items-center gap-3">
-                  {owner.avatar_url ? (
+                  {list.owner.avatar_url ? (
                     <Image
-                      source={{ uri: getPublicUrl(owner.avatar_url) }}
+                      source={{ uri: getPublicUrl(list.owner.avatar_url) }}
                       className="h-10 w-10 rounded-full"
                     />
                   ) : (
@@ -231,7 +229,7 @@ export default function ListContent({
 
                   <View>
                     <Text className="font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-100">
-                      {owner.display_name}
+                      {list.owner.display_name}
                     </Text>
                     <Text className="text-sm text-primary-600 dark:text-primary-400">
                       List creator
@@ -241,7 +239,7 @@ export default function ListContent({
 
                 {/* Right: action */}
                 <View className="rounded-full border border-primary-300 px-3 py-1.5 dark:border-primary-700">
-                  {owner.is_private ? (
+                  {list.owner.is_private ? (
                     <Lock size={14} color={theme.primary[600]} />
                   ) : (
                     <Text className="font-SpaceGrotesk-Medium text-sm text-primary-900 dark:text-primary-100">

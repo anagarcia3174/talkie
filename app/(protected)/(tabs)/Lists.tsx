@@ -190,11 +190,7 @@ export default function Lists() {
                   router.push({
                     pathname: '/list/[id]',
                     params: {
-                      id: list.id,
-                      ownerId: list.owner?.id,
-                      ownerName: list.owner?.display_name,
-                      ownerAvatar: list.owner?.avatar_url ?? '',
-                      isProfileClickable: (!list.owner?.is_private).toString(),
+                      id: list.id
                     },
                   })}
                 }

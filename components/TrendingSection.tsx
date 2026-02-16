@@ -78,7 +78,7 @@ export default function TrendingSection({ movies, onAddToLibrary, title }: Trend
 
                     <View className="flex-row items-center justify-between">
                       <Text className="text-md font-SpaceGrotesk-Regular text-primary-200">
-                        {item.release_date.split('-')[0]}
+                        {item.release_date?.split('-')[0]} 
                       </Text>
 
                       <View className="flex-row items-center gap-x-1">

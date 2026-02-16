@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import LoadingScreen from '~/components/LoadingScreen';
 import { getProfileById, getProfileStats } from '~/services/profileService';
-import { List, Profile, ProfileStats } from '~/types/supabaseTypes';
+import { List, ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity, View } from 'react-native';
 import ProfileSection from '~/components/ProfileSection';
@@ -14,14 +14,13 @@ import { useTheme } from '~/hooks/useTheme';
 import { getPublicListsByUserId } from '~/services/listService';
 import { useLists } from '~/store/listStore';
 
-
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
-  const [profileLists, setProfileLists] = useState<List[]>([]);
+  const [profileLists, setProfileLists] = useState<ListWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const { addListToState } = useLists();
   const router = useRouter();
@@ -108,15 +107,19 @@ export default function ProfileScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
-                addListToState(item);
+                addListToState({
+                  ...item,
+                  owner: {
+                    id: profile.id,
+                    display_name: profile.display_name,
+                    avatar_url: profile.avatar_url,
+                    is_private: profile.is_private,
+                  },
+                });
                 router.push({
                   pathname: '/list/[id]',
                   params: {
                     id: item.id,
-                    ownerId: profile.id,
-                    ownerName: profile.display_name,
-                    ownerAvatar: profile.avatar_url ?? '',
-                    isOwnerPrivate: profile.is_private.toString(),
                   },
                 });
               }}
@@ -142,7 +145,7 @@ export default function ProfileScreen() {
                   <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
                     {item.likes_count}
                   </Text>
-                  <Bookmark size={12} color={theme.primary[700]} />
+                  <Bookmark size={12} color={theme.primary[700]} fill={ item.is_liked ? theme.primary[700] : theme.primary[100]}/>
                 </View>
               </View>
 

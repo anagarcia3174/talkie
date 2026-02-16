@@ -23,8 +23,8 @@ interface ProfileActionsModalProps {
   visible: boolean;
   onClose: () => void;
   avatar: string | null;
-  displayName: string | undefined;
-  bio: string | undefined;
+  displayName: string;
+  bio: string | null;
   isPrivate: boolean;
   onUpdateProfile: (image?: ImagePicker.ImagePickerAsset, data?: Partial<Profile>) => Promise<void>;
 }
@@ -104,12 +104,12 @@ export default function ProfileActionsModal({
       setImageUri(manipulated.uri);
     } catch (error) {
       Toast.show({
-          type: 'error',
-          text1: 'There was an error proccessing your image.',
-          position: 'top',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
+        type: 'error',
+        text1: 'There was an error proccessing your image.',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
     }
   };
 
@@ -123,19 +123,30 @@ export default function ProfileActionsModal({
   const handleSubmit = async () => {
     if (!name.trim()) {
       Toast.show({
-          type: 'error',
-          text1: 'Your display name cannot be empty',
-          position: 'top',
-          visibilityTime: 4000,
-          autoHide: true,
-        });
+        type: 'error',
+        text1: 'Your display name cannot be empty',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
       return;
     }
 
     const updates: Partial<Profile> = {};
-    if (name !== displayName) updates.display_name = name;
-    if (userBio !== bio) updates.bio = userBio;
-    if (userIsPrivate != isPrivate) updates.is_private = userIsPrivate;
+
+    if (name !== displayName) {
+      updates.display_name = name;
+    }
+    const normalizedBio = userBio.trim() === '' ? null : userBio;
+
+    if (normalizedBio !== bio) {
+      updates.bio = normalizedBio;
+    }
+
+    if (userIsPrivate !== isPrivate) {
+      updates.is_private = userIsPrivate;
+    }
+
     const hasImage = image && imageUri && imageUri !== avatar;
     const hasUpdates = Object.keys(updates).length > 0;
 
@@ -247,12 +258,14 @@ export default function ProfileActionsModal({
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-     {visible &&  <Toast
-        config={toastConfig}
-        position="top"
-        topOffset={insets.top + 10}
-        onPress={() => Toast.hide()}
-      />}
+      {visible && (
+        <Toast
+          config={toastConfig}
+          position="top"
+          topOffset={insets.top + 10}
+          onPress={() => Toast.hide()}
+        />
+      )}
     </Modal>
   );
 }

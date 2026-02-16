@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { useAuth } from '~/context/AuthContext';
 import ProfileActionsModal from '~/components/ProfileActionsModal';
 import Toast from 'react-native-toast-message';
-import ErrorScreen from '~/components/ErrorScreen';
 import { LogOut } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import SignOutModal from '~/components/SignOutModal';

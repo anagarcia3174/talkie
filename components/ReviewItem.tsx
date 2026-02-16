@@ -1,12 +1,12 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { ReviewWithProfile } from '~/types/supabaseTypes';
+import { ReviewWithUser } from '~/types/supabaseTypes';
 import { Star, Trash2, UserRound } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { getPublicUrl } from '~/utils/storageUrl';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 
 interface ReviewItemProps {
-  review: ReviewWithProfile;
+  review: ReviewWithUser;
   isUser?: boolean;
 }
 

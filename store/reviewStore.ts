@@ -1,16 +1,16 @@
 import { create } from 'zustand';
-import type { Review, ReviewWithProfile } from '~/types/supabaseTypes';
+import type { Review, ReviewWithUser } from '~/types/supabaseTypes';
 import { getReviewsForMedia, postReview, deleteReview } from '~/services/reviewService';
 
 type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
 interface ReviewsState {
-  fetchedReviews: Record<number, ReviewWithProfile[]>;
+  fetchedReviews: Record<number, ReviewWithUser[]>;
 
-  fetchReviewsForMedia: (mediaId: number) => Promise<StoreResult<ReviewWithProfile[]>>;
+  fetchReviewsForMedia: (mediaId: number) => Promise<StoreResult<ReviewWithUser[]>>;
   submitReview: (
     review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'>
-  ) => Promise<StoreResult<ReviewWithProfile>>;
+  ) => Promise<StoreResult<ReviewWithUser>>;
   removeReview: (reviewId: number) => Promise<StoreResult<void>>;
 }
 

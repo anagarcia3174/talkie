@@ -5,9 +5,9 @@ import { useTheme } from '~/hooks/useTheme';
 
 interface ProfileSectionProps {
   avatar: string | null;
-  displayName?: string;
-  bio?: string;
-  subtitle?: string; // email or "Member since"
+  displayName: string;
+  bio: string | null;
+  subtitle?: string; 
   editable?: boolean;
   onEditPress?: () => void;
 }

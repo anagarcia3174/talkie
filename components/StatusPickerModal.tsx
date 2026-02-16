@@ -1,18 +1,18 @@
 import { Modal, View, Text, TouchableOpacity, Pressable } from 'react-native';
 import { Check, Eye, Clock, Trash2 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { LibraryStatus } from '~/types/supabaseTypes';
+import { Status } from '~/types/supabaseTypes';
 
 interface StatusPickerModalProps {
   visible: boolean;
-  currentStatus: LibraryStatus;
-  onConfirm: (status: LibraryStatus) => void;
+  currentStatus: Status;
+  onConfirm: (status: Status) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
 const OPTIONS: {
-  status: LibraryStatus;
+  status: Status;
   label: string;
   Icon: any;
 }[] = [

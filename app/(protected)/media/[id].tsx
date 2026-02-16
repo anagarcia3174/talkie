@@ -2,15 +2,13 @@ import {
   View,
   TouchableOpacity,
   ImageBackground,
-  FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Eye, Plus, Star } from 'lucide-react-native';
+import { ArrowLeft, Plus } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Media } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
