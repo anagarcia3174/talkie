@@ -1,8 +1,17 @@
-import { View, Text, FlatList, Dimensions, TouchableOpacity, Image } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Dimensions,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import { Plus } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { Media } from '~/types/supabaseTypes';
+import { useState } from 'react';
 
 interface MediaRowSectionProps {
   title: string;
@@ -15,6 +24,8 @@ const CARD_WIDTH = width * 0.38;
 
 export default function MediaRowSection({ title, movies, onAddToLibrary }: MediaRowSectionProps) {
   const router = useRouter();
+  const [loadingId, setLoadingId] = useState<number | null>(null);
+
   return (
     <View className="px-4">
       {/* Section Title */}
@@ -52,7 +63,12 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
 
               {/* Add Button */}
               <TouchableOpacity
-                onPress={() => onAddToLibrary(item.id)}
+                disabled={loadingId === item.id}
+                onPress={async () => {
+                  setLoadingId(item.id);
+                  await onAddToLibrary(item.id);
+                  setLoadingId(null);
+                }}
                 className="absolute right-2 top-2 rounded-full  "
                 activeOpacity={0.7}>
                 <BlurView
@@ -60,7 +76,11 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
                   className="p-2"
                   tint="systemMaterialDark"
                   style={{ borderRadius: 50, overflow: 'hidden' }}>
-                  <Plus size={16} color="white" />
+                  {loadingId === item.id ? (
+                    <ActivityIndicator size={16} />
+                  ) : (
+                    <Plus size={16} color="white" />
+                  )}
                 </BlurView>
               </TouchableOpacity>
             </View>

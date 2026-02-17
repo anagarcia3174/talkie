@@ -19,6 +19,7 @@ export default function Profile() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [signOutModal, setSignOutModal] = useState(false);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
+  const [ updateLoading, setUpdateLoading ] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const theme = useTheme();
   const tabBarHeight = useBottomTabBarHeight();
@@ -81,7 +82,7 @@ export default function Profile() {
         <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
           Profile
         </Text>
-        <TouchableOpacity onPress={() => setSignOutModal(true)}>
+        <TouchableOpacity disabled={!user || updateLoading || deleting} onPress={() => setSignOutModal(true)}>
           <LogOut color={theme.primary[900]} strokeWidth={1.5} size={24} />
         </TouchableOpacity>
       </View>
@@ -91,13 +92,13 @@ export default function Profile() {
           displayName={profile.display_name}
           bio={profile.bio}
           subtitle={subtitle}
-          editable
+          editable={!updateLoading && !deleting}
           onEditPress={() => setShowProfileModal(true)}
         />
         <StatsSection stats={stats} />
       </ScrollView>
-      <View className="" style={{ paddingBottom: tabBarHeight }}>
-        <TouchableOpacity onPress={() => setDeleteAccountModal(true)}>
+      <View  style={{ paddingBottom: tabBarHeight }}>
+        <TouchableOpacity disabled={updateLoading || deleting} onPress={() => setDeleteAccountModal(true)}>
           <Text className="text-center font-SpaceGrotesk-Regular text-sm text-primary-400 underline dark:text-primary-600">
             Delete Account
           </Text>
@@ -111,7 +112,8 @@ export default function Profile() {
         isPrivate={profile.is_private}
         onClose={() => setShowProfileModal(false)}
         onUpdateProfile={async (image, data) => {
-          if (!user) return;
+          if (!user || deleting || updateLoading) return;
+          setUpdateLoading(true);
           Toast.show({
             type: 'info',
             text1: 'Updating Profile...',
@@ -160,6 +162,8 @@ export default function Profile() {
               visibilityTime: 4000,
               onPress: () => Toast.hide(),
             });
+          } finally {
+            setUpdateLoading(false);
           }
         }}
       />

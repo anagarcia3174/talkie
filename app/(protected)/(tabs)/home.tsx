@@ -5,7 +5,7 @@ import { useHomeStore } from '~/store/homeStore';
 import { ScrollView, View } from 'react-native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import MediaRowSection from '~/components/MediaRowSection';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import LibraryProgressChart from '~/components/LibraryProgressChart';
 import { useLists } from '~/store/listStore';
 
@@ -15,6 +15,7 @@ export default function Home() {
   const { fetchHomeData, trendingMovies, trendingShows } = useHomeStore();
   const tabBarHeight = useBottomTabBarHeight();
   const { listsById, defaultListIds, addItemToList, listItems, hydrateDefaultLists } = useLists();
+  const [ loading, setLoading ] = useState(false);
 
   useEffect(() => {
     fetchHomeData();
@@ -31,6 +32,7 @@ export default function Home() {
   const addMediaToLibrary = async (mediaId: number): Promise<void> => {
     if (!library) return;
 
+    setLoading(true);
     Toast.show({
       type: 'info',
       text1: 'Adding to library...',
@@ -63,6 +65,8 @@ export default function Home() {
           visibilityTime: 4000,
         autoHide: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -1,8 +1,4 @@
-import {
-  View,
-  TouchableOpacity,
-  ImageBackground,
-} from 'react-native';
+import { View, TouchableOpacity, ImageBackground } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,7 +13,6 @@ import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
 import { useLists } from '~/store/listStore';
 
-
 const CONTENT_OPTIONS = ['Comments'];
 
 export default function MediaScreen() {
@@ -28,6 +23,7 @@ export default function MediaScreen() {
   const theme = useTheme();
   const [selectedSegment, setSelectedSegment] = useState(0);
   const [listModalVisible, setListModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const backdrop = media.backdrop_path
     ? `https://image.tmdb.org/t/p/w780${media.backdrop_path}`
     : null;
@@ -56,9 +52,9 @@ export default function MediaScreen() {
   // }, [media.id]);
 
   const handleAddToList = async (listId: number) => {
-    if(!listId || !user?.id) return;
+    if (!listId || !user?.id) return;
     setListModalVisible(false);
-
+    setLoading(true);
     Toast.show({
       type: 'info',
       text1: 'Adding to list...',
@@ -72,24 +68,25 @@ export default function MediaScreen() {
 
     if (!result.success) {
       Toast.show({
-          type: 'error',
-          text1: result.error || 'Failed to add item to your list',
-          position: 'top',
-          visibilityTime: 4000,
-          autoHide: true,
-          onPress: () => Toast.hide(),
-        });
-    }else {
+        type: 'error',
+        text1: result.error || 'Failed to add item to your list',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+    } else {
       Toast.show({
-          type: 'success',
-          text1: 'Item was added to your list!',
-          position: 'top',
-          visibilityTime: 3000,
-          autoHide: true,
-          onPress: () => Toast.hide(),
-        });
+        type: 'success',
+        text1: 'Item was added to your list!',
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
     }
-  }
+    setLoading(false);
+  };
 
   // const handleSubmitReview = async (rating: number, content: string) => {
   //   if (user?.id) {
@@ -151,13 +148,13 @@ export default function MediaScreen() {
                 onPress={() => router.back()}>
                 <ArrowLeft className="text-primary-50 dark:text-primary-950" size={24} />
               </TouchableOpacity>
-              <View className='flex-row gap-x-2'>
-              
-              <TouchableOpacity
-                onPress={() => setListModalVisible(true)}
-                className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40">
-                <Plus className="text-primary-50 dark:text-primary-950" size={24} />
-              </TouchableOpacity>
+              <View className="flex-row gap-x-2">
+                <TouchableOpacity
+                  disabled={loading}
+                  onPress={() => setListModalVisible(true)}
+                  className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40">
+                  <Plus className="text-primary-50 dark:text-primary-950" size={24} />
+                </TouchableOpacity>
               </View>
             </View>
             <View className="flex-1 px-4">

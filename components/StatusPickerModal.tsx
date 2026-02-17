@@ -29,7 +29,7 @@ export default function StatusPickerModal({
   onDelete
 }: StatusPickerModalProps) {
   const theme = useTheme();
-
+  
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}

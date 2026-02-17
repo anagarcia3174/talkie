@@ -22,6 +22,7 @@ import {
   searchLists,
   getLikedLists,
 } from '~/services/listService';
+import { useProfile } from './profileStore';
 
 type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
@@ -47,7 +48,7 @@ interface ListState {
   addListToState: (list: ListWithMeta) => void;
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
-  deleteList: (listId: number) => Promise<StoreResult<void>>;
+  deleteList: (userId: string, listId: number) => Promise<StoreResult<void>>;
   searchLists: (query: string) => Promise<StoreResult<SearchPublicListResult[]>>;
 
   likeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
@@ -187,6 +188,8 @@ export const useLists = create<ListState>((set, get) => ({
       customListIds: [...state.customListIds, createdList.id],
     }));
 
+    await useProfile.getState().getStats(userId);
+
     return { success: true };
   },
 
@@ -218,7 +221,7 @@ export const useLists = create<ListState>((set, get) => ({
     return { success: true };
   },
 
-  deleteList: async (listId) => {
+  deleteList: async (userId, listId) => {
     const result = await deleteList(listId);
     if (!result.success) {
       return {
@@ -242,6 +245,8 @@ export const useLists = create<ListState>((set, get) => ({
         customListIds: state.customListIds.filter((id) => id !== listId),
       };
     });
+
+    await useProfile.getState().getStats(userId);
 
     return { success: true };
   },

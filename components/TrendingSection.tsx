@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
 import { Star, Plus, Library } from 'lucide-react-native';
-import { Image, Text, View, Dimensions, TouchableOpacity } from 'react-native';
+import { Image, Text, View, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import { Media } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
@@ -14,9 +14,14 @@ interface TrendingSectionProps {
   title: string;
 }
 
-export default function TrendingSection({ movies, onAddToLibrary, title }: TrendingSectionProps) {
+export default function TrendingSection({
+  movies,
+  onAddToLibrary,
+  title,
+}: TrendingSectionProps) {
   const router = useRouter();
-  const [ isScrolling, setIsScrolling] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
   return (
     <View className="px-4">
@@ -42,9 +47,9 @@ export default function TrendingSection({ movies, onAddToLibrary, title }: Trend
         renderItem={({ item }) => (
           <TouchableOpacity
             activeOpacity={0.85}
-            disabled={isScrolling}
+            disabled={isScrolling || loadingId === item.id}
             onPress={() => {
-              if(isScrolling) return;
+              if (isScrolling) return;
               router.push({
                 pathname: '/media/[id]',
                 params: {
@@ -78,7 +83,7 @@ export default function TrendingSection({ movies, onAddToLibrary, title }: Trend
 
                     <View className="flex-row items-center justify-between">
                       <Text className="text-md font-SpaceGrotesk-Regular text-primary-200">
-                        {item.release_date?.split('-')[0]} 
+                        {item.release_date?.split('-')[0]}
                       </Text>
 
                       <View className="flex-row items-center gap-x-1">
@@ -91,10 +96,21 @@ export default function TrendingSection({ movies, onAddToLibrary, title }: Trend
                   </View>
 
                   <TouchableOpacity
-                    onPress={() => onAddToLibrary(item.id)}
+                    disabled={loadingId === item.id}
+                    onPress={async () => {
+                      setLoadingId(item.id);
+                      await onAddToLibrary(item.id)
+                      setLoadingId(null);
+                    }}
                     className="flex-row items-center justify-center gap-x-2 rounded-full border border-primary-200 px-3 py-2">
-                    <Plus size={16} color="white" />
-                    <Library size={16} color="white" />
+                    {loadingId === item.id ? (
+                      <ActivityIndicator size="small"  />
+                    ) : (
+                      <>
+                        <Plus size={16} color="white" />
+                        <Library size={16} color="white" />
+                      </>
+                    )}
                   </TouchableOpacity>
                 </View>
               </BlurView>

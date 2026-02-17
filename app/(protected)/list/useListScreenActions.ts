@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '~/context/AuthContext';
 import { useLists } from '~/store/listStore';
-import { LibraryStatus, List, ListItem, ListItemWithMedia } from '~/types/supabaseTypes';
+import { Status, List, ListItem, ListItemWithMedia } from '~/types/supabaseTypes';
 
 export default function useListScreenActions(listId: number) {
   const { updateItemStatus, removeItemFromList, updateList, deleteList, likeList, unlikeList } =
@@ -25,14 +25,13 @@ export default function useListScreenActions(listId: number) {
       position: 'top',
       visibilityTime: 3000,
       autoHide: true,
-
     });
 
     return result.success;
   };
 
   return {
-    updateItemStatus: (item: ListItemWithMedia | ListItem, status: LibraryStatus) =>
+    updateItemStatus: (item: ListItemWithMedia | ListItem, status: Status) =>
       withToast(
         () => updateItemStatus(item, status),
         "The item's status was updated!",
@@ -54,8 +53,10 @@ export default function useListScreenActions(listId: number) {
       ),
 
     deleteList: async () => {
+      if (!userId) return;
+
       const success = await withToast(
-        () => deleteList(listId),
+        () => deleteList(user.id, listId),
         'The list was deleted!',
         'Failed to delete the list.'
       );
@@ -66,15 +67,16 @@ export default function useListScreenActions(listId: number) {
     like: async () => {
       if (!userId) return false;
       return withToast(
-        () => likeList(listId, userId),
+        () => likeList(listId, user.id),
         'You liked the list!',
         'Failed to like the list.'
       );
     },
     unlike: async () => {
       if (!userId) return false;
+
       return withToast(
-        () => unlikeList(listId, userId),
+        () => unlikeList(listId, user.id),
         'You unliked the list!',
         'Failed to unlike the list.'
       );

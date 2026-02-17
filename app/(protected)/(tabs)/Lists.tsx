@@ -16,6 +16,8 @@ export default function Lists() {
   const theme = useTheme();
   const router = useRouter();
   const [createListModalVisible, setCreateListModalVisible] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [ deleteLoading, setDeleteLoading ] = useState(false);
   const { listsById, defaultListIds, customListIds, createList, deleteList } = useLists();
   const { user } = useAuth();
 
@@ -45,6 +47,7 @@ export default function Lists() {
       });
       return;
     }
+    setCreateLoading(true);
     setCreateListModalVisible(false);
     const result = await createList(user.id, list);
 
@@ -67,6 +70,7 @@ export default function Lists() {
         onPress: () => Toast.hide(),
       });
     }
+    setCreateLoading(false);
   };
 
   const handleDeleteList = async (listId: number) => {
@@ -86,7 +90,8 @@ export default function Lists() {
       });
       return;
     }
-    const result = await deleteList(listId);
+    setDeleteLoading(true);
+    const result = await deleteList(user.id, listId);
     if (!result.success) {
       Toast.show({
         type: 'error',
@@ -106,6 +111,7 @@ export default function Lists() {
         onPress: () => Toast.hide(),
       });
     }
+    setDeleteLoading(false);
   };
 
   return (
@@ -120,6 +126,7 @@ export default function Lists() {
         <View>
           {customListIds.length < 5 && (
             <TouchableOpacity
+              disabled={createLoading}
               onPress={() => setCreateListModalVisible(true)}
               className="rounded-full bg-primary-200 p-2 dark:bg-primary-900">
               <Plus size={24} color={theme.primary[950]} />
@@ -168,7 +175,7 @@ export default function Lists() {
               title={list.name}
               items={list.item_count}
               onPress={() => router.push(`/list/${id}`)}
-              deletable
+              deletable={!deleteLoading}
               onDelete={() => handleDeleteList(list.id)}
             />
           );
@@ -186,14 +193,14 @@ export default function Lists() {
                 key={list.id}
                 title={list.name}
                 items={list.item_count}
-                onPress={() =>{
+                onPress={() => {
                   router.push({
                     pathname: '/list/[id]',
                     params: {
-                      id: list.id
+                      id: list.id,
                     },
-                  })}
-                }
+                  });
+                }}
                 deletable={false}
               />
             ))}

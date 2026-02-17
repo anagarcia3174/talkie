@@ -1,39 +1,24 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, View, TextInput, TouchableOpacity, Image, FlatList } from 'react-native';
-import {
-  ArrowDownUp,
-  Book,
-  Bookmark,
-  ChevronLeft,
-  Globe,
-  Lock,
-  UserRound,
-  Users,
-} from 'lucide-react-native';
+import { ArrowDownUp, Bookmark, ChevronLeft, Globe, Lock, UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { useRouter } from 'expo-router';
 import SortByModal from '~/components/SortByModal';
-import {
-  ListItemWithMedia,
-  List,
-  ListItem,
-  Status,
-  ListWithMeta,
-} from '~/types/supabaseTypes';
+import { ListItemWithMedia, List, Status, ListWithMeta } from '~/types/supabaseTypes';
 import StatusPickerModal from './StatusPickerModal';
 import ListInfoModal from './ListInfoModal';
 import { getPublicUrl } from '~/utils/storageUrl';
 import { ScrollView } from 'react-native-gesture-handler';
 
 interface ListActions {
-  updateItemStatus: (item: ListItemWithMedia, status: Status) => void;
-  deleteItem: (item: ListItemWithMedia) => void;
-  updateList: (updates: Partial<List>) => void;
-  deleteList: () => void;
-  like: () => void;
-  unlike: () => void;
+  updateItemStatus: (item: ListItemWithMedia, status: Status) => Promise<boolean>;
+  deleteItem: (item: ListItemWithMedia) => Promise<boolean>;
+  updateList: (updates: Partial<List>) => Promise<boolean>;
+  deleteList: () => Promise<void>;
+  like: () => Promise<boolean>;
+  unlike: () => Promise<boolean>;
 }
 
 interface ListContentProps {
@@ -49,12 +34,7 @@ type FilterIndex = 0 | 1 | 2 | 3;
 export type SortType = 'alpha' | 'release' | 'added';
 export type SortOrder = 'asc' | 'desc';
 
-export default function ListContent({
-  list,
-  listItems,
-  actions,
-  isOwner,
-}: ListContentProps) {
+export default function ListContent({ list, listItems, actions, isOwner }: ListContentProps) {
   const theme = useTheme();
   const [selected, setSelected] = useState<FilterIndex>(0);
   const [search, setSearch] = useState('');
@@ -65,6 +45,7 @@ export default function ListContent({
   const [activeItem, setActiveItem] = useState<ListItemWithMedia | null>(null);
   const [listInfoModalVisible, setListInfoModalVisible] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const router = useRouter();
 
   const statusMap: Record<FilterIndex, Status | null> = {
@@ -131,12 +112,20 @@ export default function ListContent({
           List
         </Text>
         <TouchableOpacity
-          disabled={isOwner}
+          disabled={isOwner || loadingAction === 'like-toggle'}
           onPress={async () => {
-            if (list.is_liked) {
-              await actions.unlike();
-            } else {
-              await actions.like();
+            if (isOwner || loadingAction === 'like-toggle') return;
+
+            try {
+              setLoadingAction('like-toggle');
+
+              if (list.is_liked) {
+                await actions.unlike();
+              } else {
+                await actions.like();
+              }
+            } finally {
+              setLoadingAction(null);
             }
           }}>
           <Bookmark
@@ -359,13 +348,27 @@ export default function ListContent({
           visible={statusPickerModalVisible}
           currentStatus={activeItem.status ?? 'pending'}
           onClose={() => setStatusPickerModalVisible(false)}
-          onConfirm={(newStatus) => {
-            setStatusPickerModalVisible(false);
-            actions.updateItemStatus(activeItem, newStatus);
+          onConfirm={async (newStatus) => {
+            if (!activeItem || loadingAction === `update-status-${activeItem.id}`) return;
+
+            try {
+              setLoadingAction(`update-status-${activeItem.id}`);
+              await actions.updateItemStatus(activeItem, newStatus);
+              setStatusPickerModalVisible(false);
+            } finally {
+              setLoadingAction(null);
+            }
           }}
-          onDelete={() => {
-            setStatusPickerModalVisible(false);
-            actions.deleteItem(activeItem);
+          onDelete={async () => {
+            if (!activeItem || loadingAction === `delete-item-${activeItem.id}`) return;
+
+            try {
+              setLoadingAction(`delete-item-${activeItem.id}`);
+              await actions.deleteItem(activeItem);
+              setStatusPickerModalVisible(false);
+            } finally {
+              setLoadingAction(null);
+            }
           }}
         />
       )}
@@ -378,8 +381,16 @@ export default function ListContent({
           actions.updateList(updates);
         }}
         onDelete={() => {
-          setListInfoModalVisible(false);
-          actions.deleteList();
+          async () => {
+            if (loadingAction) return;
+
+            try {
+              setLoadingAction('delete-list');
+              await actions.deleteList();
+            } finally {
+              setLoadingAction(null);
+            }
+          };
         }}
       />
     </SafeAreaView>

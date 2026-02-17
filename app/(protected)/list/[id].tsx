@@ -5,48 +5,50 @@ import { Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ListContent from '~/components/ListContent';
 import LoadingScreen from '~/components/LoadingScreen';
-import { Status } from '~/types/supabaseTypes';
 
 import { useAuth } from '~/context/AuthContext';
 import useListScreenActions from './useListScreenActions';
 
 export default function ListScreen() {
-  const { id } = useLocalSearchParams<{
-    id: string;
-  }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
 
   const listId = Number(id);
   const isValidListId = Number.isFinite(listId);
 
   const { listsById, listItems, getListItems } = useLists();
-
   const { user } = useAuth();
-
-  const actions = useListScreenActions(listId);
 
   const list = isValidListId ? listsById[listId] : undefined;
   const items = isValidListId ? listItems[listId] : undefined;
-  const isLoadingItems = !!list && !items;
+
+  const actions = useListScreenActions(listId);
 
   useEffect(() => {
-    if (!isValidListId || items) return;
-    getListItems(listId);
-  }, [isValidListId, items, listId, getListItems]);
+    if (!isValidListId) return;
 
-  if (!list) {
+    // Only fetch if list exists and items haven't been loaded yet
+    if (list && !items) {
+      getListItems(listId);
+    }
+  }, [isValidListId, list, items, listId, getListItems]);
+
+  // 🚫 Invalid ID
+  if (!isValidListId) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-primary-50 dark:bg-primary-950">
         <Text className="font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
-          List not found
+          Invalid list
         </Text>
       </SafeAreaView>
     );
   }
 
-  if (isLoadingItems) {
+  // ⏳ List not loaded yet
+  if (!list) {
     return <LoadingScreen fullScreen />;
   }
 
+  // ⏳ Items not loaded yet
   if (!items) {
     return <LoadingScreen fullScreen />;
   }

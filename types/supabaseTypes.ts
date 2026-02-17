@@ -58,6 +58,13 @@ export interface ListWithMeta extends List {
   is_liked: boolean;
 }
 
+export interface ListOwner {
+  id: string;
+  display_name: string;
+    avatar_url: string | null;
+    is_private: boolean;
+} 
+
 export interface ListItem {
   id: number;
   list_id: number;
