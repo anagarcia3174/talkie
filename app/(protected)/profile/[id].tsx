@@ -2,14 +2,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import LoadingScreen from '~/components/LoadingScreen';
 import { getProfileById, getProfileStats } from '~/services/profileService';
-import { List, ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
+import { ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import ProfileSection from '~/components/ProfileSection';
 import ErrorScreen from '~/components/ErrorScreen';
 import StatsSection from '~/components/StatsSection';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { Bookmark, ChevronLeft } from 'lucide-react-native';
+import { Bookmark, ChevronLeft, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { getPublicListsByUserId } from '~/services/listService';
 import { useLists } from '~/store/listStore';
@@ -22,6 +22,7 @@ export default function ProfileScreen() {
   const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
   const [profileLists, setProfileLists] = useState<ListWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addListToState } = useLists();
   const router = useRouter();
   const theme = useTheme();
@@ -94,6 +95,9 @@ export default function ProfileScreen() {
           displayName={profile.display_name}
           bio={profile.bio}
           subtitle={`Member since ${new Date(profile.created_at).toLocaleDateString()}`}
+          onAvatarPress={() => {
+            setPreviewImage(profile.avatar_url);
+          }}
         />
         {profileStats && <StatsSection stats={profileStats} />}
         <Text className="mb-2 font-SpaceGrotesk-Regular text-lg text-primary-950 dark:text-primary-50">
@@ -145,7 +149,11 @@ export default function ProfileScreen() {
                   <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
                     {item.likes_count}
                   </Text>
-                  <Bookmark size={12} color={theme.primary[700]} fill={ item.is_liked ? theme.primary[700] : theme.primary[100]}/>
+                  <Bookmark
+                    size={12}
+                    color={theme.primary[700]}
+                    fill={item.is_liked ? theme.primary[700] : theme.primary[100]}
+                  />
                 </View>
               </View>
 
@@ -159,6 +167,28 @@ export default function ProfileScreen() {
           )}
         />
       </ScrollView>
+      <Modal visible={!!previewImage} transparent animationType="fade">
+        <View className="flex-1 items-center justify-center bg-primary-950 px-4">
+          <TouchableOpacity
+            onPress={() => setPreviewImage(null)}
+            className="absolute left-6 top-16 z-10">
+            <X size={28} color="white" />
+          </TouchableOpacity>
+
+          {previewImage && (
+            <Image
+              source={{ uri: previewImage }}
+              resizeMode="contain"
+              style={{
+                width: '100%', // take full width of modal minus padding
+                maxWidth: 400, // don't get too huge on tablets
+                aspectRatio: 1, // keep it square
+                maxHeight: '90%', // allow it to scale with screen height
+              }}
+            />
+          )}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

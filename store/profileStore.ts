@@ -28,6 +28,18 @@ interface ProfileState {
 const MAX_MB = 6;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 
+const addCacheBuster = (profile: Profile): Profile => {
+  if (profile.avatar_url) {
+    const timestamp = Date.now();
+    const separator = profile.avatar_url.includes('?') ? '&' : '?';
+    return {
+      ...profile,
+      avatar_url: `${profile.avatar_url}${separator}t=${timestamp}`,
+    };
+  }
+  return profile;
+};
+
 export const useProfile = create<ProfileState>((set, get) => ({
   profile: null,
   stats: {
@@ -99,7 +111,12 @@ export const useProfile = create<ProfileState>((set, get) => ({
       }
 
       // Refresh the profile after upload
-      await get().getProfile(userId);
+      const profileResult = await get().getProfile(userId);
+
+      if (profileResult.success && get().profile) {
+        // Add cache-busting timestamp to force image reload
+        set({ profile: addCacheBuster(get().profile!) });
+      }
       return { success: true };
     } catch (err: any) {
       return { success: false, error: 'There was an error uploading your profile picture.' };
@@ -115,7 +132,8 @@ export const useProfile = create<ProfileState>((set, get) => ({
     }
 
     const normalized = withPublicUrl(result.data!);
-    set({ profile: normalized });
+const withCacheBuster = addCacheBuster(normalized);
+    set({ profile: withCacheBuster });
     return { success: true };
   },
 

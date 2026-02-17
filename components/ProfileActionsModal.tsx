@@ -14,10 +14,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { Profile } from '~/types/supabaseTypes';
 import { Camera } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import * as ImageManipulator from 'expo-image-manipulator';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from './ToastConfig';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SaveFormat, ImageManipulator } from 'expo-image-manipulator';
 
 interface ProfileActionsModalProps {
   visible: boolean;
@@ -74,16 +74,14 @@ export default function ProfileActionsModal({
     const asset = result.assets[0];
 
     try {
-      const manipulated = await ImageManipulator.manipulateAsync(
-        asset.uri,
-        [{ resize: { width: 512, height: 512 } }],
-        {
-          compress: 0.8,
-          format: ImageManipulator.SaveFormat.JPEG,
-        }
-      );
+      const context = ImageManipulator.manipulate(asset.uri);
+      const renderedImage = await context.renderAsync();
+      const result = await renderedImage.saveAsync({
+        compress: 0.8,
+        format: SaveFormat.JPEG,
+      });
 
-      const sizeMB = await getImageSizeMB(manipulated.uri);
+      const sizeMB = await getImageSizeMB(result.uri);
 
       if (sizeMB > MAX_MB) {
         Toast.show({
@@ -98,10 +96,10 @@ export default function ProfileActionsModal({
 
       setImage({
         ...asset,
-        uri: manipulated.uri,
+        uri: result.uri,
         mimeType: 'image/jpeg',
       });
-      setImageUri(manipulated.uri);
+      setImageUri(result.uri);
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -154,22 +152,22 @@ export default function ProfileActionsModal({
       onClose();
       return;
     }
-
     onClose();
 
     onUpdateProfile(hasImage ? image : undefined, hasUpdates ? updates : undefined);
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       {/* Overlay */}
       <TouchableWithoutFeedback onPress={onClose}>
-        <View className="flex-1 bg-black/50" />
+        <View className="flex-1 bg-black/20" />
       </TouchableWithoutFeedback>
 
       {/* Floating Card */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        pointerEvents="box-none"
         className="absolute inset-0 items-center justify-center p-6">
         <View className="w-full max-w-md rounded-2xl bg-primary-50 p-6 dark:bg-primary-950">
           <Text className="mb-4 font-SpaceGrotesk-Medium text-lg text-primary-950 dark:text-primary-50">
@@ -258,14 +256,6 @@ export default function ProfileActionsModal({
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-      {visible && (
-        <Toast
-          config={toastConfig}
-          position="top"
-          topOffset={insets.top + 10}
-          onPress={() => Toast.hide()}
-        />
-      )}
     </Modal>
   );
 }

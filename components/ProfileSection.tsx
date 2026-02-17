@@ -1,15 +1,15 @@
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Image, Pressable, TouchableOpacity } from 'react-native';
 import { UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-
 
 interface ProfileSectionProps {
   avatar: string | null;
   displayName: string;
   bio: string | null;
-  subtitle?: string; 
+  subtitle?: string;
   editable?: boolean;
   onEditPress?: () => void;
+  onAvatarPress?: () => void;
 }
 
 export default function ProfileSection({
@@ -19,6 +19,7 @@ export default function ProfileSection({
   subtitle,
   editable = false,
   onEditPress,
+  onAvatarPress
 }: ProfileSectionProps) {
   const theme = useTheme();
 
@@ -27,7 +28,9 @@ export default function ProfileSection({
       <Pressable disabled={!editable} onPress={onEditPress}>
         <View className="mb-4 flex-row items-center">
           {avatar ? (
-            <Image source={{ uri: avatar }} className="h-16 w-16 rounded-full" />
+            <TouchableOpacity activeOpacity={0.9} onPress={() => onAvatarPress?.()}>
+              <Image source={{ uri: avatar }} className="h-16 w-16 rounded-full" />
+            </TouchableOpacity>
           ) : (
             <View className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
               <UserRound size={32} color={theme.primary[900]} />

@@ -19,7 +19,7 @@ export default function Profile() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [signOutModal, setSignOutModal] = useState(false);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
-  const [ updateLoading, setUpdateLoading ] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const theme = useTheme();
   const tabBarHeight = useBottomTabBarHeight();
@@ -82,7 +82,9 @@ export default function Profile() {
         <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
           Profile
         </Text>
-        <TouchableOpacity disabled={!user || updateLoading || deleting} onPress={() => setSignOutModal(true)}>
+        <TouchableOpacity
+          disabled={!user || updateLoading || deleting}
+          onPress={() => setSignOutModal(true)}>
           <LogOut color={theme.primary[900]} strokeWidth={1.5} size={24} />
         </TouchableOpacity>
       </View>
@@ -97,8 +99,10 @@ export default function Profile() {
         />
         <StatsSection stats={stats} />
       </ScrollView>
-      <View  style={{ paddingBottom: tabBarHeight }}>
-        <TouchableOpacity disabled={updateLoading || deleting} onPress={() => setDeleteAccountModal(true)}>
+      <View style={{ paddingBottom: tabBarHeight }}>
+        <TouchableOpacity
+          disabled={updateLoading || deleting}
+          onPress={() => setDeleteAccountModal(true)}>
           <Text className="text-center font-SpaceGrotesk-Regular text-sm text-primary-400 underline dark:text-primary-600">
             Delete Account
           </Text>
@@ -118,13 +122,14 @@ export default function Profile() {
             type: 'info',
             text1: 'Updating Profile...',
             position: 'top',
-            visibilityTime: 3000,
+            autoHide: false,
             onPress: () => Toast.hide(),
           });
           try {
             if (image) {
               const res = await uploadAvatar(user.id, image);
               if (!res.success) {
+                Toast.hide();
                 Toast.show({
                   type: 'error',
                   text1: res.error || 'Failed to update your profile',
@@ -138,6 +143,7 @@ export default function Profile() {
             if (data && Object.keys(data).length > 0) {
               const res = await updateProfile(user.id, data);
               if (!res.success) {
+                Toast.hide();
                 Toast.show({
                   type: 'error',
                   text1: res.error || 'Failed to update your profile',
@@ -148,6 +154,7 @@ export default function Profile() {
                 return;
               }
             }
+            Toast.hide();
             Toast.show({
               type: 'success',
               text1: 'Updated Profile!',
@@ -155,6 +162,7 @@ export default function Profile() {
               visibilityTime: 3000,
             });
           } catch (e: any) {
+            Toast.hide();
             Toast.show({
               type: 'error',
               text1: 'Failed to update your profile',

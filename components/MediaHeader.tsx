@@ -1,5 +1,5 @@
 import { Media } from '~/types/supabaseTypes';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { ImageOff, Star } from 'lucide-react-native';
 import MediaOverview from './MediaOverview';
 import Animated, {
@@ -14,9 +14,10 @@ import { useTheme } from '~/hooks/useTheme';
 interface MediaHeaderProps {
   media: Media;
   shrinkHeader: boolean;
+  onPosterPress?: () => void;
 }
 
-export default function MediaHeader({ media, shrinkHeader }: MediaHeaderProps) {
+export default function MediaHeader({ media, shrinkHeader, onPosterPress }: MediaHeaderProps) {
   const year = media.release_date?.slice(0, 4);
   const rating = media.vote_average?.toFixed(1);
   const theme = useTheme();
@@ -64,19 +65,19 @@ export default function MediaHeader({ media, shrinkHeader }: MediaHeaderProps) {
     <Animated.View style={[containerStyle]} className="items-center px-4">
       {/* Poster */}
       {poster ? (
-        <Animated.Image
-          source={{ uri: poster }}
-          style={posterStyle}
-          className="mb-2 rounded-xl"
-          resizeMode="cover"
-        />
+        <TouchableOpacity activeOpacity={0.9} onPress={() => onPosterPress?.()}>
+          <Animated.Image
+            source={{ uri: poster }}
+            style={posterStyle}
+            className="mb-2 rounded-xl"
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
       ) : (
         <Animated.View
-          style={[
-            posterStyle,
-          ]}
+          style={[posterStyle]}
           className="mb-2 items-center justify-center rounded-xl bg-primary-400 dark:bg-primary-800">
-          <ImageOff size={48} color={theme.primary[700]} /> 
+          <ImageOff size={48} color={theme.primary[700]} />
         </Animated.View>
       )}
 

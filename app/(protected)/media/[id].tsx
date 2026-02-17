@@ -1,8 +1,8 @@
-import { View, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, TouchableOpacity, ImageBackground, Modal, Pressable, Image } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Plus } from 'lucide-react-native';
+import { ArrowLeft, Plus, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import { Media } from '~/types/supabaseTypes';
@@ -29,6 +29,8 @@ export default function MediaScreen() {
     : null;
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
   const [shrinkHeader, setShrinkHeader] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   // const { submitReview, fetchReviewsForMedia } = useReviews();
   // const [reviews, setReviews] = useState<ReviewWithProfile[]>([]);
   // const [loadingReviews, setLoadingReviews] = useState(true);
@@ -158,7 +160,13 @@ export default function MediaScreen() {
               </View>
             </View>
             <View className="flex-1 px-4">
-              <MediaHeader media={media} shrinkHeader={shrinkHeader} />
+              <MediaHeader
+                media={media}
+                shrinkHeader={shrinkHeader}
+                onPosterPress={() => {
+                  setPreviewImage(`https://image.tmdb.org/t/p/w780${media.poster_path}`);
+                }}
+              />
               <MediaTabs
                 selectedIndex={selectedSegment}
                 onChange={setSelectedSegment}
@@ -193,6 +201,24 @@ export default function MediaScreen() {
               onClose={() => setListModalVisible(false)}
               onConfirm={handleAddToList}
             />
+            <Modal visible={!!previewImage} transparent animationType="fade">
+              <View className="flex-1 items-center justify-center bg-primary-950">
+                {/* Close Button */}
+                <TouchableOpacity
+                  onPress={() => setPreviewImage(null)}
+                  className="absolute left-6 top-16 z-10">
+                  <X size={28} color="white" />
+                </TouchableOpacity>
+
+                {previewImage && (
+                  <Image
+                    source={{ uri: previewImage }}
+                    resizeMode="contain"
+                    style={{ width: '100%', height: '75%' }}
+                  />
+                )}
+              </View>
+            </Modal>
           </SafeAreaView>
         </BlurView>
       </ImageBackground>
