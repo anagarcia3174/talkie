@@ -13,6 +13,10 @@ import { Bookmark, ChevronLeft, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { getPublicListsByUserId } from '~/services/listService';
 import { useLists } from '~/store/listStore';
+import FollowButton from '~/components/FollowButton';
+import { useBlock } from '~/store/blockStore';
+import { useAuth } from '~/context/AuthContext';
+import Toast from 'react-native-toast-message';
 
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
@@ -22,8 +26,11 @@ export default function ProfileScreen() {
   const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
   const [profileLists, setProfileLists] = useState<ListWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ blocking, setBlocking ] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addListToState } = useLists();
+  const { block } = useBlock();
+  const { user } = useAuth();
   const router = useRouter();
   const theme = useTheme();
 
@@ -77,17 +84,35 @@ export default function ProfileScreen() {
     );
   }
 
+  const handleBlock = async () => {
+    if (!user) return;
+    setBlocking(true);
+    const result = await block(user.id, profile.id);
+    if (!result.success) {
+      Toast.show({
+        type: 'error',
+        text1: result.error || 'Failed to block the user.',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+      return;
+    }
+    setBlocking(false);
+    router.back();
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
-      <View className="relative flex-row items-center px-4 py-3">
+      <View className="relative flex-row items-center justify-between px-4 py-3">
         <TouchableOpacity onPress={() => router.back()}>
           <ChevronLeft color={theme.primary[950]} size={24} />
         </TouchableOpacity>
         <Text
           pointerEvents="none"
-          className="absolute left-0 right-0 text-center font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+          className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           Profile
         </Text>
+        <FollowButton targetUserId={profile.id} />
       </View>
       <ScrollView className="px-4">
         <ProfileSection
@@ -167,6 +192,13 @@ export default function ProfileScreen() {
           )}
         />
       </ScrollView>
+      <View>
+        <TouchableOpacity disabled={blocking} onPress={handleBlock}>
+          <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 underline">
+            Block User
+          </Text>
+        </TouchableOpacity>
+      </View>
       <Modal visible={!!previewImage} transparent animationType="fade">
         <View className="flex-1 items-center justify-center bg-primary-950 px-4">
           <TouchableOpacity

@@ -154,11 +154,12 @@ export async function deleteList(listId: number): Promise<VoidResult> {
 export async function getListItems(listId: number): Promise<DataResult<ListItemWithMedia[]>> {
   try {
     const { data, error } = await supabase.rpc('get_list_items_with_media', { p_list_id: listId });
-    if (error)
+    if (error){
       return errorData(error, {
         operation: 'get_list_items',
         rpc: 'get_list_items_with_media',
       });
+    }
     return successData(data);
   } catch (err) {
     return errorData(err, {

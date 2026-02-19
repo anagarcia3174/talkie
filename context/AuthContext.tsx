@@ -6,6 +6,8 @@ import { useLists } from '~/store/listStore';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
 import { restoreUser } from '~/services/profileService';
+import { useFollow } from '~/store/followStore';
+import { useBlock } from '~/store/blockStore';
 
 interface AuthContextType {
   user: User | null;
@@ -93,6 +95,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loadUserData = useCallback(async (userId: string) => {
     const { getProfile, getStats } = useProfile.getState();
     const { getLists } = useLists.getState();
+    const { hydrateFollowerIds, hydrateFollowingIds } = useFollow.getState();
+    const { hydrateBlockedMap } = useBlock.getState();
 
     const profileResult = await getProfile(userId);
 
@@ -104,7 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     // Only load additional data if active
-    await Promise.allSettled([getStats(userId), getLists(userId)]);
+    await Promise.allSettled([getStats(userId), getLists(userId), hydrateFollowerIds(userId), hydrateFollowingIds(userId), hydrateBlockedMap(userId)]);
 
     return { accountDeleted: false };
   }, []);
@@ -214,7 +218,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return result;
     }
 
-    setLoading(true)
+    setLoading(true);
     setAccountDeleted(false);
     await loadUserData(user.id);
 
