@@ -8,6 +8,7 @@ import {
   unFollowUser,
 } from '~/services/followService';
 import { Profile } from '~/types/supabaseTypes';
+import { useProfile } from './profileStore';
 
 type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
@@ -73,6 +74,8 @@ export const useFollow = create<FollowState>((set, get) => ({
       return { followingIds: updated };
     });
 
+    await useProfile.getState().getStats(currentUserId);
+
     return { success: true };
   },
 
@@ -89,6 +92,7 @@ export const useFollow = create<FollowState>((set, get) => ({
 
       return { followingIds: updated };
     });
+    await useProfile.getState().getStats(currentUserId);
 
     return { success: true };
   },

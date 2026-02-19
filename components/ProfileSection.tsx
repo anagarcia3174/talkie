@@ -7,8 +7,6 @@ interface ProfileSectionProps {
   displayName: string;
   bio: string | null;
   subtitle?: string;
-  editable?: boolean;
-  onEditPress?: () => void;
   onAvatarPress?: () => void;
 }
 
@@ -17,15 +15,12 @@ export default function ProfileSection({
   displayName,
   bio,
   subtitle,
-  editable = false,
-  onEditPress,
   onAvatarPress
 }: ProfileSectionProps) {
   const theme = useTheme();
 
   return (
     <View className="mb-6 mt-2 rounded-lg bg-primary-200 p-3 dark:bg-primary-900">
-      <Pressable disabled={!editable} onPress={onEditPress}>
         <View className="mb-4 flex-row items-center">
           {avatar ? (
             <TouchableOpacity activeOpacity={0.9} onPress={() => onAvatarPress?.()}>
@@ -57,7 +52,6 @@ export default function ProfileSection({
             {bio || 'No bio yet'}
           </Text>
         </View>
-      </Pressable>
     </View>
   );
 }

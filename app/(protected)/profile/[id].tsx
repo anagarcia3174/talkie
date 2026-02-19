@@ -74,6 +74,7 @@ export default function ProfileScreen() {
     if (!profile) return;
 
     if (blockedIds.has(profile.id)) {
+      router.dismissAll();
       router.replace('/(protected)/(tabs)/Home');
     }
   }, [blockedIds, profile, router]);
@@ -202,7 +203,7 @@ export default function ProfileScreen() {
       </ScrollView>
       <View>
         <TouchableOpacity disabled={blocking} onPress={handleBlock}>
-          <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 underline">
+          <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 dark:text-red-400 underline">
             {blocking ? 'Blocking...' : 'Block User'}
           </Text>
         </TouchableOpacity>

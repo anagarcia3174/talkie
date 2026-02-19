@@ -7,22 +7,24 @@ import { useState } from 'react';
 import { useAuth } from '~/context/AuthContext';
 import ProfileActionsModal from '~/components/ProfileActionsModal';
 import Toast from 'react-native-toast-message';
-import { LogOut } from 'lucide-react-native';
+import { MoreVertical } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import SignOutModal from '~/components/SignOutModal';
 import DeleteAccountModal from '~/components/DeleteAccountModal';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import AccountOverlay from '~/components/AccountOverlay';
+import BlockedUsersModal from '~/components/BlockedUsersModal';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
+  const theme = useTheme();
   const { stats, profile, uploadAvatar, updateProfile, deleteAccount } = useProfile();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [signOutModal, setSignOutModal] = useState(false);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [ blockedModal, setBlockedModal ] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const theme = useTheme();
-  const tabBarHeight = useBottomTabBarHeight();
+  const [overlayVisible, setOverlayVisible] = useState(false);
   const subtitle =
     user?.email ??
     (user?.created_at
@@ -82,10 +84,8 @@ export default function Profile() {
         <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
           Profile
         </Text>
-        <TouchableOpacity
-          disabled={!user || updateLoading || deleting}
-          onPress={() => setSignOutModal(true)}>
-          <LogOut color={theme.primary[900]} strokeWidth={1.5} size={24} />
+        <TouchableOpacity onPress={() => setOverlayVisible(true)}>
+          <MoreVertical size={24} color={theme.primary[950]} />
         </TouchableOpacity>
       </View>
       <ScrollView className="px-4">
@@ -94,20 +94,9 @@ export default function Profile() {
           displayName={profile.display_name}
           bio={profile.bio}
           subtitle={subtitle}
-          editable={!updateLoading && !deleting}
-          onEditPress={() => setShowProfileModal(true)}
         />
         <StatsSection stats={stats} />
       </ScrollView>
-      <View style={{ paddingBottom: tabBarHeight }}>
-        <TouchableOpacity
-          disabled={updateLoading || deleting}
-          onPress={() => setDeleteAccountModal(true)}>
-          <Text className="text-center font-SpaceGrotesk-Regular text-sm text-primary-400 underline dark:text-primary-600">
-            Delete Account
-          </Text>
-        </TouchableOpacity>
-      </View>
       <ProfileActionsModal
         visible={showProfileModal}
         avatar={profile.avatar_url}
@@ -191,6 +180,28 @@ export default function Profile() {
           }
         }}
         email={user?.email || profile.display_name}
+      />
+      <BlockedUsersModal visible={blockedModal} onClose={() => setBlockedModal(false)} />
+      <AccountOverlay
+        visible={overlayVisible}
+        onClose={() => setOverlayVisible(false)}
+        onSubmit={(operation) => {
+          if (operation === 'edit_profile' && !updateLoading && !deleting) {
+            setOverlayVisible(false);
+            setShowProfileModal(true);
+          } else if (operation === 'blocked_users') {
+            setOverlayVisible(false);
+            setBlockedModal(true);
+          } else if ((operation === 'sign_out' && !updateLoading) || !deleting) {
+            setOverlayVisible(false);
+            setSignOutModal(true);
+          } else if ((operation === 'delete_account' && !updateLoading) || !deleting) {
+            setOverlayVisible(false);
+            setDeleteAccountModal(true);
+          } else {
+            setOverlayVisible(false);
+          }
+        }}
       />
     </SafeAreaView>
   );

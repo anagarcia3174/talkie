@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { blockUser, getBlockedIds, getBlockedUsers, unBlockUser } from '~/services/blockService';
 import { Profile } from '~/types/supabaseTypes';
+import { useLists } from './listStore';
+import { useProfile } from './profileStore';
 
 type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
@@ -48,6 +50,8 @@ export const useBlock = create<BlockState>((set, get) => ({
 
       return { blockedIds: updated };
     });
+    await useProfile.getState().getStats(currentUserId);
+    await useLists.getState().getLists(currentUserId);
 
     return { success: true };
   },
@@ -60,13 +64,15 @@ export const useBlock = create<BlockState>((set, get) => ({
     }
 
     set((state) => {
-      const updated = { ...state.blockedIds };
+      const updated = new Set(state.blockedIds)
       updated.delete(targetUserId);
 
       return {
         blockedIds: updated,
       };
     });
+
+    await useLists.getState().getLists(currentUserId);
 
     return { success: true };
   },
