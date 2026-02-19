@@ -11,6 +11,7 @@ import { List } from '~/types/supabaseTypes';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import ListRow from '~/components/ListRow';
+import { useBlock } from '~/store/blockStore';
 
 export default function Lists() {
   const theme = useTheme();
@@ -20,6 +21,7 @@ export default function Lists() {
   const [ deleteLoading, setDeleteLoading ] = useState(false);
   const { listsById, defaultListIds, customListIds, createList, deleteList } = useLists();
   const { user } = useAuth();
+  const { blockedIds } = useBlock();
 
   const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
 
@@ -30,7 +32,8 @@ export default function Lists() {
       list.is_liked &&
       !customListIds.includes(list.id) &&
       list.id !== defaultListIds.library &&
-      list.id !== defaultListIds.favorites
+      list.id !== defaultListIds.favorites && 
+      !blockedIds.has(list.user_id)
   );
 
   const handleCreateList = async (list: Partial<List>) => {

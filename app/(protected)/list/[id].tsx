@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useLists } from '~/store/listStore';
 import { Text } from 'react-native';
@@ -8,6 +8,7 @@ import LoadingScreen from '~/components/LoadingScreen';
 
 import { useAuth } from '~/context/AuthContext';
 import useListScreenActions from './useListScreenActions';
+import { useBlock } from '~/store/blockStore';
 
 export default function ListScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,10 +18,10 @@ export default function ListScreen() {
 
   const { listsById, listItems, getListItems } = useLists();
   const { user } = useAuth();
-
+  const { blockedIds } = useBlock();
   const list = isValidListId ? listsById[listId] : undefined;
   const items = isValidListId ? listItems[listId] : undefined;
-
+  const router = useRouter();
   const actions = useListScreenActions(listId);
 
   useEffect(() => {
@@ -31,6 +32,14 @@ export default function ListScreen() {
       getListItems(listId);
     }
   }, [isValidListId, list, items, listId, getListItems]);
+
+  useEffect(() => {
+    if (!list) return;
+
+    if (blockedIds.has(list.user_id)) {
+      router.replace('/(protected)/(tabs)/Home');
+    }
+  }, [blockedIds, list, router]);
 
   // 🚫 Invalid ID
   if (!isValidListId) {

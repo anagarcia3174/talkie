@@ -26,10 +26,10 @@ export default function ProfileScreen() {
   const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
   const [profileLists, setProfileLists] = useState<ListWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ blocking, setBlocking ] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addListToState } = useLists();
-  const { block } = useBlock();
+  const { block, blockedIds } = useBlock();
   const { user } = useAuth();
   const router = useRouter();
   const theme = useTheme();
@@ -70,6 +70,14 @@ export default function ProfileScreen() {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (!profile) return;
+
+    if (blockedIds.has(profile.id)) {
+      router.replace('/(protected)/(tabs)/Home');
+    }
+  }, [blockedIds, profile, router]);
+
   if (loading) {
     return <LoadingScreen fullScreen />;
   }
@@ -95,10 +103,10 @@ export default function ProfileScreen() {
         visibilityTime: 4000,
         autoHide: true,
       });
+      setBlocking(false);
       return;
     }
     setBlocking(false);
-    router.back();
   };
 
   return (
@@ -195,7 +203,7 @@ export default function ProfileScreen() {
       <View>
         <TouchableOpacity disabled={blocking} onPress={handleBlock}>
           <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 underline">
-            Block User
+            {blocking ? 'Blocking...' : 'Block User'}
           </Text>
         </TouchableOpacity>
       </View>

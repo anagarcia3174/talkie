@@ -6,8 +6,8 @@ type StoreResult<T = void> = { success: true; data?: T } | { success: false; err
 
 interface BlockState {
   // relationship cache
-  blockedMap: Record<string, boolean>;
-  hydrateBlockedMap: (userId: string) => Promise<StoreResult<void>>;
+  blockedIds: Set<string>;
+  hydrateBlockedIds: (userId: string) => Promise<StoreResult<void>>;
 
   // users I blocked
   blockedUsers: Profile[];
@@ -22,21 +22,16 @@ interface BlockState {
 }
 
 export const useBlock = create<BlockState>((set, get) => ({
-  blockedMap: {},
+  blockedIds: new Set<string>(),
   blockedUsers: [],
-  hydrateBlockedMap: async (userId) => {
+  hydrateBlockedIds: async (userId) => {
     const result = await getBlockedIds(userId);
 
     if (!result.success) {
       return { success: false, error: result.error };
     }
 
-    const map = (result.data ?? []).reduce<Record<string, boolean>>((acc, id) => {
-      acc[id] = true;
-      return acc;
-    }, {});
-
-    set({ blockedMap: map });
+    set({ blockedIds: new Set(result.data ?? []) });
 
     return { success: true };
   },
@@ -47,12 +42,12 @@ export const useBlock = create<BlockState>((set, get) => ({
       return { success: false, error: result.error };
     }
 
-    set((state) => ({
-      blockedMap: {
-        ...state.blockedMap,
-        [targetUserId]: true,
-      },
-    }));
+    set((state) => {
+      const updated = new Set(state.blockedIds);
+      updated.add(targetUserId);
+
+      return { blockedIds: updated };
+    });
 
     return { success: true };
   },
@@ -65,11 +60,11 @@ export const useBlock = create<BlockState>((set, get) => ({
     }
 
     set((state) => {
-      const updatedMap = { ...state.blockedMap };
-      delete updatedMap[targetUserId];
+      const updated = { ...state.blockedIds };
+      updated.delete(targetUserId);
 
       return {
-        blockedMap: updatedMap,
+        blockedIds: updated,
       };
     });
 
@@ -87,10 +82,7 @@ export const useBlock = create<BlockState>((set, get) => ({
 
     set({
       blockedUsers: blockedProfiles,
-      blockedMap: blockedProfiles.reduce<Record<string, boolean>>((acc, profile) => {
-        acc[profile.id] = true;
-        return acc;
-      }, {}),
+      blockedIds: new Set(blockedProfiles.map((p) => p.id)),
     });
 
     return { success: true };
@@ -98,7 +90,7 @@ export const useBlock = create<BlockState>((set, get) => ({
 
   clearBlockData: () => {
     set({
-      blockedMap: {},
+      blockedIds: new Set(),
       blockedUsers: [],
     });
   },

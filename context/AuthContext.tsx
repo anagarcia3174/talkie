@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { getProfile, getStats } = useProfile.getState();
     const { getLists } = useLists.getState();
     const { hydrateFollowerIds, hydrateFollowingIds } = useFollow.getState();
-    const { hydrateBlockedMap } = useBlock.getState();
+    const { hydrateBlockedIds } = useBlock.getState();
 
     const profileResult = await getProfile(userId);
 
@@ -108,7 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     // Only load additional data if active
-    await Promise.allSettled([getStats(userId), getLists(userId), hydrateFollowerIds(userId), hydrateFollowingIds(userId), hydrateBlockedMap(userId)]);
+    await Promise.allSettled([getStats(userId), getLists(userId), hydrateFollowerIds(userId), hydrateFollowingIds(userId), hydrateBlockedIds(userId)]);
 
     return { accountDeleted: false };
   }, []);
