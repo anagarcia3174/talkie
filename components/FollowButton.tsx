@@ -7,6 +7,7 @@ import { UserPlus, UserRoundCheck, UserCheck, Users } from 'lucide-react-native'
 
 interface FollowButtonProps {
   targetUserId: string;
+  isSmall?: boolean;
 }
 
 type FollowState = 'follow' | 'followBack' | 'following' | 'friends';
@@ -58,7 +59,7 @@ const STATES: Record<
   },
 };
 
-export default function FollowButton({ targetUserId }: FollowButtonProps) {
+export default function FollowButton({ targetUserId, isSmall = false }: FollowButtonProps) {
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
 
@@ -88,6 +89,20 @@ export default function FollowButton({ targetUserId }: FollowButtonProps) {
     friends: theme.primary[500], // primary-400 / primary-500
   }[state];
 
+  const sizeStyles = isSmall
+    ? {
+        container: 'rounded-md px-3 py-1.5',
+        text: 'text-xs',
+        iconSize: 13,
+        gap: 'gap-1',
+      }
+    : {
+        container: 'rounded-lg px-4 py-2 mt-2',
+        text: 'text-sm',
+        iconSize: 15,
+        gap: 'gap-1.5',
+      };
+
   const handlePress = async () => {
     if (loading) return;
 
@@ -106,14 +121,13 @@ export default function FollowButton({ targetUserId }: FollowButtonProps) {
     <Pressable
       onPress={handlePress}
       disabled={loading}
-      className={`mt-2 flex-row items-center justify-center gap-1.5 rounded-lg px-4 py-2 active:opacity-70 ${className}`}
-    >
+      className={`flex-row items-center justify-center ${sizeStyles.gap} active:opacity-70 ${sizeStyles.container} ${className}`}>
       {loading ? (
-        <ActivityIndicator color={iconColor} />
+        <ActivityIndicator size={isSmall ? 'small' : 'small'} color={iconColor} />
       ) : (
         <>
-          <Icon size={15} color={iconColor} strokeWidth={2.2} />
-          <Text className={`font-SpaceGrotesk-Bold text-sm ${textClassName}`}>
+          <Icon size={sizeStyles.iconSize} color={iconColor} strokeWidth={2.2} />
+          <Text className={`font-SpaceGrotesk-Bold ${sizeStyles.text} ${textClassName}`}>
             {label}
           </Text>
         </>

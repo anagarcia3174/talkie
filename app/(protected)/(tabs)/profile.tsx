@@ -13,6 +13,7 @@ import SignOutModal from '~/components/SignOutModal';
 import DeleteAccountModal from '~/components/DeleteAccountModal';
 import AccountOverlay from '~/components/AccountOverlay';
 import BlockedUsersModal from '~/components/BlockedUsersModal';
+import FollowsModal from '~/components/FollowsModal';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -22,9 +23,11 @@ export default function Profile() {
   const [signOutModal, setSignOutModal] = useState(false);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
-  const [ blockedModal, setBlockedModal ] = useState(false);
+  const [blockedModal, setBlockedModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [followModal, setFollowModal] = useState<null | 'followers' | 'following'>(null);
+  const [followModalVisible, setFollowModalVisible] = useState(false);
   const subtitle =
     user?.email ??
     (user?.created_at
@@ -95,7 +98,18 @@ export default function Profile() {
           bio={profile.bio}
           subtitle={subtitle}
         />
-        <StatsSection stats={stats} />
+        <StatsSection
+          stats={stats}
+          onTilePress={(tile) => {
+            if (tile === 'followers') {
+              setFollowModal('followers');
+              setFollowModalVisible(true);
+            } else if (tile === 'following') {
+              setFollowModal('following');
+              setFollowModalVisible(true);
+            }
+          }}
+        />
       </ScrollView>
       <ProfileActionsModal
         visible={showProfileModal}
@@ -182,6 +196,11 @@ export default function Profile() {
         email={user?.email || profile.display_name}
       />
       <BlockedUsersModal visible={blockedModal} onClose={() => setBlockedModal(false)} />
+      <FollowsModal
+        visible={followModalVisible}
+        onClose={() => setFollowModalVisible(false)}
+        checking={followModal ?? 'followers'}
+      />
       <AccountOverlay
         visible={overlayVisible}
         onClose={() => setOverlayVisible(false)}

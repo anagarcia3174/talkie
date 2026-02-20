@@ -14,14 +14,17 @@ interface BlockedUsersModal {
 }
 
 export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModal) {
-  const { blockedUsers, getBlockedUsers, unblock } = useBlock();
+  const { blockedIds, blockedUsers, getBlockedUsers, unblock } = useBlock();
   const { user } = useAuth();
   const theme = useTheme();
 
   useEffect(() => {
-    if (!user) return;
-    getBlockedUsers(user.id);
-  }, [user]);
+    if (!visible || !user) return;
+
+    if (blockedIds.size !== blockedUsers.length) {
+      getBlockedUsers(user.id);
+    }
+  }, [visible, user, blockedIds, blockedUsers.length]);
 
   const handleUnblock = async (targetUserId: string) => {
     if (!user) return;
