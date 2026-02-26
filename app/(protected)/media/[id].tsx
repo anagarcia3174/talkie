@@ -4,23 +4,28 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useState } from 'react';
-import { Media } from '~/types/supabaseTypes';
+import { useEffect, useState } from 'react';
+import { Media, TVDetails } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
 import { useLists } from '~/store/listStore';
+import TimestampPicker from '~/components/TimestampPicker';
+import { useMedia } from '~/store/mediaStore';
 
 const CONTENT_OPTIONS = ['Comments'];
 
 export default function MediaScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { mediaDetails, loadingIds, fetchMediaDetails } = useMedia();
   const params = useLocalSearchParams<{ id: string; mediaData: string }>();
   const media: Media = JSON.parse(params.mediaData as string);
   const theme = useTheme();
+  const details = mediaDetails[media.id];
+  const isLoading = loadingIds.has(media.id);
   const [selectedSegment, setSelectedSegment] = useState(0);
   const [listModalVisible, setListModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,6 +35,9 @@ export default function MediaScreen() {
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
   const [shrinkHeader, setShrinkHeader] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [timestamp, setTimestamp] = useState(0);
+  const [season, setSeason] = useState(1);
+  const [episode, setEpisode] = useState(1);
 
   // const { submitReview, fetchReviewsForMedia } = useReviews();
   // const [reviews, setReviews] = useState<ReviewWithProfile[]>([]);
@@ -52,6 +60,12 @@ export default function MediaScreen() {
   // useEffect(() => {
   //   loadReviews();
   // }, [media.id]);
+
+  useEffect(() => {
+    if (!details) {
+      fetchMediaDetails(media.id);
+    }
+  }, [media.id]);
 
   const handleAddToList = async (listId: number) => {
     if (!listId || !user?.id) return;
@@ -132,6 +146,13 @@ export default function MediaScreen() {
   //   }
   // };
 
+  const TimestampSkeleton = () => (
+    <View className="py-2">
+      <View className="mb-2 h-9 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
+      <View className="h-6 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
+    </View>
+  );
+
   return (
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
       <ImageBackground
@@ -167,11 +188,27 @@ export default function MediaScreen() {
                   setPreviewImage(`https://image.tmdb.org/t/p/w780${media.poster_path}`);
                 }}
               />
+
               <MediaTabs
                 selectedIndex={selectedSegment}
                 onChange={setSelectedSegment}
                 options={CONTENT_OPTIONS}
               />
+              {!details && isLoading ? (
+                <TimestampSkeleton />
+              ) : details ? (
+                <TimestampPicker
+                  mediaType={media.media_type}
+                  details={mediaDetails[media.id]}
+                  selectedTimestamp={timestamp}
+                  selectedSeason={season}
+                  selectedEpisode={episode}
+                  onTimestampChange={setTimestamp}
+                  onSeasonChange={setSeason}
+                  onEpisodeChange={setEpisode}
+                />
+              ) : null}
+
               {/* {selectedSegment === 0 &&
                 (loadingReviews ? (
                   <ActivityIndicator

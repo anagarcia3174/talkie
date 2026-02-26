@@ -1,6 +1,8 @@
 import { supabase } from '~/utils/supabase';
-import type { Media, DataResult } from '~/types/supabaseTypes';
+import type { Media, DataResult, MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import { errorData, successData } from '~/types/supabaseTypes';
+
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
 
 export async function getMediaById(id: number, mediaType: string): Promise<DataResult<Media>> {
   try {
@@ -71,3 +73,27 @@ export async function searchMedia(searchText: string): Promise<DataResult<Media[
 // Usage
 export const getTrendingMovies = () => getCollection('trending', 'movie');
 export const getTrendingShows = () => getCollection('trending', 'tv');
+
+export async function getMediaDetails(id: number): Promise<DataResult<MovieDetails | TVDetails>> {
+  try {
+    const url = `${supabaseUrl}/functions/v1/get-media-details?media_id=${id}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      return { success: false, error: `Request failed with status ${response.status}` };
+    }
+
+    const data = await response.json();
+    return successData(data);
+  } catch (err) {
+    return errorData(err, {
+      operation: 'get_media_details',
+    });
+  }
+}

@@ -12,7 +12,7 @@ export default function MediaTabs({ selectedIndex, onChange, options }: MediaTab
   const theme = useTheme();
 
   return (
-    <View className="mb-4 w-full">
+    <View className="mb-2 w-full">
       <SegmentedControl
         values={options}
         selectedIndex={selectedIndex}

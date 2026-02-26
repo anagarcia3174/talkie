@@ -108,6 +108,27 @@ export interface Media {
   last_fetched: string | null;
 }
 
+export interface MovieDetails {
+  runtime_minutes: number | null;
+}
+
+export interface TVDetails {
+  seasons: TVSeason[];
+  episodes: Record<number, TVEpisode[]>;
+}
+
+export interface TVSeason {
+  id: number;
+  media_id: number;
+  season_number: number;
+  episode_count: number;
+}
+
+export interface TVEpisode {
+  episode_number: number;
+  runtime_minutes: number | null;
+}
+
 export interface Comment {
   id: number;
   user_id: string;
@@ -123,6 +144,15 @@ export interface Comment {
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface CommentWithUser extends Comment {
+   owner: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    is_private: boolean;
+  } ;
 }
 
 export interface CommentLike {

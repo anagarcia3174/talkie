@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '~/components/Header';
 import TrendingSection from '~/components/TrendingSection';
-import { useHomeStore } from '~/store/homeStore';
+import { useMedia } from '~/store/mediaStore';
 import { ScrollView, View } from 'react-native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import MediaRowSection from '~/components/MediaRowSection';
@@ -12,14 +12,16 @@ import { useLists } from '~/store/listStore';
 import Toast from 'react-native-toast-message';
 
 export default function Home() {
-  const { fetchHomeData, trendingMovies, trendingShows } = useHomeStore();
+  const { fetchHomeData, trendingMovies, trendingShows } = useMedia();
   const tabBarHeight = useBottomTabBarHeight();
   const { listsById, defaultListIds, addItemToList, listItems, hydrateDefaultLists } = useLists();
-  const [ loading, setLoading ] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchHomeData();
-  }, []);
+    if (trendingMovies.length === 0 || trendingShows.length === 0) {
+      fetchHomeData();
+    }
+  }, [trendingMovies.length, trendingShows.length, fetchHomeData]);
 
   useEffect(() => {
     if (defaultListIds.library) {
@@ -46,23 +48,21 @@ export default function Home() {
         Toast.show({
           type: 'error',
           text1: result.error || 'Failed to add item to your library',
-              visibilityTime: 4000,
+          visibilityTime: 4000,
           autoHide: true,
-
         });
       } else {
         Toast.show({
           type: 'success',
           text1: 'Added to Library!',
-                  autoHide: true,
-
+          autoHide: true,
         });
       }
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'An unexpected error ocurred while adding the item to your library',
-          visibilityTime: 4000,
+        visibilityTime: 4000,
         autoHide: true,
       });
     } finally {

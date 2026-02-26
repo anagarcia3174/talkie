@@ -62,14 +62,14 @@ export default function MediaHeader({ media, shrinkHeader, onPosterPress }: Medi
   });
 
   return (
-    <Animated.View style={[containerStyle]} className="items-center px-4">
+    <Animated.View style={[containerStyle]} className="items-center">
       {/* Poster */}
       {poster ? (
         <TouchableOpacity activeOpacity={0.9} onPress={() => onPosterPress?.()}>
           <Animated.Image
             source={{ uri: poster }}
             style={posterStyle}
-            className="mb-2 rounded-xl"
+            className="mb-1 rounded-xl"
             resizeMode="cover"
           />
         </TouchableOpacity>
