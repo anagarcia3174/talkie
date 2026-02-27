@@ -1,6 +1,7 @@
 import {
   Comment,
   CommentWithUser,
+  CreateCommentInput,
   DataResult,
   errorData,
   errorVoid,
@@ -31,21 +32,35 @@ export async function getCommentsForMedia(mediaId: number): Promise<DataResult<C
   }
 }
 
-export async function postComment(comment: Partial<Comment>): Promise<VoidResult> {
+export async function postComment(comment: CreateCommentInput): Promise<DataResult<CommentWithUser>> {
   try {
-    const { data, error } = await supabase.from('comments').insert(comment);
+    const { data, error } = await supabase
+      .from('comments')
+      .insert(comment)
+      .select(
+        `
+  *,
+  owner:profiles (
+    id,
+    display_name,
+    avatar_url,
+    is_private
+  )
+`
+      )
+      .single();
 
     if (error) {
-      return errorVoid(error, {
+      return errorData(error, {
         operation: 'post_comment',
         table: 'comments',
         isWrite: true,
       });
     }
 
-    return successVoid();
+    return successData(data as CommentWithUser);
   } catch (err) {
-    return errorVoid(err, {
+    return errorData(err, {
       operation: 'post_comment',
       table: 'comments',
       isWrite: true,

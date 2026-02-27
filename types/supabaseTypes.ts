@@ -146,6 +146,16 @@ export interface Comment {
   updated_at: string;
 }
 
+export type CreateCommentInput = Omit<
+  Comment,
+  | 'id'
+  | 'created_at'
+  | 'updated_at'
+  | 'like_count'
+  | 'reply_count'
+  | 'is_deleted'
+>;
+
 export interface CommentWithUser extends Comment {
    owner: {
     id: string;
