@@ -13,14 +13,24 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useTheme } from '~/hooks/useTheme';
+import { useComments } from '~/store/commentStore';
 import { useProfile } from '~/store/profileStore';
 
 interface PostCommentFormProps {
-  onSubmitComment: (content: string, isSpoiler: boolean) => Promise<void>;
+  mediaId: number;
+  timestamp: number;
+  season: number | null;
+  episode: number | null;
 }
 
-export default function PostCommentForm({ onSubmitComment }: PostCommentFormProps) {
+export default function PostCommentForm({
+  mediaId,
+  timestamp,
+  season,
+  episode,
+}: PostCommentFormProps) {
   const { profile } = useProfile();
+  const { postComment } = useComments();
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(false);
   const theme = useTheme();
@@ -43,18 +53,55 @@ export default function PostCommentForm({ onSubmitComment }: PostCommentFormProp
         autoHide: true,
       });
     }
-    setLoading(true);
-    await onSubmitComment(commentText.trim(), false);
+    if (profile) {
+      setLoading(true);
+      Toast.show({
+        type: 'info',
+        text1: 'Posting your comment...',
+        autoHide: true,
+      });
+      const result = await postComment({
+        media_id: mediaId,
+        content: commentText.trim(),
+        is_spoiler: false,
+        user_id: profile.id,
+        season_number: season,
+        episode_number: episode,
+        timestamp_seconds: timestamp,
+        parent_comment_id: null,
+      });
+      if (result.success) {
+        Toast.show({
+          type: 'success',
+          text1: 'Comment posted!',
+          autoHide: true,
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: result.error || 'Failed to post your comment.',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      }
 
-    setCommentText('');
-    setLoading(false);
+      setCommentText('');
+      setLoading(false);
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'An unexpected error occurred while posting your comment.',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    }
   };
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <BlurView
         intensity={30}
-        className="overflow-hidden px-4 pt-2"
+        className="overflow-hidden pt-2 px-4"
         style={{ paddingBottom: insets.bottom * 0.6 }}>
         <View className="flex-row items-center">
           {/* Profile Picture */}

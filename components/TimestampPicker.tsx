@@ -63,10 +63,10 @@ export default function TimestampPicker({
   const tvDetails = mediaType === 'tv' ? (details as TVDetails) : null;
 
   return (
-    <View className="">
+    <View className="px-4">
       {/* ---------------- TV PICKERS ---------------- */}
       {mediaType === 'tv' && tvDetails && (
-        <View className="mb-3 flex-row gap-2">
+        <View className="mb-3 flex-row gap-1">
           <CompactDropdown
             label="Season"
             items={tvDetails.seasons}

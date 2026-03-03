@@ -26,7 +26,7 @@ export async function getReviewsForMedia(
 }
 
 export async function postReview(
-  review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'>
+  review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'>
 ): Promise<DataResult<ReviewWithUser>> {
   try {
     const { data, error } = await supabase
@@ -43,12 +43,13 @@ export async function postReview(
       )
       .single();
 
-    if (error)
+    if (error){
+      console.log(error);
       return errorData(error, {
         operation: 'post_review',
         table: 'reviews',
         isWrite: true,
-      });
+      });}
 
     const flattened: ReviewWithUser = {
       ...data,
@@ -60,6 +61,7 @@ export async function postReview(
 
     return successData(flattened);
   } catch (err) {
+    console.log(err);
     return errorData(err);
   }
 }

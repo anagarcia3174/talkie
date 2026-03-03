@@ -264,6 +264,7 @@ export interface ReviewWithUser {
   created_at: string;
   display_name: string;
   avatar_url: string | null;
+  is_private: boolean;
 }
 
 export interface ProfileStats {

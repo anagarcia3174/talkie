@@ -4,74 +4,122 @@ import { getReviewsForMedia, postReview, deleteReview } from '~/services/reviewS
 
 type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
-interface ReviewsState {
-  fetchedReviews: Record<number, ReviewWithUser[]>;
+interface MediaReviewsState {
+  reviews: ReviewWithUser[];
+  isLoading: boolean;
+  hasFetched: boolean;
+  error: string | null;
+}
 
-  fetchReviewsForMedia: (mediaId: number) => Promise<StoreResult<ReviewWithUser[]>>;
+interface ReviewsState {
+  fetchedReviews: Record<number, MediaReviewsState>;
+
+  fetchReviewsForMedia: (mediaId: number, force?: boolean) => Promise<StoreResult<void>>;
   submitReview: (
-    review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'>
-  ) => Promise<StoreResult<ReviewWithUser>>;
-  removeReview: (reviewId: number) => Promise<StoreResult<void>>;
+    review: Omit<
+      Review,
+      'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'
+    >
+  ) => Promise<StoreResult<void>>;
+  removeReview: (reviewId: number, mediaId: number) => Promise<StoreResult<void>>;
 }
 
 export const useReviews = create<ReviewsState>((set, get) => ({
   fetchedReviews: {},
-  fetchReviewsForMedia: async (mediaId) => {
+  fetchReviewsForMedia: async (mediaId, force = false) => {
     const cachedReviews = get().fetchedReviews[mediaId];
 
-    if (cachedReviews !== undefined) {
-      return { success: true, data: cachedReviews };
+    if (cachedReviews?.isLoading) {
+      return { success: true };
     }
+
+    if (cachedReviews?.hasFetched && !force) {
+      return { success: true };
+    }
+
+    set((state) => ({
+      fetchedReviews: {
+        ...state.fetchedReviews,
+        [mediaId]: {
+          reviews: cachedReviews?.reviews ?? [],
+          isLoading: true,
+          hasFetched: cachedReviews?.hasFetched ?? false,
+          error: null,
+        },
+      },
+    }));
 
     const result = await getReviewsForMedia(mediaId);
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      set((state) => ({
+        fetchedReviews: {
+          ...state.fetchedReviews,
+          [mediaId]: {
+            reviews: [],
+            isLoading: false,
+            hasFetched: false,
+            error: result.error,
+          },
+        },
+      }));
+      return result;
     }
-    const reviews = result.data || [];
+
+    const reviews = result.data ?? [];
     set((state) => ({
       fetchedReviews: {
         ...state.fetchedReviews,
-        [mediaId]: reviews,
+        [mediaId]: {
+          reviews: reviews,
+          isLoading: false,
+          hasFetched: true,
+          error: null,
+        },
       },
     }));
-
-    return { success: true, data: reviews };
+    return { success: true };
   },
   submitReview: async (review) => {
     const result = await postReview(review);
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return result;
     }
 
     const newReview = result.data;
     if (newReview) {
       set((state) => {
         const mediaId = review.media_id;
-        const existingReviews = state.fetchedReviews[mediaId] || [];
-
+        const existingReviews = state.fetchedReviews[mediaId];
+        if (!existingReviews) return state;
         return {
           fetchedReviews: {
             ...state.fetchedReviews,
-            [mediaId]: [newReview, ...existingReviews],
+            [mediaId]: {
+              ...existingReviews,
+              reviews: [newReview, ...existingReviews.reviews],
+            },
           },
         };
       });
     }
-    return { success: true, data: newReview };
+    return { success: true };
   },
-  removeReview: async (reviewId) => {
+  removeReview: async (reviewId, mediaId) => {
     const result = await deleteReview(reviewId);
 
     if (!result.success) {
-      return { success: false, error: result.error };
+      return result;
     }
 
     set((state) => {
       const updated = { ...state.fetchedReviews };
-      for (const mediaId in updated) {
-        updated[mediaId] = updated[mediaId].filter((r) => r.id !== reviewId);
+      if (updated[mediaId]) {
+        updated[mediaId] = {
+          ...updated[mediaId],
+          reviews: updated[mediaId].reviews.filter((r) => r.id !== reviewId),
+        };
       }
       return { fetchedReviews: updated };
     });
