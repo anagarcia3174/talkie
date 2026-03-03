@@ -14,6 +14,8 @@ import MediaHeader from '~/components/MediaHeader';
 import { useLists } from '~/store/listStore';
 import TimestampPicker from '~/components/TimestampPicker';
 import { useMedia } from '~/store/mediaStore';
+import PostCommentForm from '~/components/PostCommentForm';
+import { useComments } from '~/store/commentStore';
 
 const CONTENT_OPTIONS = ['Comments'];
 
@@ -38,7 +40,7 @@ export default function MediaScreen() {
   const [timestamp, setTimestamp] = useState(0);
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
-
+  const { postComment } = useComments();
   // const { submitReview, fetchReviewsForMedia } = useReviews();
   // const [reviews, setReviews] = useState<ReviewWithProfile[]>([]);
   // const [loadingReviews, setLoadingReviews] = useState(true);
@@ -146,6 +148,50 @@ export default function MediaScreen() {
   //   }
   // };
 
+  const handleSubmitComment = async (content: string, isSpoiler: boolean) => {
+    if (user?.id) {
+      const result = await postComment({
+        content,
+        is_spoiler: isSpoiler,
+        user_id: user.id,
+        media_id: media.id,
+        season_number: media.media_type === 'tv' ? season : null,
+        episode_number: media.media_type === 'tv' ? episode : null,
+        timestamp_seconds: timestamp,
+        parent_comment_id: null,
+      });
+
+      if (result.success) {
+        Toast.show({
+          type: 'success',
+          text1: 'Comment Posted!',
+          position: 'top',
+          visibilityTime: 3000,
+          autoHide: true,
+          onPress: () => Toast.hide(),
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: result.error || 'Failed to post your comment',
+          position: 'top',
+          visibilityTime: 4000,
+          autoHide: true,
+          onPress: () => Toast.hide(),
+        });
+      }
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'An unexpected error ocurred while posting your comment.',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+    }
+  };
+
   const TimestampSkeleton = () => (
     <View className="py-2">
       <View className="mb-2 h-9 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
@@ -233,6 +279,13 @@ export default function MediaScreen() {
                 ))} */}
             </View>
             {/* {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />} */}
+            {selectedSegment === 0 && (
+              <PostCommentForm
+                onSubmitComment={async (content, isSpoiler) => {
+                  handleSubmitComment(content, isSpoiler);
+                }}
+              />
+            )}
             <ListSelectionModal
               visible={listModalVisible}
               onClose={() => setListModalVisible(false)}

@@ -32,7 +32,9 @@ export async function getCommentsForMedia(mediaId: number): Promise<DataResult<C
   }
 }
 
-export async function postComment(comment: CreateCommentInput): Promise<DataResult<CommentWithUser>> {
+export async function postComment(
+  comment: CreateCommentInput
+): Promise<DataResult<CommentWithUser>> {
   try {
     const { data, error } = await supabase
       .from('comments')
@@ -51,6 +53,7 @@ export async function postComment(comment: CreateCommentInput): Promise<DataResu
       .single();
 
     if (error) {
+      console.log(error);
       return errorData(error, {
         operation: 'post_comment',
         table: 'comments',
@@ -60,6 +63,7 @@ export async function postComment(comment: CreateCommentInput): Promise<DataResu
 
     return successData(data as CommentWithUser);
   } catch (err) {
+    console.log(err);
     return errorData(err, {
       operation: 'post_comment',
       table: 'comments',
