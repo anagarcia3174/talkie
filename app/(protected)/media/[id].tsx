@@ -2,11 +2,9 @@ import {
   View,
   TouchableOpacity,
   ImageBackground,
-  Modal,
+  Keyboard,
+  TouchableWithoutFeedback,
   Pressable,
-  Image,
-  ActivityIndicator,
-  FlatList,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -14,22 +12,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useEffect, useState } from 'react';
-import { Media, ReviewWithUser, TVDetails } from '~/types/supabaseTypes';
+import { Media } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
 import { useLists } from '~/store/listStore';
-import TimestampPicker from '~/components/TimestampPicker';
 import { useMedia } from '~/store/mediaStore';
-import PostCommentForm from '~/components/PostCommentForm';
-import { useComments } from '~/store/commentStore';
 import PosterPreviewModal from '~/components/PosterPreviewModal';
 import MediaCommentSection from '~/components/MediaCommentSection';
-import { useReviews } from '~/store/reviewStore';
-import ReviewItem from '~/components/ReviewItem';
-import AddReviewForm from '~/components/AddReviewForm';
 import MediaReviewSection from '~/components/MediaReviewSection';
 
 const CONTENT_OPTIONS = ['Reviews', 'Comments'];
@@ -53,6 +45,7 @@ export default function MediaScreen() {
   const [shrinkHeader, setShrinkHeader] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addItemToList } = useLists();
+
 
   useEffect(() => {
     if (!details) {
@@ -97,8 +90,6 @@ export default function MediaScreen() {
     setLoading(false);
   };
 
-  
-
   return (
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
       <ImageBackground
@@ -126,7 +117,10 @@ export default function MediaScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-            <View className="px-4">
+            <View
+              className="px-4"
+              onStartShouldSetResponder={() => true}
+              onResponderRelease={Keyboard.dismiss}>
               <MediaHeader
                 media={media}
                 shrinkHeader={shrinkHeader}
@@ -140,7 +134,9 @@ export default function MediaScreen() {
                 options={CONTENT_OPTIONS}
               />
             </View>
-            {selectedSegment === 0 && <MediaReviewSection mediaId={media.id} />}
+            {selectedSegment === 0 && (
+              <MediaReviewSection mediaId={media.id} setShrinkHeader={setShrinkHeader} />
+            )}
             {selectedSegment === 1 && (
               <MediaCommentSection
                 mediaType={media.media_type}

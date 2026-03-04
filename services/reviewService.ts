@@ -10,12 +10,11 @@ export async function getReviewsForMedia(
       p_media_id: mediaId,
     });
 
-    if (error)
+    if (error){
       return errorData(error, {
         operation: 'get_reviews',
         rpc: 'get_reviews_for_media',
-      });
-
+      });}
     return successData(data as ReviewWithUser[]);
   } catch (err) {
     return errorData(err, {

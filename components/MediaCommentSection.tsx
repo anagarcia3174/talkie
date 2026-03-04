@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import TimestampPicker from './TimestampPicker';
 import PostCommentForm from './PostCommentForm';
@@ -22,35 +22,39 @@ export default function MediaCommentSection({
   const [episode, setEpisode] = useState(1);
 
   const TimestampSkeleton = () => (
-    <View className="py-2 px-4">
+    <View className="px-4 py-2">
       <View className="mb-2 h-9 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
       <View className="h-6 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
     </View>
   );
 
   return (
-    <View className="flex-1 justify-between">
-      {!details || detailsLoading ? (
-        <TimestampSkeleton />
-      ) : details ? (
-        <TimestampPicker
-          mediaType={mediaType}
-          details={details}
-          selectedTimestamp={timestamp}
-          selectedSeason={season}
-          selectedEpisode={episode}
-          onTimestampChange={setTimestamp}
-          onSeasonChange={setSeason}
-          onEpisodeChange={setEpisode}
-        />
-      ) : null}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1">
+      <View className="flex-1 justify-between">
+        {!details || detailsLoading ? (
+          <TimestampSkeleton />
+        ) : details ? (
+          <TimestampPicker
+            mediaType={mediaType}
+            details={details}
+            selectedTimestamp={timestamp}
+            selectedSeason={season}
+            selectedEpisode={episode}
+            onTimestampChange={setTimestamp}
+            onSeasonChange={setSeason}
+            onEpisodeChange={setEpisode}
+          />
+        ) : null}
 
-      <PostCommentForm
-        mediaId={mediaId}
-        timestamp={timestamp}
-        season={mediaType === 'tv' ? season : null}
-        episode={mediaType === 'tv' ? episode : null}
-      />
-    </View>
+        <PostCommentForm
+          mediaId={mediaId}
+          timestamp={timestamp}
+          season={mediaType === 'tv' ? season : null}
+          episode={mediaType === 'tv' ? episode : null}
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
 }

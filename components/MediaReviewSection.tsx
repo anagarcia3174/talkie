@@ -1,5 +1,11 @@
 import { useEffect, useMemo } from 'react';
-import { ActivityIndicator, FlatList, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from 'react-native';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
 import { useReviews } from '~/store/reviewStore';
@@ -9,9 +15,10 @@ import Toast from 'react-native-toast-message';
 
 interface MediaReviewSectionProps {
   mediaId: number;
+  setShrinkHeader: (shrink: boolean) => void;
 }
 
-export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps) {
+export default function MediaReviewSection({ mediaId, setShrinkHeader }: MediaReviewSectionProps) {
   const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReviews();
   const { user } = useAuth();
   const theme = useTheme();
@@ -29,6 +36,19 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
       return 0;
     });
   }, [reviews, user?.id]);
+
+  const debugReviews = useMemo(() => {
+    if (sortedReviews.length === 1) {
+      const base = sortedReviews[0];
+
+      return Array.from({ length: 15 }).map((_, index) => ({
+        ...base,
+        id: Number(`${base.id}${index}`), // ensure unique key
+      }));
+    }
+
+    return sortedReviews;
+  }, [sortedReviews]);
 
   const hasReviewed = reviews.some((r) => r.user_id === user?.id);
 
@@ -79,25 +99,35 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
   };
 
   return (
-    <View className='flex-1 justify-between'>
-      {isLoading ? (
-        <ActivityIndicator
-          className="flex-1 items-center justify-center"
-          color={theme.primary[950]}
-        />
-      ) : (
-        <FlatList
-          data={sortedReviews}
-          keyExtractor={(item) => item.id.toString()}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingVertical: 8 }}
-          renderItem={({ item }) => (
-            <ReviewItem review={item} isUser={item.user_id === user?.id} />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1">
+        <View className="flex-1 justify-between">
+          {isLoading ? (
+            <ActivityIndicator
+              className="flex-1 items-center justify-center"
+              color={theme.primary[950]}
+            />
+          ) : (
+            <FlatList
+              data={debugReviews}
+              keyExtractor={(item) => item.id.toString()}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 8 }}
+              renderItem={({ item }) => (
+                <ReviewItem review={item} isUser={item.user_id === user?.id} />
+              )}
+              onScroll={(e) => {
+                const y = e.nativeEvent.contentOffset.y;
+                setShrinkHeader(y > 30);
+              }}
+              scrollEventThrottle={16}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode='on-drag'
+            />
           )}
-          scrollEventThrottle={16}
-        />
-      )}
-      {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />}
-    </View>
+          {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />}
+        </View>
+    </KeyboardAvoidingView>
   );
 }

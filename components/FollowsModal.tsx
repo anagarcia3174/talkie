@@ -91,7 +91,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
                     numberOfLines={1}
                     ellipsizeMode="tail"
                     className="flex-1 font-SpaceGrotesk-Regular text-lg text-primary-900 dark:text-primary-100">
-                    {item.display_name} {item.display_name} {item.display_name}
+                    {item.display_name}
                   </Text>
                 </View>
 
