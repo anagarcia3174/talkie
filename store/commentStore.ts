@@ -52,6 +52,7 @@ export const useComments = create<CommentState>((set, get) => ({
 
     //  If base already fetched and not forcing → derive locally
     if (baseExisting?.hasFetched && !force) {
+
       let comments = baseExisting.comments;
 
       if (seasonNumber != null && episodeNumber != null) {
@@ -86,9 +87,7 @@ export const useComments = create<CommentState>((set, get) => ({
         },
       },
     }));
-
     const result = await getCommentsForMedia(mediaId);
-
     if (!result.success) {
       set((state) => ({
         fetchedComments: {
@@ -122,6 +121,7 @@ export const useComments = create<CommentState>((set, get) => ({
 
     // If episode view, also derive and cache slice
     if (seasonNumber != null && episodeNumber != null) {
+
       const filtered = allComments.filter(
         (c) => c.season_number === seasonNumber && c.episode_number === episodeNumber
       );
@@ -159,7 +159,7 @@ export const useComments = create<CommentState>((set, get) => ({
     // Extract base key from contextKey
     const baseKey = `media-${comment.media_id}`;
     const episodeKey =
-      comment.season_number && comment.episode_number
+      comment.season_number != null && comment.episode_number != null
         ? `media-${comment.media_id}-s${comment.season_number}-e${comment.episode_number}`
         : baseKey;
 

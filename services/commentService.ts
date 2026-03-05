@@ -16,7 +16,6 @@ export async function getCommentsForMedia(mediaId: number): Promise<DataResult<C
     const { data, error } = await supabase.rpc('get_comments_for_media', {
       p_media_id: mediaId,
     });
-
     if (error)
       return errorData(error, {
         operation: 'get_comments',
@@ -53,7 +52,6 @@ export async function postComment(
       .single();
 
     if (error) {
-      console.log(error);
       return errorData(error, {
         operation: 'post_comment',
         table: 'comments',
@@ -63,7 +61,6 @@ export async function postComment(
 
     return successData(data as CommentWithUser);
   } catch (err) {
-    console.log(err);
     return errorData(err, {
       operation: 'post_comment',
       table: 'comments',

@@ -43,7 +43,6 @@ export async function postReview(
       .single();
 
     if (error){
-      console.log(error);
       return errorData(error, {
         operation: 'post_review',
         table: 'reviews',
@@ -60,7 +59,6 @@ export async function postReview(
 
     return successData(flattened);
   } catch (err) {
-    console.log(err);
     return errorData(err);
   }
 }

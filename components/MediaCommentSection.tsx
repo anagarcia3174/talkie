@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import TimestampPicker from './TimestampPicker';
 import PostCommentForm from './PostCommentForm';
+import { useComments } from '~/store/commentStore';
+import { useTheme } from '~/hooks/useTheme';
+import { FlatList } from 'react-native-gesture-handler';
 
 interface MediaCommentSectionProps {
   mediaType: 'movie' | 'tv';
@@ -17,9 +20,30 @@ export default function MediaCommentSection({
   details,
   detailsLoading,
 }: MediaCommentSectionProps) {
+  const { fetchedComments, fetchCommentsForMedia } = useComments();
+  const theme = useTheme();
   const [timestamp, setTimestamp] = useState(0);
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
+  const contextKey =
+    mediaType === 'movie' ? `media-${mediaId}` : `media-${mediaId}-s${season}-e${episode}`;
+  const mediaComments = fetchedComments[contextKey];
+  const comments = mediaComments?.comments ?? [];
+  const isLoading = mediaComments?.isLoading ?? false;
+  const error = mediaComments?.error ?? null;
+
+  
+  useEffect(() => {
+    if (mediaType === 'movie') {
+      fetchCommentsForMedia({ mediaId });
+    } else {
+      fetchCommentsForMedia({
+        mediaId,
+        seasonNumber: season,
+        episodeNumber: episode,
+      });
+    }
+  }, [mediaId, mediaType, season, episode]);
 
   const TimestampSkeleton = () => (
     <View className="px-4 py-2">
@@ -47,6 +71,24 @@ export default function MediaCommentSection({
             onEpisodeChange={setEpisode}
           />
         ) : null}
+        {isLoading ? (
+          <ActivityIndicator
+            className="flex-1 items-center justify-center"
+            color={theme.primary[950]}
+          />
+        ) : (
+          <FlatList
+            data={comments}
+            keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingVertical: 8 }}
+            renderItem={({ item }) => (
+              <View className="bg-primary-50 px-4 py-2">
+                <Text className="text-xl text-primary-950">{item.content}</Text>
+              </View>
+            )}
+          />
+        )}
 
         <PostCommentForm
           mediaId={mediaId}
