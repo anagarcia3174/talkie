@@ -4,6 +4,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
   View,
 } from 'react-native';
 import { useAuth } from '~/context/AuthContext';
@@ -12,6 +13,7 @@ import { useReviews } from '~/store/reviewStore';
 import ReviewItem from './ReviewItem';
 import AddReviewForm from './AddReviewForm';
 import Toast from 'react-native-toast-message';
+import { BlurView } from 'expo-blur';
 
 interface MediaReviewSectionProps {
   mediaId: number;
@@ -102,32 +104,36 @@ export default function MediaReviewSection({ mediaId, setShrinkHeader }: MediaRe
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1">
-        <View className="flex-1 justify-between">
-          {isLoading ? (
-            <ActivityIndicator
-              className="flex-1 items-center justify-center"
-              color={theme.primary[950]}
-            />
-          ) : (
-            <FlatList
-              data={debugReviews}
-              keyExtractor={(item) => item.id.toString()}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingVertical: 8 }}
-              renderItem={({ item }) => (
-                <ReviewItem review={item} isUser={item.user_id === user?.id} />
-              )}
-              onScroll={(e) => {
-                const y = e.nativeEvent.contentOffset.y;
-                setShrinkHeader(y > 30);
-              }}
-              scrollEventThrottle={16}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode='on-drag'
-            />
-          )}
-          {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />}
-        </View>
+      <View className="flex-1 justify-between">
+        {isLoading ? (
+          <ActivityIndicator
+            className="flex-1 items-center justify-center"
+            color={theme.primary[950]}
+          />
+        ) : (
+          <FlatList
+            data={debugReviews}
+            keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            renderItem={({ item, index }) => (
+              <ReviewItem
+                review={item}
+                isUser={item.user_id === user?.id}
+                isLast={index === debugReviews.length - 1}
+              />
+            )}
+            onScroll={(e) => {
+              const y = e.nativeEvent.contentOffset.y;
+              setShrinkHeader(y > 30);
+            }}
+            scrollEventThrottle={16}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          />
+        )}
+        {!hasReviewed && <AddReviewForm onSubmitReview={handleSubmitReview} />}
+      </View>
     </KeyboardAvoidingView>
   );
 }

@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { ImageOff, Star } from 'lucide-react-native';
 import MediaOverview from './MediaOverview';
 import { useTheme } from '~/hooks/useTheme';
+import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
 
 interface MediaHeaderProps {
   media: Media;
@@ -20,10 +21,15 @@ export default function MediaHeader({ media, shrinkHeader, onPosterPress }: Medi
   const posterWidth = shrinkHeader ? 66 : 132;
   const titleSize = shrinkHeader ? 18 : 22;
 
-  if (shrinkHeader) {
-    return (
-      <View className="my-2 items-start">
-        <View className="flex-row items-start">
+  return (
+    <View className={shrinkHeader ? 'my-2 items-start' : 'items-center'}>
+      {/* SHRUNK HEADER */}
+      {shrinkHeader ? (
+        <Animated.View
+          key="shrunk"
+          entering={FadeInDown.duration(200)}
+          exiting={FadeOutUp.duration(200)}
+          className="flex-row items-start">
           {/* Poster */}
           {poster ? (
             <TouchableOpacity activeOpacity={0.9} onPress={() => onPosterPress?.()}>
@@ -59,58 +65,62 @@ export default function MediaHeader({ media, shrinkHeader, onPosterPress }: Medi
                   <View className="mx-3 h-1 w-1 rounded-full bg-primary-700 dark:bg-primary-200" />
                 </>
               )}
-              <Star size={12} color="#fbbf24" fill="#fbbf24" />
+              <Star size={12} color={theme.isDark ? 'gold' : 'yellow'} fill={theme.isDark ? 'gold' : 'yellow'} />
               <Text className="text-md ml-1 font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-50">
                 {rating}
               </Text>
             </View>
           </View>
-        </View>
-      </View>
-    );
-  } else {
-    return (
-      <View className="items-center">
-        {/* Poster */}
-        {poster ? (
-          <TouchableOpacity activeOpacity={0.9} onPress={() => onPosterPress?.()}>
-            <Image
-              source={{ uri: poster }}
+        </Animated.View>
+      ) : (
+        /* EXPANDED HEADER (original layout) */
+        <Animated.View
+          key="expanded"
+          entering={FadeInDown.duration(200)}
+          exiting={FadeOutUp.duration(200)}
+          className="items-center">
+          {/* Poster */}
+          {poster ? (
+            <TouchableOpacity activeOpacity={0.9} onPress={() => onPosterPress?.()}>
+              <Image
+                source={{ uri: poster }}
+                style={{ height: posterHeight, width: posterWidth }}
+                className="mb-1 rounded-xl"
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          ) : (
+            <View
               style={{ height: posterHeight, width: posterWidth }}
-              className="mb-1 rounded-xl"
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        ) : (
-          <View
-            style={{ height: posterHeight, width: posterWidth }}
-            className="mb-2 items-center justify-center rounded-xl bg-primary-400 dark:bg-primary-800">
-            <ImageOff size={48} color={theme.primary[700]} />
-          </View>
-        )}
-
-        <Text
-          style={{ fontSize: titleSize }}
-          className="text-center font-SpaceGrotesk-SemiBold text-primary-900 dark:text-primary-50">
-          {media.title}
-        </Text>
-
-        <View className="mb-2 flex-row items-center">
-          {year && (
-            <>
-              <Text className="font-SpaceGrotesk-Medium text-lg text-primary-800 dark:text-primary-100">
-                {year}
-              </Text>
-              <View className="mx-4 h-1 w-1 rounded-full bg-primary-700 dark:bg-primary-200" />
-            </>
+              className="mb-2 items-center justify-center rounded-xl bg-primary-400 dark:bg-primary-800">
+              <ImageOff size={48} color={theme.primary[700]} />
+            </View>
           )}
-          <Star size={16} color="#fbbf24" fill="#fbbf24" />
-          <Text className="ml-1 font-SpaceGrotesk-Medium text-lg text-primary-900 dark:text-primary-50">
-            {rating}
+
+          <Text
+            style={{ fontSize: titleSize }}
+            className="text-center font-SpaceGrotesk-SemiBold text-primary-900 dark:text-primary-50">
+            {media.title}
           </Text>
-        </View>
-        <MediaOverview synopsis={media.synopsis || 'No overview available.'} />
-      </View>
-    );
-  }
+
+          <View className="mb-2 flex-row items-center">
+            {year && (
+              <>
+                <Text className="font-SpaceGrotesk-Medium text-lg text-primary-800 dark:text-primary-100">
+                  {year}
+                </Text>
+                <View className="mx-4 h-1 w-1 rounded-full bg-primary-700 dark:bg-primary-200" />
+              </>
+            )}
+            <Star size={16} color={theme.isDark ? 'gold' : 'yellow'} fill={theme.isDark ? 'gold' : 'yellow'} />
+            <Text className="ml-1 font-SpaceGrotesk-Medium text-lg text-primary-800 dark:text-primary-100">
+              {rating}
+            </Text>
+          </View>
+
+          <MediaOverview synopsis={media.synopsis || 'No overview available.'} />
+        </Animated.View>
+      )}
+    </View>
+  );
 }

@@ -1,98 +1,87 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { ReviewWithUser } from '~/types/supabaseTypes';
 import { Star, Trash2, UserRound } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
 import { getPublicUrl } from '~/utils/storageUrl';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { TouchableOpacity } from 'react-native';
+import { useTheme } from '~/hooks/useTheme';
 
 interface ReviewItemProps {
   review: ReviewWithUser;
   isUser?: boolean;
+  isLast?: boolean; // hide divider on last item
 }
 
-export default function ReviewItem({ review, isUser }: ReviewItemProps) {
+export default function ReviewItem({ review, isUser, isLast }: ReviewItemProps) {
   const uri = getPublicUrl(review.avatar_url);
   const hasAvatar = uri && uri.length > 0;
+  const theme = useTheme();
 
   const renderRightActions = () => {
     if (!isUser) return null;
-
     return (
-      <TouchableOpacity className="h-full w-24 items-center justify-center bg-red-500">
-        <Trash2 size={24} color="white" />
+      <TouchableOpacity className="h-full w-20 items-center justify-center bg-red-500">
+        <Trash2 size={20} color="white" />
       </TouchableOpacity>
     );
   };
 
   return (
-    <>
-      <ReanimatedSwipeable
-        enabled={isUser} // disable swipe for all other users
-        rightThreshold={40}
-        renderRightActions={renderRightActions}
-        friction={3}
-        overshootRight={false}>
-        <View
-          className={`flex-row items-center gap-3 border-b border-gray-200 p-4 dark:border-gray-700
-    ${isUser && 'bg-primary-100/40 dark:bg-primary-950/40'}
-    `}>
+    <ReanimatedSwipeable
+      enabled={isUser}
+      rightThreshold={40}
+      renderRightActions={renderRightActions}
+      friction={3}
+      overshootRight={false}>
+      <View className="px-4 py-3">
+        <View className="flex-row items-start gap-3">
           {/* Avatar */}
           {hasAvatar ? (
-            <Image source={{ uri }} className="h-10 w-10 rounded-full bg-gray-300" />
+            <Image source={{ uri }} className="mt-0.5 h-9 w-9 rounded-full bg-primary-300" />
           ) : (
-            <View className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
-              <UserRound size={24} />
+            <View className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full border border-primary-300 dark:border-primary-700 bg-primary-200 dark:bg-primary-600">
+              <UserRound size={20} color={theme.primary[700]} />
             </View>
           )}
+
           {/* Review content */}
           <View className="flex-1">
             <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center">
-                <Text className="font-semibold text-black dark:text-white">
+              <View className="flex-row items-center gap-2">
+                <Text className="text-sm font-semibold text-primary-950 dark:text-primary-50">
                   {review.display_name}
                 </Text>
-
                 {isUser && (
-                  <View className="ml-2 rounded-full bg-primary-600/20 px-2 py-0.5">
-                    <Text className="text-[10px] font-semibold text-primary-700 dark:text-primary-200">
+                  <View className="rounded-full bg-primary-600/20 px-2 py-0.5">
+                    <Text className="text-[9px] font-SpaceGrotesk-Bold tracking-wide text-primary-700 dark:text-primary-300">
                       YOU
                     </Text>
                   </View>
                 )}
               </View>
-              <View className="flex-row items-center justify-center gap-x-1">
-                <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-950 dark:text-primary-50">
+              <View className="flex-row items-center gap-x-1">
+                <Text className="text-xs font-SpaceGrotesk-SemiBold text-primary-950 dark:text-primary-100">
                   {review.rating}/10
                 </Text>
-                <Star strokeWidth={1.5} size={14} color="gold" fill="gold" />
+                <Star strokeWidth={1.5} size={12} color={theme.isDark ? 'gold' : 'yellow'} fill={theme.isDark ? 'gold' : 'yellow'} />
               </View>
             </View>
 
-            {/* Review Content */}
             {review.content ? (
-              <View className="relative mt-1">
-                <Text className="text-sm text-gray-700 dark:text-gray-300">{review.content}</Text>
-                <BlurView
-                  intensity={0}
-                  tint="light"
-                  className="absolute inset-0"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                  }}
-                />
-              </View>
+              <Text className="mt-1 text-sm font-SpaceGrotesk-Light leading-5 text-primary-800 dark:text-primary-200">
+                {review.content}
+              </Text>
             ) : (
-              <Text className="mt-1 text-sm italic text-gray-500 dark:text-gray-400">
+              <Text className="mt-1 text-sm font-SpaceGrotesk-Light text-primary-500 dark:text-primary-400">
                 No written review
               </Text>
             )}
           </View>
         </View>
-      </ReanimatedSwipeable>
-    </>
+      </View>
+
+      {/* Inset divider — skipped on last item */}
+      {!isLast && <View className="mx-4 h-px bg-primary-300 dark:bg-primary-700" />}
+    </ReanimatedSwipeable>
   );
 }

@@ -4,7 +4,6 @@ import { View, Image, TextInput, TouchableOpacity, Text, ActivityIndicator } fro
 import { SendHorizonal, Star } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
 import Toast from 'react-native-toast-message';
 import { useUI } from '~/store/uiStore';
 interface AddReviewFormProps {
@@ -44,10 +43,7 @@ export default function AddReviewForm({ onSubmitReview }: AddReviewFormProps) {
   };
 
   return (
-    <BlurView
-      intensity={30}
-      className="overflow-hidden px-4 pt-2"
-      style={{ paddingBottom: insets.bottom * 0.7 }}>
+    <View className="overflow-hidden px-4 pt-2" style={{ paddingBottom: insets.bottom * 0.7 }}>
       {/* Star Rating */}
       <View className="mb-3 flex-row justify-between">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
@@ -60,8 +56,8 @@ export default function AddReviewForm({ onSubmitReview }: AddReviewFormProps) {
               <Star
                 strokeWidth={1.5}
                 size={28}
-                color={star <= rating ? 'gold' : theme.primary[500]}
-                fill={star <= rating ? 'gold' : 'transparent'}
+                color={star <= rating ? (theme.isDark ? 'gold' : 'yellow') : theme.primary[500]}
+                fill={star <= rating ? (theme.isDark ? 'gold' : 'yellow') : 'transparent'}
               />
               {star <= rating && (
                 <Text className="absolute font-SpaceGrotesk-SemiBold text-xs text-primary-950">
@@ -107,6 +103,6 @@ export default function AddReviewForm({ onSubmitReview }: AddReviewFormProps) {
           )}
         </TouchableOpacity>
       </View>
-    </BlurView>
+    </View>
   );
 }
