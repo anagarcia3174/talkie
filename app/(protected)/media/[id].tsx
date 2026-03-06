@@ -3,12 +3,12 @@ import {
   TouchableOpacity,
   ImageBackground,
   Keyboard,
-  TouchableWithoutFeedback,
-  Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useEffect, useState } from 'react';
@@ -45,7 +45,7 @@ export default function MediaScreen() {
   const [shrinkHeader, setShrinkHeader] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addItemToList } = useLists();
-
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (!details) {
@@ -117,10 +117,7 @@ export default function MediaScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-            <View
-              className="px-4"
-              onStartShouldSetResponder={() => true}
-              onResponderRelease={Keyboard.dismiss}>
+            <View className="px-4">
               <MediaHeader
                 media={media}
                 shrinkHeader={shrinkHeader}
@@ -134,18 +131,22 @@ export default function MediaScreen() {
                 options={CONTENT_OPTIONS}
               />
             </View>
-            {selectedSegment === 0 && (
-              <MediaReviewSection mediaId={media.id} setShrinkHeader={setShrinkHeader} />
-            )}
-            {selectedSegment === 1 && (
-              <MediaCommentSection
-                mediaType={media.media_type}
-                mediaId={media.id}
-                details={details}
-                detailsLoading={isLoading}
-              />
-            )}
-
+            <KeyboardAvoidingView
+              className="flex-1"
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+              {selectedSegment === 0 && (
+                <MediaReviewSection mediaId={media.id} setShrinkHeader={setShrinkHeader} />
+              )}
+              {selectedSegment === 1 && (
+                <MediaCommentSection
+                  mediaType={media.media_type}
+                  mediaId={media.id}
+                  details={details}
+                  detailsLoading={isLoading}
+                  setShrinkHeader={setShrinkHeader}
+                />
+              )}
+            </KeyboardAvoidingView>
             <ListSelectionModal
               visible={listModalVisible}
               onClose={() => setListModalVisible(false)}

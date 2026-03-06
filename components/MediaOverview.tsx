@@ -1,5 +1,4 @@
 import { View, Text, Pressable, Keyboard } from 'react-native';
-import { useTheme } from '~/hooks/useTheme';
 import { useUI } from '~/store/uiStore';
 
 interface MediaOverviewProps {
@@ -7,7 +6,6 @@ interface MediaOverviewProps {
 }
 
 export default function MediaOverview({ synopsis }: MediaOverviewProps) {
-  const theme = useTheme();
   const { overviewExpanded, setOverviewExpanded } = useUI();
 
   const isLong = synopsis.length > 200;

@@ -1,3 +1,4 @@
+import { BlurView } from 'expo-blur';
 import { SendHorizonal, UserRound } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator, Image, TextInput, TouchableOpacity, View } from 'react-native';
@@ -90,46 +91,74 @@ export default function PostCommentForm({
     }
   };
 
+  const formatTime = (seconds: number) => {
+    if (seconds >= 3600) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
   return (
-    <View className="overflow-hidden px-4 pt-2" style={{ paddingBottom: insets.bottom * 0.6 }}>
-      <View className="flex-row items-center">
-        {/* Profile Picture */}
-        {profile && profile.avatar_url ? (
-          <Image
-            source={{ uri: profile.avatar_url || 'https://via.placeholder.com/50' }}
-            className="h-10 w-10 rounded-full"
-          />
-        ) : (
-          <View className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
-            <UserRound size={12} color={theme.primary[900]} />
-          </View>
-        )}
-        {/* Text Input */}
-        <TextInput
-          placeholder="Leave a comment..."
-          value={commentText}
-          onChangeText={setCommentText}
-          multiline
-          numberOfLines={2}
-          className="text-md mx-3 max-h-24 flex-1 rounded-xl border border-primary-700 px-4 py-2 font-SpaceGrotesk-Light text-primary-950 focus:border-[1.5px] focus:border-primary-950 dark:border-primary-400 dark:text-primary-200 focus:dark:border-primary-50"
-          cursorColor={theme.primary[700]}
-          selectionColor={theme.primary[700]}
-          placeholderTextColor={theme.primary[600]}
-          maxLength={1000}
-          returnKeyType="done"
-          submitBehavior="blurAndSubmit"
-          onFocus={() => setOverviewExpanded(false)}
-        />
-
-        {/* Submit Button */}
-        <TouchableOpacity onPress={handleSubmit} disabled={loading} className="rounded-full">
-          {loading ? (
-            <ActivityIndicator color={theme.primary[950]} />
+    <View
+      className="px-4"
+      style={{
+        paddingBottom: insets.bottom * 0.2,
+      }}>
+      <BlurView
+        intensity={40}
+        tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
+        className="overflow-hidden rounded-3xl border border-white/15"
+        style={{
+          shadowColor: '#000',
+          shadowOpacity: 0.15,
+          shadowRadius: 14,
+          shadowOffset: { width: 0, height: 6 },
+          elevation: 10,
+        }}>
+        <View className="flex-row items-end px-4 py-3">
+          {/* Avatar */}
+          {profile && profile.avatar_url ? (
+            <Image source={{ uri: profile.avatar_url }} className="h-11 w-11 rounded-full" />
           ) : (
-            <SendHorizonal color={theme.primary[950]} size={24} strokeWidth={1.5} />
+            <View className="h-11 w-11 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
+              <UserRound size={16} color={theme.primary[900]} />
+            </View>
           )}
-        </TouchableOpacity>
-      </View>
+
+          {/* Input */}
+          <TextInput
+            placeholder={`Leave a comment at ${formatTime(timestamp)}...`}
+            value={commentText}
+            onChangeText={setCommentText}
+            multiline
+            className="mx-4 max-h-28 flex-1 py-3 font-SpaceGrotesk-Light text-[15px] text-primary-950 dark:text-primary-200"
+            cursorColor={theme.primary[700]}
+            selectionColor={theme.primary[700]}
+            placeholderTextColor={theme.primary[500]}
+            maxLength={1000}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onFocus={() => setOverviewExpanded(false)}
+            numberOfLines={2}
+          />
+
+          {/* Send Button */}
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={loading}
+            className="h-11 w-11 items-center justify-center rounded-full">
+            {loading ? (
+              <ActivityIndicator size="small" color={theme.primary[950]} />
+            ) : (
+              <SendHorizonal size={20} strokeWidth={2} color={theme.primary[950]} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </BlurView>
     </View>
   );
 }

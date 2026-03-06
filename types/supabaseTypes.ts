@@ -185,6 +185,18 @@ export interface Review {
   is_deleted: boolean;
 }
 
+export interface ReviewWithUser {
+  id: number;
+  media_id: number;
+  user_id: string;
+  rating: number | null;
+  content: string | null;
+  created_at: string;
+  display_name: string;
+  avatar_url: string | null;
+  is_private: boolean;
+}
+
 export interface ReviewLike {
   id: number;
   user_id: string;
@@ -255,17 +267,7 @@ export interface ListItemWithMedia {
   media: Media;
 }
 
-export interface ReviewWithUser {
-  id: number;
-  media_id: number;
-  user_id: string;
-  rating: number | null;
-  content: string | null;
-  created_at: string;
-  display_name: string;
-  avatar_url: string | null;
-  is_private: boolean;
-}
+
 
 export interface ProfileStats {
   followers: number;

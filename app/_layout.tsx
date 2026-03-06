@@ -10,7 +10,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toastConfig } from '~/components/ToastConfig';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import ErrorScreen from '~/components/ErrorScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,7 +65,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <InitialLayout />
-      {/* <ToastManager config={toastConfig} topOffset={insets.top + 10} /> */}
+
       <Toast
         config={toastConfig}
         position="top"

@@ -6,6 +6,7 @@ import { useTheme } from '~/hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useUI } from '~/store/uiStore';
+import { BlurView } from 'expo-blur';
 interface AddReviewFormProps {
   onSubmitReview: (rating: number, content: string) => Promise<void>;
 }
@@ -43,66 +44,108 @@ export default function AddReviewForm({ onSubmitReview }: AddReviewFormProps) {
   };
 
   return (
-    <View className="overflow-hidden px-4 pt-2" style={{ paddingBottom: insets.bottom * 0.7 }}>
-      {/* Star Rating */}
-      <View className="mb-3 flex-row justify-between">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+  <View
+    className="px-4"
+    style={{
+      paddingBottom: insets.bottom * 0.2,
+    }}>
+    <BlurView
+      intensity={40}
+      tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
+      className="overflow-hidden rounded-3xl border border-white/15"
+      style={{
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 10,
+      }}>
+      <View className="px-4 py-4">
+        {/* Star Rating */}
+        <View className="mb-3 flex-row justify-between px-1">
+          {[1,2,3,4,5,6,7,8,9,10].map((star) => (
+            <TouchableOpacity
+              key={star}
+              onPress={() => handleSetRating(star === rating ? 0 : star)}
+              activeOpacity={0.7}
+              className="items-center">
+
+              <View className="relative items-center justify-center">
+                <Star
+                  strokeWidth={1.2}
+                  size={30}
+                  color={
+                    star <= rating
+                      ? theme.isDark
+                        ? 'gold'
+                        : 'gold'
+                      : theme.primary[500]
+                  }
+                  fill={
+                    star <= rating
+                      ? theme.isDark
+                        ? 'gold'
+                        : 'gold'
+                      : 'transparent'
+                  }
+                />
+
+                {star <= rating && (
+                  <Text className="absolute font-SpaceGrotesk-SemiBold text-[10px] text-primary-950">
+                    {star}
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+          <View className='h-[1px] mb-2 bg-primary-400/50 dark:bg-primary-800'></View>
+        {/* Input Row */}
+        <View className="flex-row items-end">
+          {/* Avatar */}
+          <Image
+            source={{ uri: profile.avatar_url || 'https://via.placeholder.com/50' }}
+            className="h-11 w-11 rounded-full"
+          />
+
+          {/* Input */}
+          <TextInput
+            placeholder="Leave a review..."
+            value={reviewText}
+            onChangeText={setReviewText}
+            multiline
+            className="mx-4 max-h-28 flex-1 py-3 font-SpaceGrotesk-Light text-[15px] text-primary-950 dark:text-primary-200"
+            cursorColor={theme.primary[700]}
+            selectionColor={theme.primary[700]}
+            placeholderTextColor={theme.primary[500]}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            maxLength={1000}
+            onFocus={() => setOverviewExpanded(false)}
+            numberOfLines={2}
+          />
+
+          {/* Submit */}
           <TouchableOpacity
-            key={star}
-            onPress={() => handleSetRating(star === rating ? 0 : star)}
-            activeOpacity={0.7}
-            className="items-center">
-            <View className="relative items-center justify-center">
-              <Star
-                strokeWidth={1.5}
-                size={28}
-                color={star <= rating ? (theme.isDark ? 'gold' : 'yellow') : theme.primary[500]}
-                fill={star <= rating ? (theme.isDark ? 'gold' : 'yellow') : 'transparent'}
+            onPress={handleSubmit}
+            disabled={loading}
+            className="h-11 w-11 items-center justify-center rounded-full ">
+            {loading ? (
+              <ActivityIndicator
+                size="small"
+              color={theme.primary[950]}
               />
-              {star <= rating && (
-                <Text className="absolute font-SpaceGrotesk-SemiBold text-xs text-primary-950">
-                  {star}
-                </Text>
-              )}
-            </View>
+            ) : (
+              <SendHorizonal
+                size={20}
+                strokeWidth={2}
+              color={theme.primary[950]}
+              />
+            )}
           </TouchableOpacity>
-        ))}
+        </View>
       </View>
-
-      {/* Input Row */}
-      <View className="flex-row items-center">
-        {/* Profile Picture */}
-        <Image
-          source={{ uri: profile.avatar_url || 'https://via.placeholder.com/50' }}
-          className="h-10 w-10 rounded-full"
-        />
-
-        {/* Text Input */}
-        <TextInput
-          placeholder="Leave a review..."
-          value={reviewText}
-          onChangeText={setReviewText}
-          multiline
-          numberOfLines={2}
-          className="text-md mx-3 max-h-24 flex-1 rounded-xl border border-primary-700 px-4 py-2 font-SpaceGrotesk-Light text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:text-primary-200 focus:dark:border-primary-50"
-          cursorColor={theme.primary[700]}
-          selectionColor={theme.primary[700]}
-          placeholderTextColor={theme.primary[500]}
-          returnKeyType="done"
-          submitBehavior="blurAndSubmit"
-          maxLength={1000}
-          onFocus={() => setOverviewExpanded(false)}
-        />
-
-        {/* Submit Button */}
-        <TouchableOpacity onPress={handleSubmit} disabled={loading} className="rounded-full">
-          {loading ? (
-            <ActivityIndicator color={theme.primary[950]} />
-          ) : (
-            <SendHorizonal color={theme.primary[950]} size={24} />
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    </BlurView>
+  </View>
+);
 }
