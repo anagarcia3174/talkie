@@ -1,14 +1,12 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { CommentWithUser } from '~/types/supabaseTypes';
-import { Trash2, UserRound, Heart, MessageCircle, AlertTriangle, Clock } from 'lucide-react-native';
+import { UserRound, AlertTriangle } from 'lucide-react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useTheme } from '~/hooks/useTheme';
 
 interface CommentItemProps {
   comment: CommentWithUser;
   isUser?: boolean;
-  isLast?: boolean;
 }
 
 function formatTimestamp(seconds: number): string {
@@ -34,31 +32,17 @@ function formatRelativeTime(dateString: string): string {
   return date.toLocaleDateString();
 }
 
-export default function CommentItem({ comment, isUser, isLast }: CommentItemProps) {
+export default function CommentItem({ comment, isUser }: CommentItemProps) {
   const uri = comment.owner.avatar_url ? getPublicUrl(comment.owner.avatar_url) : null;
   const hasAvatar = uri && uri.length > 0;
   const theme = useTheme();
   const isReply = comment.parent_comment_id !== null;
 
-  const renderRightActions = () => {
-    if (!isUser) return null;
-    return (
-      <TouchableOpacity className="h-full w-20 items-center justify-center bg-red-500">
-        <Trash2 size={20} color="white" />
-      </TouchableOpacity>
-    );
-  };
-
   return (
-    <ReanimatedSwipeable
-      enabled={isUser}
-      rightThreshold={40}
-      renderRightActions={renderRightActions}
-      friction={3}
-      overshootRight={false}>
+    <>
       {/* Indent replies */}
       <View className={isReply ? 'pl-10' : ''}>
-        <View className="px-6 py-3">
+        <View className="mx-2 my-1 rounded-2xl bg-primary-100/30 dark:bg-primary-950/30  px-6 py-3">
           <View className="flex-row items-start gap-3">
             {/* Avatar */}
             {hasAvatar ? (
@@ -93,77 +77,32 @@ export default function CommentItem({ comment, isUser, isLast }: CommentItemProp
                     </View>
                   )}
                 </View>
-                <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
+                <Text className="font-SpaceGrotesk-Light text-xs text-primary-600 dark:text-primary-400">
                   {formatRelativeTime(comment.created_at)}
                 </Text>
               </View>
 
-              {/* Timestamp / episode context */}
-              {(comment.timestamp_seconds !== null ||
-                comment.season_number !== null ||
-                comment.episode_number !== null) && (
-                <View className="mt-1 flex-row items-center gap-1">
-                  <Clock size={11} color={theme.isDark ? theme.primary[400] : theme.primary[500]} />
-                  <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
-                    {comment.season_number !== null && comment.episode_number !== null
-                      ? `S${comment.season_number}E${comment.episode_number}`
-                      : comment.season_number !== null
-                        ? `Season ${comment.season_number}`
-                        : null}
-                    {comment.timestamp_seconds !== null
-                      ? `${comment.season_number !== null || comment.episode_number !== null ? ' · ' : ''}${formatTimestamp(comment.timestamp_seconds)}`
-                      : null}
-                  </Text>
-                </View>
-              )}
-
-              {/* Comment body */}
+              {/* Comment body with optional inline timestamp prefix */}
               {comment.is_deleted ? (
                 <Text className="mt-1 font-SpaceGrotesk-Light text-sm italic text-primary-400 dark:text-primary-500">
                   This comment has been deleted.
                 </Text>
-              ) : comment.content ? (
-                <Text className="mt-1 font-SpaceGrotesk-Light text-sm leading-5 text-primary-800 dark:text-primary-200">
-                  {comment.content}
-                </Text>
               ) : (
-                <Text className="mt-1 font-SpaceGrotesk-Light text-sm text-primary-500 dark:text-primary-400">
-                  No content
+                <Text className="mt-1 font-SpaceGrotesk-Light text-sm leading-5 text-primary-800 dark:text-primary-200">
+                  {comment.timestamp_seconds !== null && (
+                    <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">
+                      {`${formatTimestamp(comment.timestamp_seconds)} — `}
+                    </Text>
+                  )}
+                  {comment.content ?? (
+                    <Text className="text-primary-500 dark:text-primary-400">No content</Text>
+                  )}
                 </Text>
-              )}
-
-              {/* Footer: likes & replies */}
-              {!comment.is_deleted && (
-                <View className="mt-2 flex-row items-center gap-4">
-                  <TouchableOpacity className="flex-row items-center gap-1">
-                    <Heart
-                      size={13}
-                      color={theme.isDark ? theme.primary[400] : theme.primary[500]}
-                    />
-                    <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
-                      {comment.like_count}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity className="flex-row items-center gap-1">
-                    <MessageCircle
-                      size={13}
-                      color={theme.isDark ? theme.primary[400] : theme.primary[500]}
-                    />
-                    <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
-                      {comment.reply_count > 0
-                        ? `${comment.reply_count} repl${comment.reply_count === 1 ? 'y' : 'ies'}`
-                        : 'Reply'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
               )}
             </View>
           </View>
         </View>
       </View>
-
-      {/* Inset divider — skipped on last item */}
-      {!isLast && <View className="mx-6 h-px bg-primary-300 dark:bg-primary-700" />}
-    </ReanimatedSwipeable>
+    </>
   );
 }

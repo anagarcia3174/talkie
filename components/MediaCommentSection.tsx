@@ -14,7 +14,6 @@ interface MediaCommentSectionProps {
   mediaId: number;
   details?: MovieDetails | TVDetails;
   detailsLoading: boolean;
-  setShrinkHeader: (shrink: boolean) => void;
 }
 
 export default function MediaCommentSection({
@@ -22,7 +21,6 @@ export default function MediaCommentSection({
   mediaId,
   details,
   detailsLoading,
-  setShrinkHeader,
 }: MediaCommentSectionProps) {
   const { fetchedComments, fetchCommentsForMedia } = useComments();
   const theme = useTheme();
@@ -36,18 +34,7 @@ export default function MediaCommentSection({
   const comments = mediaComments?.comments ?? [];
   const isLoading = mediaComments?.isLoading ?? false;
   const error = mediaComments?.error ?? null;
-
-  const debugReviews = useMemo(() => {
-    if (comments.length > 0) {
-      const base = comments[0];
-
-      return Array.from({ length: 15 }).map((_, index) => ({
-        ...base,
-        id: Number(`${base.id}${index}`), // ensure unique key
-      }));
-    }
-    return comments;
-  }, [comments]);
+  
 
   useEffect(() => {
     if (mediaType === 'movie') {
@@ -92,24 +79,18 @@ export default function MediaCommentSection({
       ) : (
         <FlatList
           style={{ flex: 1 }}
-          data={debugReviews}
+          data={comments}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: 100,
+            paddingBottom: 110,
           }}
           renderItem={({ item, index }) => (
             <CommentItem
               comment={item}
               isUser={item.user_id === user?.id}
-              isLast={index === debugReviews.length - 1}
             />
           )}
-          onScroll={(e) => {
-            const y = e.nativeEvent.contentOffset.y;
-            setShrinkHeader(y > 30);
-          }}
-          scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         />

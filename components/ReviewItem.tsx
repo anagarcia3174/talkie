@@ -1,21 +1,28 @@
 import { View, Text, Image } from 'react-native';
 import { ReviewWithUser } from '~/types/supabaseTypes';
-import { Star, Trash2, UserRound } from 'lucide-react-native';
+import { Star, UserRound } from 'lucide-react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { TouchableOpacity } from 'react-native';
 import { useTheme } from '~/hooks/useTheme';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  SharedValue,
-  useAnimatedStyle,
-} from 'react-native-reanimated';
 
 interface ReviewItemProps {
   review: ReviewWithUser;
   isUser?: boolean;
-  isLast?: boolean; // hide divider on last item
+  isLast?: boolean;
+}
+
+function formatRelativeTime(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
 }
 
 export default function ReviewItem({ review, isUser, isLast }: ReviewItemProps) {
@@ -23,35 +30,9 @@ export default function ReviewItem({ review, isUser, isLast }: ReviewItemProps) 
   const hasAvatar = uri && uri.length > 0;
   const theme = useTheme();
 
-  const renderRightActions = (prog: SharedValue<number>, drag: SharedValue<number>) => {
-    if (!isUser) return null;
-
-    const styleAnim = useAnimatedStyle(() => {
-      const scale = interpolate(drag.value, [-80, -40, 0], [1, 0.85, 0.7], Extrapolation.CLAMP);
-      const opacity = interpolate(drag.value, [-60, -20], [1, 0], Extrapolation.CLAMP);
-      return { transform: [{ scale }], opacity };
-    });
-
-    return (
-      <TouchableOpacity
-        activeOpacity={0.8}
-        className="my-1 mr-3 w-16 items-center justify-center rounded-r-lg ">
-        <Animated.View style={styleAnim} className="items-center gap-1">
-          <Trash2 size={18} color={theme.primary[950]} strokeWidth={2} />
-          <Text className="text-[10px] font-semibold tracking-wide text-primary-950 dark:text-primary-50">Delete</Text>
-        </Animated.View>
-      </TouchableOpacity>
-    );
-  };
-
   return (
-    <ReanimatedSwipeable
-      enabled={isUser}
-      rightThreshold={60}
-      renderRightActions={renderRightActions}
-      friction={2}
-      overshootRight={false}>
-      <View className="px-6 py-3">
+    <>
+      <View className="px-6 py-3 mx-2 my-1 rounded-2xl bg-primary-100/30 dark:bg-primary-950/30 ">
         <View className="flex-row items-start gap-3">
           {/* Avatar */}
           {hasAvatar ? (
@@ -64,11 +45,13 @@ export default function ReviewItem({ review, isUser, isLast }: ReviewItemProps) 
 
           {/* Review content */}
           <View className="flex-1">
+            {/* Header row */}
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
                 <Text className="text-sm font-semibold text-primary-950 dark:text-primary-50">
                   {review.display_name}
                 </Text>
+
                 {isUser && (
                   <View className="rounded-full bg-primary-600/20 px-2 py-0.5">
                     <Text className="font-SpaceGrotesk-Bold text-[9px] tracking-wide text-primary-700 dark:text-primary-300">
@@ -77,34 +60,36 @@ export default function ReviewItem({ review, isUser, isLast }: ReviewItemProps) 
                   </View>
                 )}
               </View>
-              <View className="flex-row items-center gap-x-1">
-                <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-950 dark:text-primary-100">
-                  {review.rating}/10
-                </Text>
-                <Star
-                  strokeWidth={1.5}
-                  size={12}
-                  color={theme.isDark ? 'gold' : 'yellow'}
-                  fill={theme.isDark ? 'gold' : 'yellow'}
-                />
-              </View>
+
+              {/* created_at now top-right */}
+              <Text className="font-SpaceGrotesk-Light text-xs text-primary-600 dark:text-primary-400">
+                {formatRelativeTime(review.created_at)}
+              </Text>
             </View>
 
-            {review.content ? (
-              <Text className="mt-1 font-SpaceGrotesk-Light text-sm leading-5 text-primary-800 dark:text-primary-200">
-                {review.content}
+            {/* Review body */}
+            <Text className="mt-1 font-SpaceGrotesk-Light text-sm leading-5 text-primary-800 dark:text-primary-200">
+              {/* rating prefix like timestamp */}
+              <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">
+                {review.rating}/10{' '}
               </Text>
-            ) : (
-              <Text className="mt-1 font-SpaceGrotesk-Light text-sm text-primary-500 dark:text-primary-400">
-                No written review
-              </Text>
-            )}
+
+              <Star
+                strokeWidth={1.5}
+                size={12}
+                color={theme.isDark ? 'gold' : 'yellow'}
+                fill={theme.isDark ? 'gold' : 'yellow'}
+              />
+
+              <Text> — </Text>
+
+              {review.content ?? (
+                <Text className="text-primary-500 dark:text-primary-400">No written review</Text>
+              )}
+            </Text>
           </View>
         </View>
       </View>
-
-      {/* Inset divider — skipped on last item */}
-      {!isLast && <View className="mx-6 h-px bg-primary-300 dark:bg-primary-700" />}
-    </ReanimatedSwipeable>
+    </>
   );
 }

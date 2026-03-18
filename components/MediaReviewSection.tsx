@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Platform, View } from 'react-native';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
@@ -9,10 +9,9 @@ import Toast from 'react-native-toast-message';
 
 interface MediaReviewSectionProps {
   mediaId: number;
-  setShrinkHeader: (shrink: boolean) => void;
 }
 
-export default function MediaReviewSection({ mediaId, setShrinkHeader }: MediaReviewSectionProps) {
+export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps) {
   const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReviews();
   const { user } = useAuth();
   const theme = useTheme();
@@ -30,19 +29,6 @@ export default function MediaReviewSection({ mediaId, setShrinkHeader }: MediaRe
       return 0;
     });
   }, [reviews, user?.id]);
-
-   const debugReviews = useMemo(() => {
-    if (sortedReviews.length === 1) {
-      const base = sortedReviews[0];
-
-      return Array.from({ length: 15 }).map((_, index) => ({
-        ...base,
-        id: Number(`${base.id}${index}`), // ensure unique key
-      }));
-    }
-
-    return sortedReviews;
-  }, [sortedReviews]);
 
   const hasReviewed = reviews.some((r) => r.user_id === user?.id);
 
@@ -102,24 +88,19 @@ export default function MediaReviewSection({ mediaId, setShrinkHeader }: MediaRe
       ) : (
         <FlatList
           style={{ flex: 1 }}
-          data={debugReviews}
+          data={sortedReviews}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: 160,
+            paddingBottom: 165,
           }}
           renderItem={({ item, index }) => (
             <ReviewItem
               review={item}
               isUser={item.user_id === user?.id}
-              isLast={index === debugReviews.length - 1}
+              isLast={index === sortedReviews.length - 1}
             />
           )}
-          onScroll={(e) => {
-            const y = e.nativeEvent.contentOffset.y;
-            setShrinkHeader(y > 30);
-          }}
-          scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         />

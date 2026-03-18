@@ -35,21 +35,15 @@ export async function postComment(
   comment: CreateCommentInput
 ): Promise<DataResult<CommentWithUser>> {
   try {
-    const { data, error } = await supabase
-      .from('comments')
-      .insert(comment)
-      .select(
-        `
-  *,
-  owner:profiles (
-    id,
-    display_name,
-    avatar_url,
-    is_private
-  )
-`
-      )
-      .single();
+    const { data, error } = await supabase.rpc('post_comment_for_media', {
+      p_media_id: comment.media_id,
+      p_content: comment.content,
+      p_timestamp_seconds: comment.timestamp_seconds,
+      p_season_number: comment.season_number,
+      p_episode_number: comment.episode_number,
+      p_parent_comment_id: comment.parent_comment_id,
+      p_is_spoiler: comment.is_spoiler,
+    });
 
     if (error) {
       return errorData(error, {
@@ -59,7 +53,8 @@ export async function postComment(
       });
     }
 
-    return successData(data as CommentWithUser);
+    // rpc returns an array (even for 1 row)
+    return successData(data[0] as CommentWithUser);
   } catch (err) {
     return errorData(err, {
       operation: 'post_comment',

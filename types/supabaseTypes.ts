@@ -149,6 +149,7 @@ export interface Comment {
 export type CreateCommentInput = Omit<
   Comment,
   | 'id'
+  | 'user_id'
   | 'created_at'
   | 'updated_at'
   | 'like_count'

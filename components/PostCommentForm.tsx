@@ -58,7 +58,6 @@ export default function PostCommentForm({
         media_id: mediaId,
         content: commentText.trim(),
         is_spoiler: false,
-        user_id: profile.id,
         season_number: season,
         episode_number: episode,
         timestamp_seconds: timestamp,
@@ -104,7 +103,6 @@ export default function PostCommentForm({
   };
   return (
     <View
-      className="px-4"
       style={{
         paddingBottom: insets.bottom * 0.2,
       }}>

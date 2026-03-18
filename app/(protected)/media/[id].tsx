@@ -42,10 +42,8 @@ export default function MediaScreen() {
     ? `https://image.tmdb.org/t/p/w780${media.backdrop_path}`
     : null;
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
-  const [shrinkHeader, setShrinkHeader] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addItemToList } = useLists();
-  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (!details) {
@@ -103,24 +101,21 @@ export default function MediaScreen() {
           <SafeAreaView className="flex-1" edges={['top']}>
             {/* Header Buttons */}
             <View className="flex-row justify-between px-4 ">
-              <TouchableOpacity
-                className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40"
-                onPress={() => router.back()}>
-                <ArrowLeft className="text-primary-50 dark:text-primary-950" size={24} />
+              <TouchableOpacity className="rounded-full px-2" onPress={() => router.back()}>
+                <ArrowLeft color={theme.primary[950]} size={24} />
               </TouchableOpacity>
               <View className="flex-row gap-x-2">
                 <TouchableOpacity
                   disabled={loading}
                   onPress={() => setListModalVisible(true)}
-                  className="rounded-full bg-primary-900/40 p-2 dark:bg-primary-100/40">
-                  <Plus className="text-primary-50 dark:text-primary-950" size={24} />
+                  className="px-3">
+                  <Plus color={theme.primary[950]} size={24} />
                 </TouchableOpacity>
               </View>
             </View>
             <View className="px-4">
               <MediaHeader
                 media={media}
-                shrinkHeader={shrinkHeader}
                 onPosterPress={() => {
                   setPreviewImage(`https://image.tmdb.org/t/p/w780${media.poster_path}`);
                 }}
@@ -132,10 +127,10 @@ export default function MediaScreen() {
               />
             </View>
             <KeyboardAvoidingView
-              className="flex-1"
+              className="flex-1 px-2"
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
               {selectedSegment === 0 && (
-                <MediaReviewSection mediaId={media.id} setShrinkHeader={setShrinkHeader} />
+                <MediaReviewSection mediaId={media.id} />
               )}
               {selectedSegment === 1 && (
                 <MediaCommentSection
@@ -143,7 +138,6 @@ export default function MediaScreen() {
                   mediaId={media.id}
                   details={details}
                   detailsLoading={isLoading}
-                  setShrinkHeader={setShrinkHeader}
                 />
               )}
             </KeyboardAvoidingView>
