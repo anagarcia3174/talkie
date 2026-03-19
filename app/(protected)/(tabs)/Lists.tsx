@@ -18,7 +18,7 @@ export default function Lists() {
   const router = useRouter();
   const [createListModalVisible, setCreateListModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
-  const [ deleteLoading, setDeleteLoading ] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const { listsById, defaultListIds, customListIds, createList, deleteList } = useLists();
   const { user } = useAuth();
   const { blockedIds } = useBlock();
@@ -32,7 +32,7 @@ export default function Lists() {
       list.is_liked &&
       !customListIds.includes(list.id) &&
       list.id !== defaultListIds.library &&
-      list.id !== defaultListIds.favorites && 
+      list.id !== defaultListIds.favorites &&
       !blockedIds.has(list.user_id)
   );
 
@@ -131,7 +131,7 @@ export default function Lists() {
             <TouchableOpacity
               disabled={createLoading}
               onPress={() => setCreateListModalVisible(true)}
-              className="rounded-full bg-primary-200 p-2 dark:bg-primary-900">
+              className="rounded-full p-2 ">
               <Plus size={24} color={theme.primary[950]} />
             </TouchableOpacity>
           )}

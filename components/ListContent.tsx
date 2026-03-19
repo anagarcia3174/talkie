@@ -104,14 +104,15 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950" edges={['top']}>
       {/* Collapsing Header */}
-      <View className="flex-row items-center justify-between px-4 py-3">
-        <TouchableOpacity onPress={() => router.back()}>
+      <View className="flex-row items-center justify-between  px-2">
+        <TouchableOpacity onPress={() => router.back()} className=' p-2'>
           <ChevronLeft color={theme.primary[950]} size={24} />
         </TouchableOpacity>
         <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           List
         </Text>
         <TouchableOpacity
+        className=' p-2'
           disabled={isOwner || loadingAction === 'like-toggle'}
           onPress={async () => {
             if (isOwner || loadingAction === 'like-toggle') return;
@@ -132,7 +133,7 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
             color={isOwner ? theme.primary[50] : theme.primary[950]}
             fill={isOwner ? theme.primary[50] : theme.primary[950]}
             fillOpacity={list.is_liked ? 1 : 0}
-            size={22}
+            size={24}
           />
         </TouchableOpacity>
       </View>

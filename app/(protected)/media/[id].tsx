@@ -100,18 +100,16 @@ export default function MediaScreen() {
           className="flex-1 bg-primary-50/30 dark:bg-primary-950/40">
           <SafeAreaView className="flex-1" edges={['top']}>
             {/* Header Buttons */}
-            <View className="flex-row justify-between px-4 ">
-              <TouchableOpacity className="rounded-full px-2" onPress={() => router.back()}>
+            <View className="flex-row justify-between px-4">
+              <TouchableOpacity className="p-2" onPress={() => router.back()}>
                 <ArrowLeft color={theme.primary[950]} size={24} />
               </TouchableOpacity>
-              <View className="flex-row gap-x-2">
-                <TouchableOpacity
-                  disabled={loading}
-                  onPress={() => setListModalVisible(true)}
-                  className="px-3">
-                  <Plus color={theme.primary[950]} size={24} />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                disabled={loading}
+                onPress={() => setListModalVisible(true)}
+                className="p-2">
+                <Plus color={theme.primary[950]} size={24} />
+              </TouchableOpacity>
             </View>
             <View className="px-4">
               <MediaHeader
@@ -129,9 +127,7 @@ export default function MediaScreen() {
             <KeyboardAvoidingView
               className="flex-1 px-2"
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-              {selectedSegment === 0 && (
-                <MediaReviewSection mediaId={media.id} />
-              )}
+              {selectedSegment === 0 && <MediaReviewSection mediaId={media.id} />}
               {selectedSegment === 1 && (
                 <MediaCommentSection
                   mediaType={media.media_type}

@@ -6,6 +6,7 @@ import { useReviews } from '~/store/reviewStore';
 import ReviewItem from './ReviewItem';
 import AddReviewForm from './AddReviewForm';
 import Toast from 'react-native-toast-message';
+import ErrorScreen from './ErrorScreen';
 
 interface MediaReviewSectionProps {
   mediaId: number;
@@ -85,6 +86,8 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
           className="flex-1 items-center justify-center"
           color={theme.primary[950]}
         />
+      ) : error ? (
+        <ErrorScreen fullScreen={false} title="Error!" message={error} />
       ) : (
         <FlatList
           style={{ flex: 1 }}

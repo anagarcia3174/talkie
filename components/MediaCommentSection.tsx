@@ -8,6 +8,7 @@ import { useTheme } from '~/hooks/useTheme';
 import { FlatList } from 'react-native-gesture-handler';
 import CommentItem from './CommentItem';
 import { useAuth } from '~/context/AuthContext';
+import ErrorScreen from './ErrorScreen';
 
 interface MediaCommentSectionProps {
   mediaType: 'movie' | 'tv';
@@ -34,7 +35,6 @@ export default function MediaCommentSection({
   const comments = mediaComments?.comments ?? [];
   const isLoading = mediaComments?.isLoading ?? false;
   const error = mediaComments?.error ?? null;
-  
 
   useEffect(() => {
     if (mediaType === 'movie') {
@@ -76,6 +76,8 @@ export default function MediaCommentSection({
           className="flex-1 items-center justify-center"
           color={theme.primary[950]}
         />
+      ) : error ? (
+        <ErrorScreen fullScreen={false} title="Error!" message={error} />
       ) : (
         <FlatList
           style={{ flex: 1 }}
@@ -86,10 +88,7 @@ export default function MediaCommentSection({
             paddingBottom: 110,
           }}
           renderItem={({ item, index }) => (
-            <CommentItem
-              comment={item}
-              isUser={item.user_id === user?.id}
-            />
+            <CommentItem comment={item} isUser={item.user_id === user?.id} />
           )}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"

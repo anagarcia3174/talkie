@@ -1,12 +1,12 @@
 import { UserRound } from 'lucide-react-native';
 import { Modal, View, TouchableOpacity, Text, FlatList, Image } from 'react-native';
-import { Profile } from '~/types/supabaseTypes';
 import { getPublicUrl } from '~/utils/storageUrl';
 import FollowButton from './FollowButton';
 import { useTheme } from '~/hooks/useTheme';
 import { useFollow } from '~/store/followStore';
 import { useEffect } from 'react';
 import { useAuth } from '~/context/AuthContext';
+import { useRouter } from 'expo-router';
 
 interface FollowsModalProps {
   checking: 'followers' | 'following';
@@ -19,6 +19,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
     useFollow();
   const theme = useTheme();
   const { user } = useAuth();
+  const router = useRouter();
   useEffect(() => {
     if (!visible || !user) return;
 
@@ -75,7 +76,15 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
             contentContainerStyle={{ paddingBottom: 10 }}
             renderItem={({ item }) => (
               <View className="flex-row items-center justify-between border-b border-neutral-200 py-4 dark:border-neutral-800">
-                <View className="flex-1 flex-row items-center">
+                <TouchableOpacity
+                  disabled={item.is_private || item.is_deleted}
+                  className="flex-1 flex-row items-center"
+                  onPress={() => {
+                    if (!item.is_private) {
+                      onClose();
+                      router.push({ pathname: '/profile/[id]', params: { id: item.id } });
+                    }
+                  }}>
                   {item.avatar_url ? (
                     <Image
                       source={{ uri: getPublicUrl(item.avatar_url) }}
@@ -86,16 +95,14 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
                       <UserRound size={12} color={theme.primary[900]} />
                     </View>
                   )}
-
                   <Text
                     numberOfLines={1}
                     ellipsizeMode="tail"
                     className="flex-1 font-SpaceGrotesk-Regular text-lg text-primary-900 dark:text-primary-100">
                     {item.display_name}
                   </Text>
-                </View>
-
-                <FollowButton targetUserId={item.id} isSmall/>
+                </TouchableOpacity>
+                <FollowButton targetUserId={item.id} isSmall />
               </View>
             )}
           />

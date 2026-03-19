@@ -91,7 +91,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
           className="flex-1">
           <SafeAreaView className="flex-1 px-4">
             <View className='flex items-end'>
-              <TouchableOpacity onPress={onClose} className="rounded-full ">
+              <TouchableOpacity onPress={onClose} className="p-2">
                 <X size={24} color={theme.primary[800]} />
               </TouchableOpacity>
             </View>

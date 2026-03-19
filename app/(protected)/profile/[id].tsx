@@ -35,6 +35,8 @@ export default function ProfileScreen() {
   const theme = useTheme();
 
   useEffect(() => {
+    if (profile) return; // 👈 prevents refetch + loading flash
+
     let mounted = true;
 
     const load = async () => {
@@ -42,24 +44,19 @@ export default function ProfileScreen() {
         setLoading(true);
 
         const profileRes = await getProfileById(id);
-        if (!mounted) return;
-        if (!profileRes.success) return;
+        if (!mounted || !profileRes.success) return;
 
         const statsRes = await getProfileStats(id);
-        if (!mounted) return;
-        if (!statsRes.success) return;
+        if (!mounted || !statsRes.success) return;
 
         const listsRes = await getPublicListsByUserId(id);
-        if (!mounted) return;
-        if (!listsRes.success) return;
+        if (!mounted || !listsRes.success) return;
 
         setProfile(profileRes.data);
         setProfileStats(statsRes.data);
         setProfileLists(listsRes.data);
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
@@ -68,7 +65,7 @@ export default function ProfileScreen() {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [id, profile]);
 
   useEffect(() => {
     if (!profile) return;
@@ -79,7 +76,7 @@ export default function ProfileScreen() {
     }
   }, [blockedIds, profile, router]);
 
-  if (loading) {
+  if (loading && !profile) {
     return <LoadingScreen fullScreen />;
   }
 
@@ -113,7 +110,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
       <View className="relative flex-row items-center justify-between px-4 py-3">
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity className="p-2" onPress={() => router.back()}>
           <ChevronLeft color={theme.primary[950]} size={24} />
         </TouchableOpacity>
         <Text
@@ -201,9 +198,9 @@ export default function ProfileScreen() {
           )}
         />
       </ScrollView>
-      <View>
-        <TouchableOpacity disabled={blocking} onPress={handleBlock}>
-          <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 dark:text-red-400 underline">
+      <View className="items-center px-4 pb-4">
+        <TouchableOpacity className="p-2" disabled={blocking} onPress={handleBlock}>
+          <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 underline dark:text-red-400">
             {blocking ? 'Blocking...' : 'Block User'}
           </Text>
         </TouchableOpacity>
@@ -212,7 +209,7 @@ export default function ProfileScreen() {
         <View className="flex-1 items-center justify-center bg-primary-950 px-4">
           <TouchableOpacity
             onPress={() => setPreviewImage(null)}
-            className="absolute left-6 top-16 z-10">
+            className="absolute left-6 top-16 z-10 py-2">
             <X size={28} color="white" />
           </TouchableOpacity>
 

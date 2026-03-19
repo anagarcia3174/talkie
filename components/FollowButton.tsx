@@ -4,6 +4,7 @@ import { useTheme } from '~/hooks/useTheme';
 import { useFollow } from '~/store/followStore';
 import { useAuth } from '~/context/AuthContext';
 import { UserPlus, UserRoundCheck, UserCheck, Users } from 'lucide-react-native';
+import Toast from 'react-native-toast-message';
 
 interface FollowButtonProps {
   targetUserId: string;
@@ -109,9 +110,21 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
     setLoading(true);
 
     if (isFollowing) {
-      await unfollow(user.id, targetUserId);
+      const result = await unfollow(user.id, targetUserId);
+      if (!result.success) {
+        Toast.show({
+          type: 'error',
+          text1: result.error,
+        });
+      }
     } else {
-      await follow(user.id, targetUserId);
+      const result = await follow(user.id, targetUserId);
+      if (!result.success) {
+        Toast.show({
+          type: 'error',
+          text1: result.error,
+        });
+      }
     }
 
     setLoading(false);

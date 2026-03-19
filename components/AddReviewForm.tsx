@@ -61,13 +61,13 @@ export default function AddReviewForm({ onSubmitReview }: AddReviewFormProps) {
         }}>
         <View className="px-4 py-4">
           {/* Star Rating */}
-          <View className="mb-3 flex-row justify-between px-1">
+          <View className="mb-3 flex-row justify-between">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
               <TouchableOpacity
                 key={star}
                 onPress={() => handleSetRating(star === rating ? 0 : star)}
                 activeOpacity={0.7}
-                className="items-center">
+                className="items-center ">
                 <View className="relative items-center justify-center">
                   <Star
                     strokeWidth={1.2}
@@ -115,7 +115,7 @@ export default function AddReviewForm({ onSubmitReview }: AddReviewFormProps) {
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={loading}
-              className="h-11 w-11 items-center justify-center rounded-full ">
+              className="h-11 w-11 items-center justify-center rounded-full">
               {loading ? (
                 <ActivityIndicator size="small" color={theme.primary[950]} />
               ) : (

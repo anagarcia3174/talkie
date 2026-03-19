@@ -55,7 +55,7 @@ export default function ListScreen() {
   if (list && blockedIds.has(list.user_id)) {
     return (
       <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
-        <TouchableOpacity onPress={() => router.back()} className="px-4 pt-2">
+        <TouchableOpacity onPress={() => router.back()} className="px-4 py-2">
           <ChevronLeft color={theme.primary[950]} />
         </TouchableOpacity>
         <View className="flex-1 items-center justify-center px-4">

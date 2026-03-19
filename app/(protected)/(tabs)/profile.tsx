@@ -87,7 +87,7 @@ export default function Profile() {
         <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
           Profile
         </Text>
-        <TouchableOpacity onPress={() => setOverlayVisible(true)}>
+        <TouchableOpacity className="p-2" onPress={() => setOverlayVisible(true)}>
           <MoreVertical size={24} color={theme.primary[950]} />
         </TouchableOpacity>
       </View>
@@ -211,10 +211,10 @@ export default function Profile() {
           } else if (operation === 'blocked_users') {
             setOverlayVisible(false);
             setBlockedModal(true);
-          } else if ((operation === 'sign_out' && !updateLoading) || !deleting) {
+          } else if (operation === 'sign_out' && !updateLoading) {
             setOverlayVisible(false);
             setSignOutModal(true);
-          } else if ((operation === 'delete_account' && !updateLoading) || !deleting) {
+          } else if (operation === 'delete_account' && !updateLoading) {
             setOverlayVisible(false);
             setDeleteAccountModal(true);
           } else {

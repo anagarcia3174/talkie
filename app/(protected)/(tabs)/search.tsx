@@ -203,7 +203,7 @@ export default function Search() {
           onChangeText={setQuery}
           onSubmitEditing={onSubmitSearch}
         />
-        <TouchableOpacity onPress={() => setSortModalVisible(true)}>
+        <TouchableOpacity className='p-2' onPress={() => setSortModalVisible(true)}>
           <ArrowDownUp color={theme.primary[950]} />
         </TouchableOpacity>
       </View>
