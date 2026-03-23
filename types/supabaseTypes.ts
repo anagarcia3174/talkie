@@ -61,9 +61,9 @@ export interface ListWithMeta extends List {
 export interface ListOwner {
   id: string;
   display_name: string;
-    avatar_url: string | null;
-    is_private: boolean;
-} 
+  avatar_url: string | null;
+  is_private: boolean;
+}
 
 export interface ListItem {
   id: number;
@@ -80,16 +80,13 @@ export interface ListLike {
   created_at: string;
 }
 
-
 export type StoreList = List & {
   is_liked: boolean;
 };
 
-
 export interface SearchPublicListResult extends ListWithMeta {
   rank: number;
 }
-
 
 export interface Media {
   id: number;
@@ -148,22 +145,16 @@ export interface Comment {
 
 export type CreateCommentInput = Omit<
   Comment,
-  | 'id'
-  | 'user_id'
-  | 'created_at'
-  | 'updated_at'
-  | 'like_count'
-  | 'reply_count'
-  | 'is_deleted'
+  'id' | 'user_id' | 'created_at' | 'updated_at' | 'like_count' | 'reply_count' | 'is_deleted'
 >;
 
 export interface CommentWithUser extends Comment {
-   owner: {
+  owner: {
     id: string;
     display_name: string;
     avatar_url: string | null;
     is_private: boolean;
-  } ;
+  };
 }
 
 export interface CommentLike {
@@ -196,6 +187,8 @@ export interface ReviewWithUser {
   display_name: string;
   avatar_url: string | null;
   is_private: boolean;
+  like_count: number;
+  is_liked: boolean;
 }
 
 export interface ReviewLike {
@@ -267,8 +260,6 @@ export interface ListItemWithMedia {
   created_at: string;
   media: Media;
 }
-
-
 
 export interface ProfileStats {
   followers: number;

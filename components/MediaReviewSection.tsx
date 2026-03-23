@@ -4,9 +4,12 @@ import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
 import { useReviews } from '~/store/reviewStore';
 import ReviewItem from './ReviewItem';
-import AddReviewForm from './AddReviewForm';
+import AddReviewForm from './ReviewForm';
 import Toast from 'react-native-toast-message';
 import ErrorScreen from './ErrorScreen';
+import ReviewForm from './ReviewForm';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface MediaReviewSectionProps {
   mediaId: number;
@@ -20,7 +23,7 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
   const reviews = mediaReviews?.reviews ?? [];
   const isLoading = mediaReviews?.isLoading ?? false;
   const error = mediaReviews?.error ?? null;
-
+  const insets = useSafeAreaInsets();
   const sortedReviews = useMemo(() => {
     if (!user?.id) return reviews;
 
@@ -97,13 +100,7 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
           contentContainerStyle={{
             paddingBottom: 165,
           }}
-          renderItem={({ item, index }) => (
-            <ReviewItem
-              review={item}
-              isUser={item.user_id === user?.id}
-              isLast={index === sortedReviews.length - 1}
-            />
-          )}
+          renderItem={({ item }) => <ReviewItem review={item} isUser={item.user_id === user?.id} />}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         />
@@ -118,7 +115,16 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
             zIndex: 1000,
             elevation: 10,
           }}>
-          <AddReviewForm onSubmitReview={handleSubmitReview} />
+          <View style={{ paddingBottom: insets.bottom * 0.2 }}>
+            <BlurView
+              intensity={40}
+              tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
+              className="overflow-hidden rounded-3xl border border-white/15">
+              <View className="px-4 py-4">
+                <ReviewForm mode="create" onSubmit={handleSubmitReview} />
+              </View>
+            </BlurView>
+          </View>
         </View>
       )}
     </View>

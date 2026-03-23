@@ -2,19 +2,18 @@ import { supabase } from '~/utils/supabase';
 import type { Review, DataResult, VoidResult, ReviewWithUser } from '~/types/supabaseTypes';
 import { successData, successVoid, errorData, errorVoid } from '~/types/supabaseTypes';
 
-export async function getReviewsForMedia(
-  mediaId: number
-): Promise<DataResult<ReviewWithUser[]>> {
+export async function getReviewsForMedia(mediaId: number): Promise<DataResult<ReviewWithUser[]>> {
   try {
     const { data, error } = await supabase.rpc('get_reviews_for_media', {
       p_media_id: mediaId,
     });
 
-    if (error){
+    if (error) {
       return errorData(error, {
         operation: 'get_reviews',
         rpc: 'get_reviews_for_media',
-      });}
+      });
+    }
     return successData(data as ReviewWithUser[]);
   } catch (err) {
     return errorData(err, {
@@ -25,7 +24,10 @@ export async function getReviewsForMedia(
 }
 
 export async function postReview(
-  review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'>
+  review: Omit<
+    Review,
+    'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'
+  >
 ): Promise<DataResult<ReviewWithUser>> {
   try {
     const { data, error } = await supabase
@@ -42,12 +44,13 @@ export async function postReview(
       )
       .single();
 
-    if (error){
+    if (error) {
       return errorData(error, {
         operation: 'post_review',
         table: 'reviews',
         isWrite: true,
-      });}
+      });
+    }
 
     const flattened: ReviewWithUser = {
       ...data,
@@ -75,9 +78,65 @@ export async function deleteReview(reviewId: number): Promise<VoidResult> {
       });
     return successVoid();
   } catch (err) {
-return errorVoid(err, {
-        operation: 'delete_review',
+    return errorVoid(err, {
+      operation: 'delete_review',
+      table: 'reviews',
+      isWrite: true,
+    });
+  }
+}
+
+export async function toggleReviewLike(reviewId: number): Promise<DataResult<boolean>> {
+  try {
+    const { data, error } = await supabase.rpc('toggle_review_like', {
+      p_review_id: reviewId,
+    });
+
+    if (error)
+      return errorData(error, {
+        operation: 'toggle_review_like',
+        table: 'review_likes',
+        isWrite: true,
+      });
+    return successData(data);
+  } catch (err) {
+    return errorData(err, {
+      operation: 'toggle_review_like',
+      table: 'review_likes',
+      isWrite: true,
+    });
+  }
+}
+
+export async function updateReview(
+  reviewId: number,
+  updates: Partial<Pick<Review, 'rating' | 'content'>>
+): Promise<VoidResult> {
+  try {
+    if (Object.keys(updates).length === 0) {
+      return successVoid();
+    }
+    const { error } = await supabase
+      .from('reviews')
+      .update({
+        ...updates,
+      })
+      .eq('id', reviewId);
+
+    if (error) {
+      return errorVoid(error, {
+        operation: 'update_review',
         table: 'reviews',
         isWrite: true,
-      });  }
+      });
+    }
+
+    return successVoid();
+  } catch (err) {
+    return errorData(err, {
+      operation: 'update_review',
+      table: 'reviews',
+      isWrite: true,
+    });
+  }
 }

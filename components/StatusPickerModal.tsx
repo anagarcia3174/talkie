@@ -2,6 +2,7 @@ import { Modal, View, Text, TouchableOpacity, Pressable } from 'react-native';
 import { Check, Eye, Clock, Trash2 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { Status } from '~/types/supabaseTypes';
+import { useEffect, useState } from 'react';
 
 interface StatusPickerModalProps {
   visible: boolean;
@@ -26,10 +27,25 @@ export default function StatusPickerModal({
   currentStatus,
   onConfirm,
   onClose,
-  onDelete
+  onDelete,
 }: StatusPickerModalProps) {
   const theme = useTheme();
-  
+  const [selectedStatus, setSelectedStatus] = useState<Status>(currentStatus);
+
+  useEffect(() => {
+    if (visible) {
+      setSelectedStatus(currentStatus);
+    }
+  }, [visible, currentStatus]);
+
+  const handleSelect = (status: Status) => {
+    setSelectedStatus(status);
+
+    setTimeout(() => {
+      onConfirm(status);
+    }, 100);
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
@@ -43,12 +59,12 @@ export default function StatusPickerModal({
           </Text>
 
           {OPTIONS.map(({ status, label, Icon }) => {
-            const isSelected = status === currentStatus;
+            const isSelected = status === selectedStatus;
 
             return (
               <TouchableOpacity
                 key={status}
-                onPress={() => onConfirm(status)}
+                onPress={() => handleSelect(status)}
                 className={`flex-row items-center gap-4 rounded-xl p-4 ${
                   isSelected
                     ? 'bg-primary-200 dark:bg-primary-800'
@@ -74,8 +90,9 @@ export default function StatusPickerModal({
           <View className="my-2 h-px bg-primary-200 dark:bg-primary-800" />
 
           {/* Delete action */}
-          <TouchableOpacity         onPress={onDelete}
- className="flex-row items-center gap-4 rounded-xl p-4 active:bg-red-50 dark:active:bg-red-900/20">
+          <TouchableOpacity
+            onPress={onDelete}
+            className="flex-row items-center gap-4 rounded-xl p-4 active:bg-red-50 dark:active:bg-red-900/20">
             <Trash2 size={20} color="#dc2626" />
 
             <Text className="flex-1 font-SpaceGrotesk-Medium text-red-600 dark:text-red-500">

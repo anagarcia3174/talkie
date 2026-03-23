@@ -32,7 +32,7 @@ export default function ListSelectionModal({
   const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
       <Pressable className="flex-1 bg-primary-950/60" onPress={onClose} />
 
