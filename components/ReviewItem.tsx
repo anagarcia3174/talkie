@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable, Modal } from 'react-native';
+import { View, Text, Image, Pressable } from 'react-native';
 import { Review, ReviewWithUser } from '~/types/supabaseTypes';
 import { Heart, MoreHorizontal, Star, UserRound } from 'lucide-react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
@@ -8,7 +8,6 @@ import { useReviews } from '~/store/reviewStore';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 import ReviewItemOptions from './ReviewItemOptions';
-import ReviewForm from './ReviewForm';
 import ReviewEditModal from './ReviewEditModal';
 
 interface ReviewItemProps {
@@ -36,7 +35,7 @@ function formatRelativeTime(dateString: string): string {
 }
 
 export default function ReviewItem({ review, isUser }: ReviewItemProps) {
-  const uri = getPublicUrl(review.avatar_url);
+  const uri = getPublicUrl(review.owner.avatar_url);
   const { toggleLikeReview, removeReview, updateReview } = useReviews();
   const [loading, setLoading] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -123,7 +122,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
                     }
                     hitSlop={8}>
                     <Text className="text-sm font-semibold text-primary-950 dark:text-primary-50">
-                      {review.display_name}
+                      {review.owner.display_name}
                     </Text>
                   </Pressable>
 

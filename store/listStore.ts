@@ -59,6 +59,7 @@ interface ListState {
   addItemToList: (listId: number, mediaId: number, userId: string) => Promise<StoreResult<void>>;
   removeItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
   updateItemStatus: (
+    userId: string,
     item: ListItem | ListItemWithMedia,
     status: Status
   ) => Promise<StoreResult<void>>;
@@ -278,7 +279,7 @@ export const useLists = create<ListState>((set, get) => ({
         [listId]: {
           ...state.listsById[listId],
           is_liked: true,
-          likes_count: (state.listsById[listId]?.likes_count ?? 0) + 1,
+          like_count: (state.listsById[listId]?.like_count ?? 0) + 1,
         },
       },
     }));
@@ -300,7 +301,7 @@ export const useLists = create<ListState>((set, get) => ({
         [listId]: {
           ...state.listsById[listId],
           is_liked: false,
-          likes_count: Math.max((state.listsById[listId]?.likes_count ?? 1) - 1, 0),
+          like_count: Math.max((state.listsById[listId]?.like_count ?? 1) - 1, 0),
         },
       },
     }));
@@ -396,8 +397,8 @@ export const useLists = create<ListState>((set, get) => ({
 
     return { success: true };
   },
-  updateItemStatus: async (item, status) => {
-    const result = await updateItemStatus(item.user_id, item.media_id, status);
+  updateItemStatus: async (userId, item, status) => {
+    const result = await updateItemStatus(userId, item.media_id, status);
     if (!result.success) {
       return {
         success: false,

@@ -32,11 +32,14 @@ export default function useListScreenActions(listId: number) {
 
   return {
     updateItemStatus: (item: ListItemWithMedia | ListItem, status: Status) =>
+     { 
+      if (!userId) return;
+      
       withToast(
-        () => updateItemStatus(item, status),
+        () => updateItemStatus(userId, item, status),
         "The item's status was updated!",
         "Failed to change the item's status."
-      ),
+      )},
 
     deleteItem: (item: ListItem) =>
       withToast(

@@ -86,12 +86,6 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
                 </Text>
               </View>
 
-              {/* Comment body with optional inline timestamp prefix */}
-              {comment.is_deleted ? (
-                <Text className="mt-1 font-SpaceGrotesk-Light text-sm italic text-primary-400 dark:text-primary-500">
-                  This comment has been deleted.
-                </Text>
-              ) : (
                 <Text className="mt-1 font-SpaceGrotesk-Light text-sm leading-5 text-primary-800 dark:text-primary-200">
                   {comment.timestamp_seconds !== null && (
                     <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">
@@ -102,7 +96,7 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
                     <Text className="text-primary-500 dark:text-primary-400">No content</Text>
                   )}
                 </Text>
-              )}
+              
             </View>
           </View>
         </View>

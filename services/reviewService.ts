@@ -26,7 +26,7 @@ export async function getReviewsForMedia(mediaId: number): Promise<DataResult<Re
 export async function postReview(
   review: Omit<
     Review,
-    'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'
+    'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' 
   >
 ): Promise<DataResult<ReviewWithUser>> {
   try {

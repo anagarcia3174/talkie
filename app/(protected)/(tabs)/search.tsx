@@ -318,7 +318,7 @@ export default function Search() {
                 {/* Likes on top right */}
                 <View className="flex-row items-center justify-start gap-x-1">
                   <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
-                    {item.likes_count}
+                    {item.like_count}
                   </Text>
                   <Bookmark size={12} color={theme.primary[700]} fill={ item.is_liked ? theme.primary[700] : theme.primary[100]}/>
                 </View>

@@ -48,12 +48,12 @@ export default function ReviewItemOptions({
         <View className="mx-4 my-4 flex-row items-center gap-3 rounded-2xl bg-primary-200 px-4 py-3 dark:bg-primary-800">
           <View className="h-8 w-8 items-center justify-center rounded-full bg-primary-800 dark:bg-primary-100">
             <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-50 dark:text-primary-950">
-              {review.display_name?.charAt(0).toUpperCase()}
+              {review.owner.display_name?.charAt(0).toUpperCase()}
             </Text>
           </View>
           <View className="flex-1">
             <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-950 dark:text-primary-50">
-              {review.display_name}
+              {review.owner.display_name}
             </Text>
             {review.content ? (
               <Text

@@ -167,7 +167,7 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
 
                 <View className="flex-row items-center gap-1">
                   <Text className="text-sm text-primary-600 dark:text-primary-400">
-                    {list.likes_count}
+                    {list.like_count}
                   </Text>
                   <Bookmark size={12} color={theme.primary[600]} />
                 </View>

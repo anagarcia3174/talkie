@@ -43,7 +43,7 @@ export interface List {
   item_count: number;
   created_at: string;
   updated_at: string;
-  likes_count: number;
+  like_count: number;
   is_private: boolean;
 }
 
@@ -69,7 +69,6 @@ export interface ListItem {
   id: number;
   list_id: number;
   media_id: number;
-  user_id: string;
   created_at: string;
 }
 
@@ -138,14 +137,13 @@ export interface Comment {
   is_spoiler: boolean;
   like_count: number;
   reply_count: number;
-  is_deleted: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export type CreateCommentInput = Omit<
   Comment,
-  'id' | 'user_id' | 'created_at' | 'updated_at' | 'like_count' | 'reply_count' | 'is_deleted'
+  'id' | 'user_id' | 'created_at' | 'updated_at' | 'like_count' | 'reply_count' 
 >;
 
 export interface CommentWithUser extends Comment {
@@ -174,21 +172,16 @@ export interface Review {
   like_count: number;
   created_at: string;
   updated_at: string;
-  is_deleted: boolean;
 }
 
-export interface ReviewWithUser {
-  id: number;
-  media_id: number;
-  user_id: string;
-  rating: number | null;
-  content: string | null;
-  created_at: string;
-  display_name: string;
-  avatar_url: string | null;
-  is_private: boolean;
-  like_count: number;
-  is_liked: boolean;
+export interface ReviewWithUser extends Review {
+  is_liked: boolean,
+    owner: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    is_private: boolean;
+  };
 }
 
 export interface ReviewLike {
@@ -255,7 +248,6 @@ export interface ListItemWithMedia {
   id: number;
   list_id: number;
   media_id: number;
-  user_id: string;
   status: Status;
   created_at: string;
   media: Media;

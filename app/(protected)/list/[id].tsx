@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useLists } from '~/store/listStore';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,7 +10,7 @@ import { useAuth } from '~/context/AuthContext';
 import useListScreenActions from './useListScreenActions';
 import { useBlock } from '~/store/blockStore';
 import ErrorScreen from '~/components/ErrorScreen';
-import { ArrowLeft, ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 
 export default function ListScreen() {
