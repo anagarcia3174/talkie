@@ -1,12 +1,16 @@
 import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { X, Pencil, Trash2, UserCircle, Flag } from 'lucide-react-native';
-import { ReviewWithUser } from '~/types/supabaseTypes';
+import { CommentWithUser, ReviewWithUser } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import { useRouter } from 'expo-router';
 
-interface ReviewItemOptionsProps {
+type ItemWithUser =
+  | { type: 'review'; data: ReviewWithUser }
+  | { type: 'comment'; data: CommentWithUser };
+
+interface ItemOptionsProps {
   visible: boolean;
-  review: ReviewWithUser;
+  item: ItemWithUser;
   isOwner: boolean;
   onClose: () => void;
   onDelete: () => void;
@@ -14,17 +18,22 @@ interface ReviewItemOptionsProps {
   onReport: () => void;
 }
 
-export default function ReviewItemOptions({
+export default function ItemOptions({
   visible,
-  review,
+  item,
   isOwner,
   onClose,
   onDelete,
   onEdit,
   onReport,
-}: ReviewItemOptionsProps) {
+}: ItemOptionsProps) {
   const theme = useTheme();
   const router = useRouter();
+
+  const owner = item.data.owner;
+  const userId = item.data.user_id;
+  const content = item.data.content;
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
@@ -44,22 +53,21 @@ export default function ReviewItemOptions({
           </TouchableOpacity>
         </View>
 
-        {/* Review identity pill — sits above the actions, clearly contextual */}
         <View className="mx-4 my-4 flex-row items-center gap-3 rounded-2xl bg-primary-200 px-4 py-3 dark:bg-primary-800">
           <View className="h-8 w-8 items-center justify-center rounded-full bg-primary-800 dark:bg-primary-100">
             <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-50 dark:text-primary-950">
-              {review.owner.display_name?.charAt(0).toUpperCase()}
+              {owner.display_name?.charAt(0).toUpperCase()}
             </Text>
           </View>
           <View className="flex-1">
             <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-950 dark:text-primary-50">
-              {review.owner.display_name}
+              {owner.display_name}
             </Text>
-            {review.content ? (
+            {content ? (
               <Text
                 numberOfLines={1}
                 className="font-SpaceGrotesk-Regular text-xs text-primary-500 dark:text-primary-400">
-                {review.content}
+                {content}
               </Text>
             ) : null}
           </View>
@@ -76,7 +84,7 @@ export default function ReviewItemOptions({
                   className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-primary-200 dark:active:bg-primary-800">
                   <Pencil size={22} color={theme.primary[500]} />
                   <Text className="font-SpaceGrotesk-Medium text-base text-primary-950 dark:text-primary-50">
-                    Edit Review
+                    Edit {item.type === 'review' ? 'Review' : 'Comment'}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -85,15 +93,17 @@ export default function ReviewItemOptions({
                 className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-red-500/10">
                 <Trash2 size={22} color="#ef4444" />
                 <Text className="font-SpaceGrotesk-Medium text-base text-red-500">
-                  Delete Review
+                 Delete {item.type === 'review' ? 'Review' : 'Comment'}
                 </Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <TouchableOpacity
-                onPress={() =>
-                  router.push({ pathname: '/profile/[id]', params: { id: review.user_id } })
+                onPress={() =>{
+                  onClose();
+                  router.push({ pathname: '/profile/[id]', params: { id: userId } })
+                }
                 }
                 className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-primary-200 dark:active:bg-primary-800">
                 <UserCircle size={22} color={theme.primary[500]} />
@@ -106,7 +116,7 @@ export default function ReviewItemOptions({
                 className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-red-500/10">
                 <Flag size={22} color="#ef4444" />
                 <Text className="font-SpaceGrotesk-Medium text-base text-red-500">
-                  Report Review
+                  Report {item.type === 'review' ? 'Review' : 'Comment'}
                 </Text>
               </TouchableOpacity>
             </>

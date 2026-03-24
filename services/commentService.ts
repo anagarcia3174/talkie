@@ -46,6 +46,7 @@ export async function postComment(
     });
 
     if (error) {
+      console.log(error)
       return errorData(error, {
         operation: 'post_comment',
         table: 'comments',
@@ -56,6 +57,7 @@ export async function postComment(
     // rpc returns an array (even for 1 row)
     return successData(data[0] as CommentWithUser);
   } catch (err) {
+    console.log(err);
     return errorData(err, {
       operation: 'post_comment',
       table: 'comments',
@@ -78,6 +80,58 @@ export async function deleteComment(commentId: number): Promise<VoidResult> {
   } catch (err) {
     return errorVoid(err, {
       operation: 'delete_comment',
+      table: 'comments',
+      isWrite: true,
+    });
+  }
+}
+
+export async function toggleCommentLike(commentId: number): Promise<DataResult<boolean>> {
+  try {
+    const { data, error } = await supabase.rpc('toggle_comment_like', {
+      p_comment_id: commentId,
+    });
+
+    if (error)
+      return errorData(error, {
+        operation: 'toggle_comment_like',
+        table: 'comment_likes',
+        isWrite: true,
+      });
+    return successData(data);
+  } catch (err) {
+    return errorData(err, {
+      operation: 'toggle_comment_like',
+      table: 'comment_likes',
+      isWrite: true,
+    });
+  }
+}
+
+export async function updateComment(commentId: number, updates: Partial<Pick<Comment, 'content' | 'timestamp_seconds'>>): Promise<VoidResult> {
+  try {
+     if (Object.keys(updates).length === 0) {
+      return successVoid();
+    }
+    const { error } = await supabase
+      .from('comments')
+      .update({
+        ...updates,
+      })
+      .eq('id', commentId);
+
+    if (error) {
+      return errorVoid(error, {
+        operation: 'update_comment',
+        table: 'comments',
+        isWrite: true,
+      });
+    }
+
+    return successVoid();
+  }catch (err) {
+    return errorData(err, {
+      operation: 'update_comment',
       table: 'comments',
       isWrite: true,
     });

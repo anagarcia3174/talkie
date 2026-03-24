@@ -3,8 +3,11 @@ import {
   getCommentsForMedia,
   postComment as postCommentService,
   deleteComment as deleteCommentService,
+  toggleCommentLike,
+  updateComment as updateCommentService,
 } from '~/services/commentService';
-import { CommentWithUser, Comment, CreateCommentInput } from '~/types/supabaseTypes';
+import { reportComment } from '~/services/reportService';
+import { CommentWithUser, Comment, CreateCommentInput, ReportReason } from '~/types/supabaseTypes';
 
 type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
@@ -32,6 +35,17 @@ interface CommentState {
   }) => Promise<StoreResult<void>>;
   postComment: (comment: CreateCommentInput) => Promise<StoreResult<void>>;
   deleteComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult<void>>;
+  toggleLikeComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult<void>>;
+  updateComment: (params: {
+    commentId: number;
+    contextKey: ContextKey;
+    updates: Partial<Pick<Comment, 'timestamp_seconds' | 'content'>>;
+  }) => Promise<StoreResult<void>>;
+  reportComment: (
+    commentId: number,
+    reportReason: ReportReason,
+    details?: string
+  ) => Promise<StoreResult<void>>;
 }
 
 export const useComments = create<CommentState>((set, get) => ({
@@ -52,7 +66,6 @@ export const useComments = create<CommentState>((set, get) => ({
 
     //  If base already fetched and not forcing → derive locally
     if (baseExisting?.hasFetched && !force) {
-
       let comments = baseExisting.comments;
 
       if (seasonNumber != null && episodeNumber != null) {
@@ -121,7 +134,6 @@ export const useComments = create<CommentState>((set, get) => ({
 
     // If episode view, also derive and cache slice
     if (seasonNumber != null && episodeNumber != null) {
-
       const filtered = allComments.filter(
         (c) => c.season_number === seasonNumber && c.episode_number === episodeNumber
       );
@@ -230,5 +242,194 @@ export const useComments = create<CommentState>((set, get) => ({
     });
 
     return result;
+  },
+  toggleLikeComment: async (commentId, contextKey) => {
+    const state = get();
+
+    const baseKey = `media-${contextKey.mediaId}`;
+    const episodeKey =
+      contextKey.seasonNumber != null && contextKey.episodeNumber != null
+        ? `media-${contextKey.mediaId}-s${contextKey.seasonNumber}-e${contextKey.episodeNumber}`
+        : baseKey;
+
+    const baseComments = state.fetchedComments[baseKey]?.comments ?? [];
+
+    const comment = baseComments.find((c) => c.id === commentId);
+    if (!comment) {
+      return { success: false, error: 'Comment not found' };
+    }
+
+    const prevLiked = comment.is_liked;
+    const prevCount = comment.like_count;
+
+    const updateComments = (comments: CommentWithUser[]) =>
+      comments.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              is_liked: !prevLiked,
+              like_count: prevLiked ? prevCount - 1 : prevCount + 1,
+            }
+          : c
+      );
+
+    set((state) => {
+      const updated = { ...state.fetchedComments };
+
+      if (updated[baseKey]) {
+        updated[baseKey] = {
+          ...updated[baseKey],
+          comments: updateComments(updated[baseKey].comments),
+        };
+      }
+
+      if (episodeKey !== baseKey && updated[episodeKey]) {
+        updated[episodeKey] = {
+          ...updated[episodeKey],
+          comments: updateComments(updated[episodeKey].comments),
+        };
+      }
+
+      return { fetchedComments: updated };
+    });
+
+    const result = await toggleCommentLike(commentId);
+
+    if (!result.success) {
+      set((state) => {
+        const updated = { ...state.fetchedComments };
+
+        const rollback = (comments: CommentWithUser[]) =>
+          comments.map((c) =>
+            c.id === commentId
+              ? {
+                  ...c,
+                  is_liked: prevLiked,
+                  like_count: prevCount,
+                }
+              : c
+          );
+
+        if (updated[baseKey]) {
+          updated[baseKey] = {
+            ...updated[baseKey],
+            comments: rollback(updated[baseKey].comments),
+          };
+        }
+
+        if (episodeKey !== baseKey && updated[episodeKey]) {
+          updated[episodeKey] = {
+            ...updated[episodeKey],
+            comments: rollback(updated[episodeKey].comments),
+          };
+        }
+
+        return { fetchedComments: updated };
+      });
+
+      return result;
+    }
+
+    return { success: true };
+  },
+  updateComment: async ({ commentId, contextKey, updates }) => {
+    const state = get();
+    const baseKey = `media-${contextKey.mediaId}`;
+    const episodeKey =
+      contextKey.seasonNumber != null && contextKey.episodeNumber != null
+        ? `media-${contextKey.mediaId}-s${contextKey.seasonNumber}-e${contextKey.episodeNumber}`
+        : baseKey;
+
+    const baseComments = state.fetchedComments[baseKey]?.comments ?? [];
+
+    const existingComment = baseComments.find((c) => c.id === commentId);
+    if (!existingComment) {
+      return { success: false, error: 'Comment not found' };
+    }
+
+    // Save previous state for rollback
+    const prevContent = existingComment.content;
+    const prevTimestamp = existingComment.timestamp_seconds;
+
+    const applyUpdate = (comments: CommentWithUser[]) =>
+      comments.map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              ...updates,
+            }
+          : c
+      );
+
+    // -------------------------
+    // Optimistic update
+    // -------------------------
+    set((state) => {
+      const updated = { ...state.fetchedComments };
+
+      if (updated[baseKey]) {
+        updated[baseKey] = {
+          ...updated[baseKey],
+          comments: applyUpdate(updated[baseKey].comments),
+        };
+      }
+
+      if (episodeKey !== baseKey && updated[episodeKey]) {
+        updated[episodeKey] = {
+          ...updated[episodeKey],
+          comments: applyUpdate(updated[episodeKey].comments),
+        };
+      }
+
+      return { fetchedComments: updated };
+    });
+
+    // -------------------------
+    // API call (you need this service)
+    // -------------------------
+    const result = await updateCommentService(commentId, updates);
+
+    if (!result.success) {
+      // -------------------------
+      // Rollback
+      // -------------------------
+      set((state) => {
+        const updated = { ...state.fetchedComments };
+
+        const rollback = (comments: CommentWithUser[]) =>
+          comments.map((c) =>
+            c.id === commentId
+              ? {
+                  ...c,
+                  content: prevContent,
+                  timestamp_seconds: prevTimestamp,
+                }
+              : c
+          );
+
+        if (updated[baseKey]) {
+          updated[baseKey] = {
+            ...updated[baseKey],
+            comments: rollback(updated[baseKey].comments),
+          };
+        }
+
+        if (episodeKey !== baseKey && updated[episodeKey]) {
+          updated[episodeKey] = {
+            ...updated[episodeKey],
+            comments: rollback(updated[episodeKey].comments),
+          };
+        }
+
+        return { fetchedComments: updated };
+      });
+
+      return result;
+    }
+
+    return { success: true };
+  },
+  reportComment: async (commentId, reason, details) => {
+    return await reportComment(commentId, reason, details);
   },
 }));

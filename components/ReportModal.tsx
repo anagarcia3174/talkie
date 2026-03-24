@@ -19,13 +19,14 @@ const REPORT_REASONS: { label: string; value: ReportReason }[] = [
   { label: 'Other', value: 'other' },
 ];
 
-interface ReviewReportModalProps {
+interface ReportModalProps {
+  type: 'review' | 'comment'
   visible: boolean;
   onClose: () => void;
   onSubmit: (reason: ReportReason, details?: string) => void;
 }
 
-export default function ReviewReportModal({ visible, onClose, onSubmit }: ReviewReportModalProps) {
+export default function ReportModal({ type, visible, onClose, onSubmit }: ReportModalProps) {
   const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
   const [details, setDetails] = useState('');
 
@@ -58,7 +59,7 @@ export default function ReviewReportModal({ visible, onClose, onSubmit }: Review
         style={{ top: '20%' }}>
         <View className="rounded-2xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
           <Text className="mb-4 font-SpaceGrotesk-Bold text-xl text-primary-900 dark:text-primary-100">
-            Report Review
+            Report {type === 'review' ? 'Review' : 'Comment'}
           </Text>
 
           {/* Reason Selection */}

@@ -148,6 +148,7 @@ export type CreateCommentInput = Omit<
 >;
 
 export interface CommentWithUser extends Comment {
+  is_liked: boolean,
   owner: {
     id: string;
     display_name: string;

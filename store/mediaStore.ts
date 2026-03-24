@@ -4,17 +4,23 @@ import { getMediaDetails, getTrendingMovies, getTrendingShows } from '~/services
 
 type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
+interface MediaCommentsState {
+  details: TVDetails | MovieDetails | null;
+  isLoading: boolean;
+  hasFetched: boolean;
+  error: string | null;
+}
+
 interface MediaState {
   loading: boolean;
   trendingMovies: Media[];
   trendingShows: Media[];
-  loadingIds: Set<number>;
-  mediaDetails: Record<number, MovieDetails | TVDetails>;
+  mediaDetails: Record<number, MediaCommentsState>;
   fetchHomeData: () => Promise<StoreResult<void>>;
   fetchMediaDetails: (
     media_id: number,
     force?: boolean
-  ) => Promise<StoreResult<MovieDetails | TVDetails>>;
+  ) => Promise<StoreResult<void>>;
 }
 
 export const useMedia = create<MediaState>((set, get) => ({
@@ -22,7 +28,6 @@ export const useMedia = create<MediaState>((set, get) => ({
   trendingMovies: [],
   trendingShows: [],
   mediaDetails: {},
-  loadingIds: new Set(),
   fetchHomeData: async () => {
     set({ loading: true });
 
@@ -50,40 +55,57 @@ export const useMedia = create<MediaState>((set, get) => ({
     return { success: true };
   },
   fetchMediaDetails: async (media_id, force = false) => {
-    const { mediaDetails, loadingIds } = get();
+    const { mediaDetails } = get();
+    const existing = mediaDetails[media_id];
 
     // Return cached data if available and not forcing refresh
-    if (!force && mediaDetails[media_id]) {
-      return { success: true, data: mediaDetails[media_id] };
+    if (!force && existing?.hasFetched) {
+      return { success: true };
     }
 
-    // Prevent duplicate in-flight requests for the same media
-    if (loadingIds.has(media_id)) {
-      return { success: true, error: 'Already fetching' };
-    }
+    set((state) => ({
+      mediaDetails: {
+        ...state.mediaDetails,
+        [media_id]: {
+          details: state.mediaDetails[media_id]?.details ?? null,
+          isLoading: true,
+          hasFetched: false,
+          error: null,
+        },
+      },
+    }));
 
-    set((state) => ({ loadingIds: new Set(state.loadingIds).add(media_id) }));
 
-    const result = await getMediaDetails(media_id);
+     const result = await getMediaDetails(media_id);
 
     if (!result.success) {
-      set((state) => {
-        const updated = new Set(state.loadingIds);
-        updated.delete(media_id);
-        return { loadingIds: updated };
-      });
+      set((state) => ({
+        mediaDetails: {
+          ...state.mediaDetails,
+          [media_id]: {
+            details: null,
+            isLoading: false,
+            hasFetched: false,
+            error: result.error,
+          },
+        },
+      }));
+
       return { success: false, error: result.error };
     }
 
-    set((state) => {
-      const updated = new Set(state.loadingIds);
-      updated.delete(media_id);
-      return {
-        loadingIds: updated,
-        mediaDetails: { ...state.mediaDetails, [media_id]: result.data },
-      };
-    });
+    set((state) => ({
+      mediaDetails: {
+        ...state.mediaDetails,
+        [media_id]: {
+          details: result.data,
+          isLoading: false,
+          hasFetched: true,
+          error: null,
+        },
+      },
+    }));
 
-    return { success: true, data: result.data };
+    return { success: true };
   },
 }));

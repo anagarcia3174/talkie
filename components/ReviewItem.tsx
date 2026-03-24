@@ -7,9 +7,9 @@ import { useRouter } from 'expo-router';
 import { useReviews } from '~/store/reviewStore';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
-import ReviewItemOptions from './ReviewItemOptions';
 import ReviewEditModal from './ReviewEditModal';
-import ReviewReportModal from './ReviewReportModal';
+import ItemOptions from './ItemOptions';
+import ReportModal from './ReportModal';
 
 interface ReviewItemProps {
   review: ReviewWithUser;
@@ -115,11 +115,11 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
 
   return (
     <>
-      <Pressable>
         <View className="mx-2 my-1 rounded-2xl bg-primary-100/30 px-6 py-3 dark:bg-primary-950/30">
           <View className="flex-row items-start gap-3">
             {/* Avatar */}
             <Pressable
+            disabled={isUser}
               onPress={() =>
                 router.push({ pathname: '/profile/[id]', params: { id: review.user_id } })
               }
@@ -139,6 +139,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
                   <Pressable
+                  disabled={isUser}
                     onPress={() =>
                       router.push({ pathname: '/profile/[id]', params: { id: review.user_id } })
                     }
@@ -216,10 +217,9 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
             </View>
           </View>
         </View>
-      </Pressable>
-      <ReviewItemOptions
+      <ItemOptions
         visible={optionsVisible}
-        review={review}
+        item={{type: 'review', data: review}}
         isOwner={!!isUser}
         onClose={() => setOptionsVisible(false)}
         onDelete={() => {
@@ -246,7 +246,8 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
           showAvatar: false,
         }}
       />
-      <ReviewReportModal
+      <ReportModal
+      type='review'
         visible={reportModalVisible}
         onClose={() => setReportModalVisible(false)}
         onSubmit={handleReviewReport}

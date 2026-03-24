@@ -29,12 +29,10 @@ const CONTENT_OPTIONS = ['Reviews', 'Comments'];
 export default function MediaScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { mediaDetails, loadingIds, fetchMediaDetails } = useMedia();
   const params = useLocalSearchParams<{ id: string; mediaData: string }>();
   const media: Media = JSON.parse(params.mediaData as string);
   const theme = useTheme();
-  const details = mediaDetails[media.id];
-  const isLoading = loadingIds.has(media.id);
+
   const [selectedSegment, setSelectedSegment] = useState(0);
   const [listModalVisible, setListModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,12 +42,6 @@ export default function MediaScreen() {
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addItemToList } = useLists();
-
-  useEffect(() => {
-    if (!details) {
-      fetchMediaDetails(media.id);
-    }
-  }, [media.id]);
 
   const handleAddToList = async (listId: number) => {
     if (!listId || !user?.id) return;
@@ -129,12 +121,7 @@ export default function MediaScreen() {
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
               {selectedSegment === 0 && <MediaReviewSection mediaId={media.id} />}
               {selectedSegment === 1 && (
-                <MediaCommentSection
-                  mediaType={media.media_type}
-                  mediaId={media.id}
-                  details={details}
-                  detailsLoading={isLoading}
-                />
+                <MediaCommentSection mediaType={media.media_type} mediaId={media.id} />
               )}
             </KeyboardAvoidingView>
             <ListSelectionModal

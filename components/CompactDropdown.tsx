@@ -11,6 +11,7 @@ export default function CompactDropdown({
   onSelect,
   getLabel,
   getValue,
+  disabled = false
 }: {
   label: string;
   items: any[];
@@ -18,6 +19,7 @@ export default function CompactDropdown({
   onSelect: (value: number) => void;
   getLabel: (item: any) => string;
   getValue: (item: any) => number;
+  disabled?: boolean;
 }) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
@@ -40,14 +42,14 @@ export default function CompactDropdown({
       {/* Trigger button */}
       <Pressable
         ref={buttonRef}
-        onPress={openDropdown}
+        onPress={!disabled ? openDropdown : null}
         style={{ backgroundColor: theme.primaryOpacity[950] }}
         disabled={isDisabled}
         className="flex-1 flex-row items-center justify-between rounded-lg px-3 py-2">
         <Text className="text-md font-SpaceGrotesk-SemiBold text-primary-900 dark:text-primary-200">
           {selectedLabel}
         </Text>
-        {!isDisabled && <ChevronDown size={14} color={theme.primary[600]} />}
+        {(!isDisabled && !disabled) && <ChevronDown size={14} color={theme.primary[600]} />}
       </Pressable>
 
       {/* Dropdown modal */}

@@ -16,6 +16,7 @@ interface TimestampPickerProps {
   onTimestampChange: (seconds: number) => void;
   onSeasonChange?: (season: number) => void;
   onEpisodeChange?: (episode: number) => void;
+  pickersDisabled?: boolean;
 }
 
 export default function TimestampPicker({
@@ -27,6 +28,7 @@ export default function TimestampPicker({
   onTimestampChange,
   onSeasonChange,
   onEpisodeChange,
+  pickersDisabled = false
 }: TimestampPickerProps) {
   const theme = useTheme();
 
@@ -69,7 +71,7 @@ export default function TimestampPicker({
   const tvDetails = mediaType === 'tv' ? (details as TVDetails) : null;
 
   return (
-    <View className="px-4">
+    <View className="">
       {/* ---------------- TV PICKERS ---------------- */}
       {mediaType === 'tv' && tvDetails && (
         <View className="mb-3 flex-row gap-1">
@@ -83,6 +85,7 @@ export default function TimestampPicker({
               onSeasonChange?.(val);
               onTimestampChange(0);
             }}
+            disabled={pickersDisabled}
           />
           {selectedSeason && tvDetails.episodes?.[selectedSeason] && (
             <CompactDropdown
@@ -95,6 +98,7 @@ export default function TimestampPicker({
                 onEpisodeChange?.(val);
                 onTimestampChange(0);
               }}
+              disabled={pickersDisabled}
             />
           )}
         </View>

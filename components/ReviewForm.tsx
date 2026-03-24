@@ -1,13 +1,6 @@
 import { useState } from 'react';
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  Text,
-  ActivityIndicator,
-  Image,
-} from 'react-native';
-import { Star, SendHorizonal, Check } from 'lucide-react-native';
+import { View, TextInput, TouchableOpacity, Text, ActivityIndicator, Image } from 'react-native';
+import { Star, SendHorizonal, Check, UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useProfile } from '~/store/profileStore';
 import Toast from 'react-native-toast-message';
@@ -18,7 +11,7 @@ export interface ReviewFormProps {
   initialContent?: string;
   onSubmit: (rating: number, content: string) => Promise<void>;
   showAvatar?: boolean;
-};
+}
 
 export default function ReviewForm({
   mode = 'create',
@@ -60,14 +53,13 @@ export default function ReviewForm({
     }
   };
 
-  const isDirty =
-    rating !== initialRating || reviewText.trim() !== initialContent;
+  const isDirty = rating !== initialRating || reviewText.trim() !== initialContent;
 
   return (
     <View>
       {/* ⭐ Stars (top row) */}
       <View className="mb-3 flex-row justify-between">
-        {[1,2,3,4,5,6,7,8,9,10].map((star) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
           <TouchableOpacity
             key={star}
             onPress={() => handleSetRating(star)}
@@ -80,7 +72,7 @@ export default function ReviewForm({
                 fill={star <= rating ? 'gold' : 'transparent'}
               />
               {star <= rating && (
-                <Text className="absolute text-[10px] font-SpaceGrotesk-SemiBold text-primary-950">
+                <Text className="absolute font-SpaceGrotesk-SemiBold text-[10px] text-primary-950">
                   {star}
                 </Text>
               )}
@@ -93,12 +85,17 @@ export default function ReviewForm({
 
       {/* ✍️ Bottom row */}
       <View className="flex-row items-end">
-        {showAvatar && profile && (
-          <Image
-            source={{ uri: profile.avatar_url || 'https://via.placeholder.com/50' }}
-            className="mr-3 h-11 w-11 rounded-full"
-          />
-        )}
+        {showAvatar &&
+          (profile?.avatar_url ? (
+            <Image
+              source={{ uri: profile.avatar_url || 'https://via.placeholder.com/50' }}
+              className="mr-3 h-11 w-11 rounded-full"
+            />
+          ) : (
+            <View className="mr-3 h-11 w-11 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
+              <UserRound size={16} color={theme.primary[900]} />
+            </View>
+          ))}
 
         <TextInput
           placeholder="Write your review..."
@@ -116,13 +113,12 @@ export default function ReviewForm({
           onPress={handleSubmit}
           disabled={loading || (mode === 'edit' && !isDirty)}
           className="ml-2 h-11 w-11 items-center justify-center rounded-full">
-          
           {loading ? (
             <ActivityIndicator size="small" color={theme.primary[950]} />
           ) : mode === 'edit' ? (
-            <Check size={20} color={theme.primary[950]} />
+            <Check size={20} strokeWidth={2} color={theme.primary[950]} />
           ) : (
-            <SendHorizonal size={20} color={theme.primary[950]} />
+            <SendHorizonal size={20} strokeWidth={2} color={theme.primary[950]} />
           )}
         </TouchableOpacity>
       </View>
