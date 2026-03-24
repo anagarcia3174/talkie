@@ -1,5 +1,5 @@
 import { View, Text, Image, Pressable } from 'react-native';
-import { Review, ReviewWithUser } from '~/types/supabaseTypes';
+import { ReportReason, Review, ReviewWithUser } from '~/types/supabaseTypes';
 import { Heart, MoreHorizontal, Star, UserRound } from 'lucide-react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
 import { useTheme } from '~/hooks/useTheme';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 import ReviewItemOptions from './ReviewItemOptions';
 import ReviewEditModal from './ReviewEditModal';
+import ReviewReportModal from './ReviewReportModal';
 
 interface ReviewItemProps {
   review: ReviewWithUser;
@@ -36,10 +37,11 @@ function formatRelativeTime(dateString: string): string {
 
 export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   const uri = getPublicUrl(review.owner.avatar_url);
-  const { toggleLikeReview, removeReview, updateReview } = useReviews();
+  const { toggleLikeReview, removeReview, updateReview, reportReview } = useReviews();
   const [loading, setLoading] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const hasAvatar = uri && uri.length > 0;
   const theme = useTheme();
   const router = useRouter();
@@ -91,6 +93,26 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
     }
   };
 
+  const handleReviewReport = async (reason: ReportReason, details?: string) => {
+    const result = await reportReview(review.id, reason, details);
+    setReportModalVisible(false);
+    if (!result.success) {
+      Toast.show({
+        type: 'error',
+        text1: result.error || 'Failed to report the review.',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    } else {
+      Toast.show({
+        type: 'success',
+        text1: 'Report submitted!',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    }
+  };
+
   return (
     <>
       <Pressable>
@@ -136,7 +158,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
                 </View>
 
                 {/* ✅ 3-dot menu */}
-                <Pressable onPress={() => setOptionsVisible(true)} hitSlop={8}>
+                <Pressable className='pl-4' onPress={() => setOptionsVisible(true)} hitSlop={8}>
                   <MoreHorizontal size={18} color={theme.primary[500]} />
                 </Pressable>
               </View>
@@ -208,7 +230,10 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
           setOptionsVisible(false);
           setEditModalVisible(true);
         }}
-        onReport={() => {}}
+        onReport={() => {
+          setOptionsVisible(false);
+          setReportModalVisible(true);
+        }}
       />
       <ReviewEditModal
         visible={editModalVisible}
@@ -220,6 +245,11 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
           onSubmit: handleReviewUpdate,
           showAvatar: false,
         }}
+      />
+      <ReviewReportModal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={handleReviewReport}
       />
     </>
   );

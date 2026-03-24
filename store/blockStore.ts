@@ -18,7 +18,7 @@ interface BlockState {
   block: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
   unblock: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
 
-  getBlockedUsers: (currentUserId: string) => Promise<StoreResult<void>>;
+  getBlockedUsers: () => Promise<StoreResult<void>>;
 
   clearBlockData: () => void;
 }
@@ -77,8 +77,8 @@ export const useBlock = create<BlockState>((set, get) => ({
     return { success: true };
   },
 
-  getBlockedUsers: async (currentUserId) => {
-    const result = await getBlockedUsers(currentUserId);
+  getBlockedUsers: async () => {
+    const result = await getBlockedUsers();
 
     if (!result.success) {
       return { success: false, error: result.error };

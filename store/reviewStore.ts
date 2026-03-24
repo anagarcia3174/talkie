@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Review, ReviewWithUser } from '~/types/supabaseTypes';
+import type { ReportReason, Review, ReviewWithUser } from '~/types/supabaseTypes';
 import {
   getReviewsForMedia,
   postReview,
@@ -7,6 +7,7 @@ import {
   toggleReviewLike,
   updateReview as updateReviewService,
 } from '~/services/reviewService';
+import { reportReview } from '~/services/reportService';
 
 type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
@@ -34,6 +35,11 @@ interface ReviewsState {
     mediaId: number;
     updates: Partial<Pick<Review, 'rating' | 'content'>>;
   }) => Promise<StoreResult<void>>;
+  reportReview: (
+    reviewId: number,
+    reason: ReportReason,
+    details?: string
+  ) => Promise<StoreResult<void>>;
 }
 
 export const useReviews = create<ReviewsState>((set, get) => ({
@@ -278,5 +284,8 @@ export const useReviews = create<ReviewsState>((set, get) => ({
     }
 
     return { success: true };
+  },
+  reportReview: async (reviewId, reason, details) => {
+    return await reportReview(reviewId, reason, details);
   },
 }));

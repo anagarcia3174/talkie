@@ -58,11 +58,9 @@ export async function unBlockUser(currentUser: string, blockedUser: string): Pro
   }
 }
 
-export async function getBlockedUsers(currentUserId: string): Promise<DataResult<Profile[]>> {
+export async function getBlockedUsers(): Promise<DataResult<Profile[]>> {
   try {
-    const { data, error } = await supabase.rpc('get_blocked_users', {
-      user_id: currentUserId,
-    });
+    const { data, error } = await supabase.rpc('get_blocked_users');
 
     if (error) {
       return errorData(error, {

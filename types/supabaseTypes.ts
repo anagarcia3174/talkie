@@ -4,6 +4,7 @@ import { ErrorContext, getErrorMessage } from '~/utils/errorHandler';
 export type MediaType = 'movie' | 'tv';
 export type ListType = 'library' | 'favorites' | 'custom';
 export type Status = 'watched' | 'watching' | 'pending';
+export type ReportReason = 'spam' | 'harassment' | 'spoilers' | 'inappropriate' | 'other';
 
 // Return types
 export type DataResult<T> = { success: true; data: T } | { success: false; error: string };
