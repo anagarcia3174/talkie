@@ -1,4 +1,4 @@
-import { Profile, ProfileStats } from '~/types/supabaseTypes';
+import { ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { withPublicUrl } from '~/utils/storageUrl';
@@ -9,13 +9,25 @@ import {
   updateProfile,
   uploadAvatar as uploadAvatarService,
 } from '~/services/profileService';
+import { getPublicListsByUserId } from '~/services/listService';
 
 type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
+
+interface OtherProfilesState {
+  profile: Profile | null;
+  stats: ProfileStats | null;
+  lists: ListWithMeta[];
+  loading: boolean;
+  error: string | null;
+}
 
 interface ProfileState {
   profile: Profile | null;
   stats: ProfileStats;
   loading: boolean;
+
+  otherProfiles: Record<string, OtherProfilesState>;
+  getOthersProfile: (userId: string) => Promise<StoreResult<void>>;
 
   getProfile: (userId: string) => Promise<StoreResult<void>>;
   getStats: (userId: string) => Promise<StoreResult<void>>;
@@ -51,6 +63,86 @@ export const useProfile = create<ProfileState>((set, get) => ({
   },
   loading: false,
 
+  otherProfiles: {},
+  getOthersProfile: async (userId) => {
+    const cached = get().otherProfiles[userId];
+
+    if (cached && !cached.loading && !cached.error) {
+      return { success: true };
+    }
+
+    if (cached?.loading) {
+      return { success: true };
+    }
+
+     set((state) => ({
+    otherProfiles: {
+      ...state.otherProfiles,
+      [userId]: {
+        profile: cached?.profile ?? null,
+        stats: cached?.stats ?? null,
+        lists: cached?.lists ?? [],
+        loading: true,
+        error: null,
+      },
+    },
+  }));
+
+  console.log('fetching for: ', userId);
+
+    const [profileResult, statsResult, listsResult] = await Promise.all([
+      getProfileById(userId),
+      getProfileStats(userId),
+      getPublicListsByUserId(userId),
+    ]);
+
+    if (!profileResult.success) {
+    set((state) => ({
+      otherProfiles: {
+        ...state.otherProfiles,
+        [userId]: {
+          profile: cached?.profile ?? null,
+          stats: cached?.stats ?? null,
+          lists: cached?.lists ?? [],
+          loading: false,
+          error: profileResult.error,
+        },
+      },
+    }));
+    return { success: false, error: profileResult.error };
+  }
+
+   const profile = profileResult.data;
+
+  const stats = statsResult.success
+    ? statsResult.data
+    : cached?.stats ?? null;
+
+  const lists = listsResult.success
+    ? (listsResult.data ?? [])
+    : cached?.lists ?? [];
+
+
+    set((state) => ({
+    otherProfiles: {
+      ...state.otherProfiles,
+      [userId]: {
+        profile,
+        stats,
+        lists,
+        loading: false,
+        error:
+          !statsResult.success
+            ? statsResult.error
+            : !listsResult.success
+            ? listsResult.error
+            : null,
+      },
+    },
+  }));
+
+  return { success: true };
+  },
   // Fetch current user's profile
   getProfile: async (userId) => {
     set({ loading: true });
@@ -132,7 +224,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
     }
 
     const normalized = withPublicUrl(result.data!);
-const withCacheBuster = addCacheBuster(normalized);
+    const withCacheBuster = addCacheBuster(normalized);
     set({ profile: withCacheBuster });
     return { success: true };
   },

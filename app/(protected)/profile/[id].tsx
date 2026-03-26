@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import LoadingScreen from '~/components/LoadingScreen';
-import { getProfileById, getProfileStats } from '~/services/profileService';
 import { ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
@@ -17,15 +16,22 @@ import FollowButton from '~/components/FollowButton';
 import { useBlock } from '~/store/blockStore';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
+import { useProfile } from '~/store/profileStore';
 
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
-  const [profileLists, setProfileLists] = useState<ListWithMeta[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { otherProfiles, getOthersProfile } = useProfile();
+
+  const profileState = otherProfiles[id];
+  const profile = profileState?.profile ?? null;
+  const profileStats = profileState?.stats ?? null;
+  const profileLists = profileState?.lists ?? [];
+
+  const loading = profileState?.loading ?? false;
+  const error = profileState?.error ?? null;
+
   const [blocking, setBlocking] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addListToState } = useLists();
@@ -35,37 +41,10 @@ export default function ProfileScreen() {
   const theme = useTheme();
 
   useEffect(() => {
-    if (profile) return; // 👈 prevents refetch + loading flash
+    if (!id) return;
 
-    let mounted = true;
-
-    const load = async () => {
-      try {
-        setLoading(true);
-
-        const profileRes = await getProfileById(id);
-        if (!mounted || !profileRes.success) return;
-
-        const statsRes = await getProfileStats(id);
-        if (!mounted || !statsRes.success) return;
-
-        const listsRes = await getPublicListsByUserId(id);
-        if (!mounted || !listsRes.success) return;
-
-        setProfile(profileRes.data);
-        setProfileStats(statsRes.data);
-        setProfileLists(listsRes.data);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    load();
-
-    return () => {
-      mounted = false;
-    };
-  }, [id, profile]);
+    getOthersProfile(id);
+  }, [id]);
 
   useEffect(() => {
     if (!profile) return;
@@ -80,12 +59,12 @@ export default function ProfileScreen() {
     return <LoadingScreen fullScreen />;
   }
 
-  if (!profile) {
+  if (error || !profile) {
     return (
       <ErrorScreen
         title="Profile not found!"
         fullScreen
-        message="There was an error fetching the profile you requests."
+        message={error || 'There was an error fetching the profile you requested.'}
       />
     );
   }
