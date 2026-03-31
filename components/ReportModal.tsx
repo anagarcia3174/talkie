@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import type { ReportReason } from '~/types/supabaseTypes';
+import { haptics } from '~/utils/haptics';
 
 const REPORT_REASONS: { label: string; value: ReportReason }[] = [
   { label: 'Spam', value: 'spam' },
@@ -71,6 +72,7 @@ export default function ReportModal({ type, visible, onClose, onSubmit }: Report
                   key={r.value}
                   onPress={() => {
                     Keyboard.dismiss();
+                    haptics.action();
                     setSelectedReason(r.value);
                   }}
                   className={`rounded-lg border px-4 py-3 ${
@@ -113,7 +115,10 @@ export default function ReportModal({ type, visible, onClose, onSubmit }: Report
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handleSubmit}
+              onPress={() => {
+                haptics.action();
+                handleSubmit();
+              }}
               disabled={!selectedReason}
               className={`rounded-lg px-4 py-2 ${
                 selectedReason

@@ -13,6 +13,7 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CommentForm from './CommentForm';
 import { useMedia } from '~/store/mediaStore';
+import { haptics } from '~/utils/haptics';
 
 interface MediaCommentSectionProps {
   mediaType: 'movie' | 'tv';
@@ -71,6 +72,7 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
     });
 
     if (result.success) {
+      haptics.success();
       Toast.show({
         type: 'success',
         text1: 'Comment Posted!',
@@ -80,6 +82,7 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
         onPress: () => Toast.hide(),
       });
     } else {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to post your comment',
@@ -100,7 +103,7 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
 
   return (
     <View className="flex-1">
-      <View className="px-4">
+      <View className="px-2">
         {!details || detailsLoading ? (
           <TimestampSkeleton />
         ) : details ? (
@@ -122,7 +125,7 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
           color={theme.primary[950]}
         />
       ) : error ? (
-        <ErrorScreen fullScreen={false} title="Error!" message={error} />
+        <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
         <FlatList
           style={{ flex: 1 }}

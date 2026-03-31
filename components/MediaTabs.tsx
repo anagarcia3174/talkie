@@ -1,6 +1,7 @@
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
 import { View } from 'react-native';
 import { useTheme } from '~/hooks/useTheme';
+import { haptics } from '~/utils/haptics';
 
 interface MediaTabsProps {
   selectedIndex: number;
@@ -16,7 +17,9 @@ export default function MediaTabs({ selectedIndex, onChange, options }: MediaTab
       <SegmentedControl
         values={options}
         selectedIndex={selectedIndex}
-        onChange={(event) => onChange(event.nativeEvent.selectedSegmentIndex)}
+        onChange={(event) => {
+          haptics.action();
+          onChange(event.nativeEvent.selectedSegmentIndex)}}
         tintColor={theme.primaryOpacity[950]}
         fontStyle={{
           color: theme.primary[600],

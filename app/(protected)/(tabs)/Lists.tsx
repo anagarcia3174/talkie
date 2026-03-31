@@ -12,6 +12,7 @@ import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import ListRow from '~/components/ListRow';
 import { useBlock } from '~/store/blockStore';
+import { haptics } from '~/utils/haptics';
 
 export default function Lists() {
   const theme = useTheme();
@@ -39,6 +40,7 @@ export default function Lists() {
   const handleCreateList = async (list: Partial<List>) => {
     if (!user) return;
     if (customListIds.length >= 5) {
+      haptics.error();
       setCreateListModalVisible(false);
       Toast.show({
         type: 'error',
@@ -55,6 +57,7 @@ export default function Lists() {
     const result = await createList(user.id, list);
 
     if (!result.success) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to create your custom list',
@@ -64,6 +67,7 @@ export default function Lists() {
         onPress: () => Toast.hide(),
       });
     } else {
+      haptics.success();
       Toast.show({
         type: 'success',
         text1: 'Your list was created',
@@ -83,6 +87,7 @@ export default function Lists() {
       defaultListIds.favorites === listId ||
       !customListIds.includes(listId)
     ) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: 'You cannot delete this list.',
@@ -96,6 +101,8 @@ export default function Lists() {
     setDeleteLoading(true);
     const result = await deleteList(user.id, listId);
     if (!result.success) {
+      haptics.error();
+
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to delete your custom list',
@@ -105,6 +112,8 @@ export default function Lists() {
         onPress: () => Toast.hide(),
       });
     } else {
+      haptics.success();
+
       Toast.show({
         type: 'success',
         text1: 'Your list was deleted',
@@ -130,7 +139,10 @@ export default function Lists() {
           {customListIds.length < 5 && (
             <TouchableOpacity
               disabled={createLoading}
-              onPress={() => setCreateListModalVisible(true)}
+              onPress={() => {
+                haptics.action();
+                setCreateListModalVisible(true);
+              }}
               className="rounded-full p-2 ">
               <Plus size={24} color={theme.primary[950]} />
             </TouchableOpacity>

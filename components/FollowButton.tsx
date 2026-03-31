@@ -5,6 +5,7 @@ import { useFollow } from '~/store/followStore';
 import { useAuth } from '~/context/AuthContext';
 import { UserPlus, UserRoundCheck, UserCheck, Users } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
+import { haptics } from '~/utils/haptics';
 
 interface FollowButtonProps {
   targetUserId: string;
@@ -108,10 +109,10 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
     if (loading) return;
 
     setLoading(true);
-
     if (isFollowing) {
       const result = await unfollow(user.id, targetUserId);
       if (!result.success) {
+        haptics.error();
         Toast.show({
           type: 'error',
           text1: result.error,
@@ -120,6 +121,7 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
     } else {
       const result = await follow(user.id, targetUserId);
       if (!result.success) {
+        haptics.error();
         Toast.show({
           type: 'error',
           text1: result.error,
@@ -132,7 +134,11 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={() => {
+        if (loading) return;
+        haptics.action();
+        handlePress();
+      }}
       disabled={loading}
       className={`flex-row items-center justify-center ${sizeStyles.gap} active:opacity-70 ${sizeStyles.container} ${className}`}>
       {loading ? (

@@ -1,4 +1,5 @@
-import { Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { haptics } from '~/utils/haptics';
 
 interface SignOutModalProps {
   visible: boolean;
@@ -8,7 +9,9 @@ interface SignOutModalProps {
 export default function SignOutModal({ visible, onClose }: SignOutModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => onClose(false)}>
-      <View className="flex-1 items-center justify-center bg-black/50 px-6">
+      <Pressable
+        className="flex-1 items-center justify-center bg-black/50 px-6"
+        onPress={() => onClose(false)}>
         <View className="w-full rounded-2xl bg-primary-50 p-5 dark:bg-primary-900">
           <Text className="mb-2 font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
             Sign Out?
@@ -25,13 +28,16 @@ export default function SignOutModal({ visible, onClose }: SignOutModalProps) {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => onClose(true)}
+              onPress={() => {
+                haptics.warning();
+                onClose(true);
+              }}
               className="flex-1 items-center rounded-xl bg-red-500 py-3">
               <Text className="font-SpaceGrotesk-Bold text-white">Sign Out</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 }

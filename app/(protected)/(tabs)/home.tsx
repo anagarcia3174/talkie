@@ -10,17 +10,46 @@ import LibraryProgressChart from '~/components/LibraryProgressChart';
 import { useLists } from '~/store/listStore';
 
 import Toast from 'react-native-toast-message';
+import LoadingScreen from '~/components/LoadingScreen';
+import ErrorScreen from '~/components/ErrorScreen';
+import { haptics } from '~/utils/haptics';
 
 export default function Home() {
   const { fetchHomeData, trendingMovies, trendingShows } = useMedia();
   const tabBarHeight = useBottomTabBarHeight();
   const { listsById, defaultListIds, addItemToList, listItems, hydrateDefaultLists } = useLists();
   const [loading, setLoading] = useState(false);
-
+  const [error, setError] = useState<string | null>(null);
+  const isInitialLoading = loading && trendingMovies.length === 0 && trendingShows.length === 0;
   useEffect(() => {
-    if (trendingMovies.length === 0 || trendingShows.length === 0) {
-      fetchHomeData();
-    }
+    const loadHomeData = async () => {
+      if (trendingMovies.length > 0 && trendingShows.length > 0) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await fetchHomeData();
+
+        if (!result.success) {
+          setError(result.error);
+          Toast.show({
+            type: 'error',
+            text1: result.error || 'Failed to load home data',
+          });
+        }
+      } catch (err) {
+        setError('Unexpected error occurred');
+        Toast.show({
+          type: 'error',
+          text1: 'Unexpected error occurred',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHomeData();
   }, [trendingMovies.length, trendingShows.length, fetchHomeData]);
 
   useEffect(() => {
@@ -34,7 +63,6 @@ export default function Home() {
   const addMediaToLibrary = async (mediaId: number): Promise<void> => {
     if (!library) return;
 
-    setLoading(true);
     Toast.show({
       type: 'info',
       text1: 'Adding to library...',
@@ -45,6 +73,7 @@ export default function Home() {
       const result = await addItemToList(library.id, mediaId, library.user_id);
 
       if (!result.success) {
+        haptics.error();
         Toast.show({
           type: 'error',
           text1: result.error || 'Failed to add item to your library',
@@ -52,6 +81,7 @@ export default function Home() {
           autoHide: true,
         });
       } else {
+        haptics.success();
         Toast.show({
           type: 'success',
           text1: 'Added to Library!',
@@ -59,16 +89,19 @@ export default function Home() {
         });
       }
     } catch (error) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: 'An unexpected error ocurred while adding the item to your library',
         visibilityTime: 4000,
         autoHide: true,
       });
-    } finally {
-      setLoading(false);
     }
   };
+
+  if (loading) {
+    return <LoadingScreen fullScreen={true} />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
@@ -76,19 +109,25 @@ export default function Home() {
       <ScrollView
         contentContainerStyle={{ paddingBottom: tabBarHeight, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}>
-        <View className="flex-1 justify-around px-0">
-          {library && <LibraryProgressChart items={listItems[library.id] || []} />}
-          <TrendingSection
-            title="Trending Movies"
-            movies={trendingMovies}
-            onAddToLibrary={addMediaToLibrary}
-          />
-          <MediaRowSection
-            movies={trendingShows}
-            title="Trending Shows"
-            onAddToLibrary={addMediaToLibrary}
-          />
-        </View>
+        {isInitialLoading ? (
+          <LoadingScreen fullScreen={false} />
+        ) : error ? (
+          <ErrorScreen title="Oops!" message={error} />
+        ) : (
+          <View className="flex-1 justify-around px-0">
+            {library && <LibraryProgressChart items={listItems[library.id] || []} />}
+            <TrendingSection
+              title="Trending Movies"
+              movies={trendingMovies}
+              onAddToLibrary={addMediaToLibrary}
+            />
+            <MediaRowSection
+              movies={trendingShows}
+              title="Trending Shows"
+              onAddToLibrary={addMediaToLibrary}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

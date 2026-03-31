@@ -17,6 +17,7 @@ import { useBlock } from '~/store/blockStore';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { useProfile } from '~/store/profileStore';
+import { haptics } from '~/utils/haptics';
 
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
@@ -178,7 +179,10 @@ export default function ProfileScreen() {
         />
       </ScrollView>
       <View className="items-center px-4 pb-4">
-        <TouchableOpacity className="p-2" disabled={blocking} onPress={handleBlock}>
+        <TouchableOpacity className="p-2" disabled={blocking} onPress={() => {
+          haptics.warning();
+          handleBlock();
+        }}>
           <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 underline dark:text-red-400">
             {blocking ? 'Blocking...' : 'Block User'}
           </Text>

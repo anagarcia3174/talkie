@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
 import { SortOrder, SortType } from './ListContent';
+import { haptics } from '~/utils/haptics';
 
 interface SortByModalPropsModal {
   isVisible: boolean;
@@ -45,7 +46,10 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
             return (
               <TouchableOpacity
                 key={opt.value}
-                onPress={() => setSelectedSort(opt.value)}
+                onPress={() => {
+                  haptics.action();
+                  setSelectedSort(opt.value);
+                }}
                 className={`mb-3 flex-row items-center justify-between rounded-lg px-3 py-3 ${
                   active ? 'bg-primary-300 dark:bg-primary-800' : 'bg-transparent'
                 }`}>
@@ -76,7 +80,10 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
             return (
               <TouchableOpacity
                 key={opt.value}
-                onPress={() => setSelectedOrder(opt.value)}
+                onPress={() => {
+                  haptics.action();
+                  setSelectedOrder(opt.value);
+                }}
                 className={`mb-3 flex-row items-center justify-between rounded-lg px-3 py-3 ${
                   active ? 'bg-primary-300 dark:bg-primary-800' : 'bg-transparent'
                 }`}>
@@ -105,7 +112,10 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={apply}
+            onPress={() => {
+              haptics.success();
+              apply();
+            }}
             className="rounded-lg bg-primary-900 px-4 py-2 dark:bg-primary-200">
             <Text className="font-SpaceGrotesk-Medium text-lg text-primary-50 dark:text-primary-950">
               Apply

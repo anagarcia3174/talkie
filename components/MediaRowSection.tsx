@@ -12,6 +12,7 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { Media } from '~/types/supabaseTypes';
 import { useState } from 'react';
+import { haptics } from '~/utils/haptics';
 
 interface MediaRowSectionProps {
   title: string;
@@ -65,6 +66,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
               <TouchableOpacity
                 disabled={loadingId === item.id}
                 onPress={async () => {
+                  haptics.action();
                   setLoadingId(item.id);
                   await onAddToLibrary(item.id);
                   setLoadingId(null);

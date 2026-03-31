@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Modal, Pressable, View, Text } from 'react-native';
 import CommentForm, { CommentFormProps } from './CommentForm';
 import TimestampPicker from './TimestampPicker';
-import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import { useMedia } from '~/store/mediaStore';
 
 interface CommentEditModalProps {
@@ -33,7 +32,9 @@ export default function CommentEditModal({
   const mediaState = mediaDetails[mediaId];
   const details = mediaState?.details ?? null;
   const isLoading = mediaState?.isLoading ?? false;
+  const error = mediaState?.error ?? null;
   const [timestamp, setTimestamp] = useState(initialTimestamp);
+  const canEdit = !error && !!details;
 
   const handleTimestampChange = (newTimestamp: number) => {
     setTimestamp(newTimestamp);
@@ -59,6 +60,10 @@ export default function CommentEditModal({
             {/* Timestamp picker — season/episode are fixed (no-ops) since those aren't editable */}
             {isLoading ? (
               <TimestampSkeleton />
+            ) : error ? (
+              <View className="mb-4">
+                <Text className="text-sm text-red-500">Failed to load media details.</Text>
+              </View>
             ) : details ? (
               <View className="mb-4">
                 <TimestampPicker
@@ -81,6 +86,7 @@ export default function CommentEditModal({
                 {...commentFormProps}
                 timestamp={timestamp}
                 onSubmit={async (content: string) => {
+                  if (!canEdit) return;
                   await onSubmit(content, timestamp);
                 }}
               />

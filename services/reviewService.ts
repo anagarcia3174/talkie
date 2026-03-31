@@ -26,7 +26,7 @@ export async function getReviewsForMedia(mediaId: number): Promise<DataResult<Re
 export async function postReview(
   review: Omit<
     Review,
-    'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' 
+    'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'
   >
 ): Promise<DataResult<ReviewWithUser>> {
   try {
@@ -37,8 +37,10 @@ export async function postReview(
         `
         *,
         profiles (
+          id,
           display_name,
-          avatar_url
+          avatar_url,
+          is_private
         )
       `
       )
@@ -54,8 +56,13 @@ export async function postReview(
 
     const flattened: ReviewWithUser = {
       ...data,
-      display_name: data.profiles.display_name,
-      avatar_url: data.profiles.avatar_url,
+      is_liked: false, // newly created review can't be liked yet
+      owner: {
+        id: data.profiles.id,
+        display_name: data.profiles.display_name,
+        avatar_url: data.profiles.avatar_url,
+        is_private: data.profiles.is_private,
+      },
     };
 
     delete (flattened as any).profiles;

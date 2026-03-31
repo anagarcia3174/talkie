@@ -1,11 +1,12 @@
 import { UserRound } from 'lucide-react-native';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal, Text, View, TouchableOpacity, Image } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
 import { useBlock } from '~/store/blockStore';
+import { haptics } from '~/utils/haptics';
 import { getPublicUrl } from '~/utils/storageUrl';
 
 interface BlockedUsersModal {
@@ -17,20 +18,32 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
   const { blockedIds, blockedUsers, getBlockedUsers, unblock } = useBlock();
   const { user } = useAuth();
   const theme = useTheme();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!visible || !user) return;
+    const loadBlockedUsers = async () => {
+      if (!visible || !user) return;
 
-    if (blockedIds.size !== blockedUsers.length) {
-      getBlockedUsers(user.id);
-    }
-  }, [visible, user, blockedIds, blockedUsers.length]);
+      if (blockedIds.size === blockedUsers.length) return;
+
+      setLoading(true);
+      setError(null);
+
+      await getBlockedUsers();
+
+      setLoading(false);
+    };
+
+    loadBlockedUsers();
+  }, [visible, user, blockedIds, blockedUsers.length, getBlockedUsers]);
 
   const handleUnblock = async (targetUserId: string) => {
     if (!user) return;
     const result = await unblock(user.id, targetUserId);
     onClose();
     if (!result.success) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to unblock the user.',
@@ -38,6 +51,7 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
         autoHide: true,
       });
     } else {
+      haptics.success();
       Toast.show({
         type: 'success',
         text1: 'User was unblocked.',
@@ -56,6 +70,16 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
           <Text className="mb-5 font-SpaceGrotesk-Medium text-xl text-primary-900 dark:text-primary-100">
             Blocked Users
           </Text>
+
+          {loading && blockedUsers.length === 0 && (
+            <Text className="text-base text-neutral-500 dark:text-neutral-400">
+              Loading blocked users...
+            </Text>
+          )}
+
+          {error && blockedUsers.length === 0 && (
+            <Text className="mb-2 text-base text-red-500">{error}</Text>
+          )}
 
           {/* Empty State */}
           {blockedUsers.length === 0 && (
@@ -88,7 +112,10 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
                 </View>
 
                 <TouchableOpacity
-                  onPress={() => handleUnblock(item.id)}
+                  onPress={() => {
+                    haptics.action();
+                    handleUnblock(item.id);
+                  }}
                   className="rounded-full border border-neutral-300 px-4 py-2 dark:border-neutral-700">
                   <Text className="font-SpaceGrotesk-Medium text-sm text-primary-900 dark:text-primary-100">
                     Unblock

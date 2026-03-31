@@ -4,6 +4,7 @@ import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
 import { List } from '~/types/supabaseTypes';
 import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
+import { haptics } from '~/utils/haptics';
 
 interface CreateListModalProps {
   visible: boolean;
@@ -106,6 +107,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
               <Pressable
                 disabled={!canSubmit}
                 onPress={() => {
+                  haptics.action();
                   onSubmit({
                     name: listName.trim(),
                     description: listDescription.trim() || undefined,

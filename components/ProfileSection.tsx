@@ -1,6 +1,7 @@
 import { View, Text, Image, Pressable, TouchableOpacity } from 'react-native';
 import { UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
+import { haptics } from '~/utils/haptics';
 
 interface ProfileSectionProps {
   avatar: string | null;
@@ -23,7 +24,9 @@ export default function ProfileSection({
     <View className="mb-6 mt-2 rounded-lg bg-primary-200 p-3 dark:bg-primary-900">
         <View className="mb-4 flex-row items-center">
           {avatar ? (
-            <TouchableOpacity activeOpacity={0.9} onPress={() => onAvatarPress?.()}>
+            <TouchableOpacity activeOpacity={0.9} onPress={() => {
+              haptics.action();
+              onAvatarPress?.()}}>
               <Image source={{ uri: avatar }} className="h-16 w-16 rounded-full" />
             </TouchableOpacity>
           ) : (

@@ -4,13 +4,14 @@ import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
 import { List } from '~/types/supabaseTypes';
 import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
+import { haptics } from '~/utils/haptics';
 
 interface ListInfoModalProps {
   list: List;
   visible: boolean;
   onClose: () => void;
   onConfirm: (updates: Partial<List>) => void;
-  onDelete: () => void;
+  onDelete: () => Promise<void>;
 }
 
 export default function ListInfoModal({
@@ -166,6 +167,7 @@ export default function ListInfoModal({
                   if (descChanged) updates.description = listDescription.trim();
                   if (isPrivateChanged) updates.is_private = listIsPrivate;
 
+                  haptics.action();
                   onConfirm(updates);
                 }}
                 className={`rounded-xl px-5 py-2 ${
@@ -190,7 +192,10 @@ export default function ListInfoModal({
             <TouchableOpacity
               disabled={list.is_default}
               activeOpacity={0.5}
-              onPress={onDelete}
+              onPress={() => {
+                haptics.warning();
+                onDelete();
+              }}
               className={`rounded-xl px-4 py-3 ${
                 list.is_default ? 'bg-primary-200  dark:bg-primary-800' : 'bg-red-500'
               }`}>

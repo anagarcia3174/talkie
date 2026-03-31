@@ -3,6 +3,7 @@ import { X, Pencil, Trash2, UserCircle, Flag } from 'lucide-react-native';
 import { CommentWithUser, ReviewWithUser } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import { useRouter } from 'expo-router';
+import { haptics } from '~/utils/haptics';
 
 type ItemWithUser =
   | { type: 'review'; data: ReviewWithUser }
@@ -89,7 +90,10 @@ export default function ItemOptions({
                 </TouchableOpacity>
               )}
               <TouchableOpacity
-                onPress={onDelete}
+                onPress={() => {
+                  haptics.warning();
+                  onDelete();
+                }}
                 className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-red-500/10">
                 <Trash2 size={22} color="#ef4444" />
                 <Text className="font-SpaceGrotesk-Medium text-base text-red-500">
@@ -112,7 +116,10 @@ export default function ItemOptions({
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={onReport}
+                onPress={() => {
+                  haptics.warning();
+                  onReport();
+                }}
                 className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-red-500/10">
                 <Flag size={22} color="#ef4444" />
                 <Text className="font-SpaceGrotesk-Medium text-base text-red-500">

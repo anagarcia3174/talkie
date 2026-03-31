@@ -14,6 +14,7 @@ import DeleteAccountModal from '~/components/DeleteAccountModal';
 import AccountOverlay from '~/components/AccountOverlay';
 import BlockedUsersModal from '~/components/BlockedUsersModal';
 import FollowsModal from '~/components/FollowsModal';
+import { haptics } from '~/utils/haptics';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -42,6 +43,7 @@ export default function Profile() {
     try {
       await signOut();
     } catch (error) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: 'Failed to sign you out.',
@@ -59,6 +61,8 @@ export default function Profile() {
     const result = await deleteAccount();
 
     if (!result.success) {
+      haptics.error();
+
       Toast.show({
         type: 'error',
         text1: result.error || 'There was an error deleting your account.',
@@ -72,6 +76,8 @@ export default function Profile() {
     try {
       await signOut();
     } catch (error) {
+      haptics.error();
+
       Toast.show({
         type: 'error',
         text1: 'Failed to sign you out.',
@@ -87,7 +93,12 @@ export default function Profile() {
         <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
           Profile
         </Text>
-        <TouchableOpacity className="p-2" onPress={() => setOverlayVisible(true)}>
+        <TouchableOpacity
+          className="p-2"
+          onPress={() => {
+            haptics.action();
+            setOverlayVisible(true);
+          }}>
           <MoreVertical size={24} color={theme.primary[950]} />
         </TouchableOpacity>
       </View>
@@ -102,9 +113,11 @@ export default function Profile() {
           stats={stats}
           onTilePress={(tile) => {
             if (tile === 'followers') {
+              haptics.action();
               setFollowModal('followers');
               setFollowModalVisible(true);
             } else if (tile === 'following') {
+              haptics.action();
               setFollowModal('following');
               setFollowModalVisible(true);
             }
@@ -133,6 +146,7 @@ export default function Profile() {
               const res = await uploadAvatar(user.id, image);
               if (!res.success) {
                 Toast.hide();
+                haptics.error();
                 Toast.show({
                   type: 'error',
                   text1: res.error || 'Failed to update your profile',
@@ -147,6 +161,7 @@ export default function Profile() {
               const res = await updateProfile(user.id, data);
               if (!res.success) {
                 Toast.hide();
+                haptics.error();
                 Toast.show({
                   type: 'error',
                   text1: res.error || 'Failed to update your profile',
@@ -158,6 +173,7 @@ export default function Profile() {
               }
             }
             Toast.hide();
+            haptics.success();
             Toast.show({
               type: 'success',
               text1: 'Updated Profile!',
@@ -166,6 +182,7 @@ export default function Profile() {
             });
           } catch (e: any) {
             Toast.hide();
+            haptics.error();
             Toast.show({
               type: 'error',
               text1: 'Failed to update your profile',

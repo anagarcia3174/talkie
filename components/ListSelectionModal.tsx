@@ -11,6 +11,7 @@ import { X, Plus, Library, List, Star, Check, ScrollText } from 'lucide-react-na
 import { useLists } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
+import { haptics } from '~/utils/haptics';
 
 interface ListSelectionModalProps {
   visible: boolean;
@@ -65,7 +66,10 @@ export default function ListSelectionModal({
                     <TouchableOpacity
                       key={list.id}
                       onPress={() =>
+                      {
+                        haptics.action();
                         setSelectedList(selectedList === list.id ? undefined : list.id)
+                      }
                       }
                       className={`flex-row items-center gap-4 rounded-xl p-4 ${
                         selectedList === list.id
@@ -120,9 +124,10 @@ export default function ListSelectionModal({
                   return (
                     <TouchableOpacity
                       key={list.id}
-                      onPress={() =>
-                        setSelectedList(selectedList === list.id ? undefined : list.id)
-                      }
+                      onPress={() => {
+                        haptics.action();
+                        setSelectedList(selectedList === list.id ? undefined : list.id);
+                      }}
                       className={`flex-row items-center gap-4 rounded-xl p-4 ${
                         selectedList === list.id
                           ? 'bg-primary-800 dark:bg-primary-100'
@@ -163,7 +168,10 @@ export default function ListSelectionModal({
         <View className="mb-8 border-t border-primary-200 px-6 py-4 dark:border-primary-800">
           <TouchableOpacity
             disabled={selectedList == null}
-            onPress={() => selectedList && onConfirm(selectedList)}
+            onPress={() => {
+              haptics.action();
+              selectedList && onConfirm(selectedList);
+            }}
             className="flex-row items-center justify-center gap-3 rounded-xl bg-primary-950 p-4 dark:bg-primary-50">
             <Plus size={20} color={theme.primary[50]} />
             <Text className="font-SpaceGrotesk-SemiBold text-primary-50 dark:text-primary-950">

@@ -46,7 +46,6 @@ export async function postComment(
     });
 
     if (error) {
-      console.log(error)
       return errorData(error, {
         operation: 'post_comment',
         table: 'comments',
@@ -57,7 +56,6 @@ export async function postComment(
     // rpc returns an array (even for 1 row)
     return successData(data[0] as CommentWithUser);
   } catch (err) {
-    console.log(err);
     return errorData(err, {
       operation: 'post_comment',
       table: 'comments',

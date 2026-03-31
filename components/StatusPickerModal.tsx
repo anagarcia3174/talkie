@@ -3,6 +3,7 @@ import { Check, Eye, Clock, Trash2 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { Status } from '~/types/supabaseTypes';
 import { useEffect, useState } from 'react';
+import { haptics } from '~/utils/haptics';
 
 interface StatusPickerModalProps {
   visible: boolean;
@@ -64,7 +65,10 @@ export default function StatusPickerModal({
             return (
               <TouchableOpacity
                 key={status}
-                onPress={() => handleSelect(status)}
+                onPress={() => {
+                  haptics.action();
+                  handleSelect(status);
+                }}
                 className={`flex-row items-center gap-4 rounded-xl p-4 ${
                   isSelected
                     ? 'bg-primary-200 dark:bg-primary-800'
@@ -91,7 +95,10 @@ export default function StatusPickerModal({
 
           {/* Delete action */}
           <TouchableOpacity
-            onPress={onDelete}
+            onPress={() => {
+              haptics.warning();
+              onDelete();
+            }}
             className="flex-row items-center gap-4 rounded-xl p-4 active:bg-red-50 dark:active:bg-red-900/20">
             <Trash2 size={20} color="#dc2626" />
 

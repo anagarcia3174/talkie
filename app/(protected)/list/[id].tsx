@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLists } from '~/store/listStore';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,14 +24,29 @@ export default function ListScreen() {
   const { blockedIds } = useBlock();
   const list = isValidListId ? listsById[listId] : undefined;
   const items = isValidListId ? listItems[listId] : undefined;
+  const [itemsError, setItemsError] = useState<string | null>(null);
+  const [loadingItems, setLoadingItems] = useState(false);
   const actions = useListScreenActions(listId);
   const theme = useTheme();
   const router = useRouter();
+
   useEffect(() => {
-    if (!isValidListId) return;
-    if (list && !items) {
-      getListItems(listId);
-    }
+    const loadItems = async () => {
+      if (!isValidListId || !list || items) return;
+
+      setLoadingItems(true);
+      setItemsError(null);
+
+      const result = await getListItems(listId);
+
+      if (!result.success) {
+        setItemsError(result.error);
+      }
+
+      setLoadingItems(false);
+    };
+
+    loadItems();
   }, [isValidListId, list, items, listId, getListItems]);
 
   if (!isValidListId) {
@@ -48,8 +63,12 @@ export default function ListScreen() {
     return <LoadingScreen fullScreen />;
   }
 
-  if (!items) {
+  if (!items && loadingItems) {
     return <LoadingScreen fullScreen />;
+  }
+
+  if (!items && itemsError) {
+    return <ErrorScreen fullScreen title="Oops!" message={itemsError} />;
   }
 
   if (list && blockedIds.has(list.user_id)) {
@@ -67,5 +86,5 @@ export default function ListScreen() {
 
   const isOwner = list.user_id === user?.id;
 
-  return <ListContent list={list} listItems={items} actions={actions} isOwner={isOwner} />;
+  return <ListContent list={list} listItems={items ?? []} actions={actions} isOwner={isOwner} />;
 }

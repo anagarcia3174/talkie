@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { useTheme } from '~/hooks/useTheme';
 import { X } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { haptics } from '~/utils/haptics';
 
 interface MenuOverlayProps {
   visible: boolean;
@@ -44,6 +45,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
     id: 'delete_account',
     title: 'Delete Account',
     onPress: () => {
+      haptics.warning();
       onSubmit('delete_account');
     },
   };

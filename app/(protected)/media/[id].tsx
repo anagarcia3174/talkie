@@ -23,6 +23,7 @@ import { useMedia } from '~/store/mediaStore';
 import PosterPreviewModal from '~/components/PosterPreviewModal';
 import MediaCommentSection from '~/components/MediaCommentSection';
 import MediaReviewSection from '~/components/MediaReviewSection';
+import { haptics } from '~/utils/haptics';
 
 const CONTENT_OPTIONS = ['Reviews', 'Comments'];
 
@@ -59,6 +60,7 @@ export default function MediaScreen() {
     const result = await addItemToList(listId, media.id, user.id);
 
     if (!result.success) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to add item to your list',
@@ -68,6 +70,7 @@ export default function MediaScreen() {
         onPress: () => Toast.hide(),
       });
     } else {
+      haptics.success();
       Toast.show({
         type: 'success',
         text1: 'Item was added to your list!',
@@ -98,7 +101,9 @@ export default function MediaScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 disabled={loading}
-                onPress={() => setListModalVisible(true)}
+                onPress={() => {
+                  haptics.action();
+                  setListModalVisible(true)}}
                 className="p-2">
                 <Plus color={theme.primary[950]} size={24} />
               </TouchableOpacity>

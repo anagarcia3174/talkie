@@ -5,6 +5,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import { Media } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { haptics } from '~/utils/haptics';
 
 const { width } = Dimensions.get('window');
 
@@ -98,6 +99,7 @@ export default function TrendingSection({
                   <TouchableOpacity
                     disabled={loadingId === item.id}
                     onPress={async () => {
+                      haptics.action();
                       setLoadingId(item.id);
                       await onAddToLibrary(item.id)
                       setLoadingId(null);

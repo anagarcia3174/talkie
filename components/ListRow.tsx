@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useTheme } from '~/hooks/useTheme';
+import { haptics } from '~/utils/haptics';
 
 interface ListRowProps {
   title: string;
@@ -28,6 +29,7 @@ export default function ListRow({
 
   const handleConfirmDelete = () => {
     if (!isMatch) return;
+    haptics.action();
     setConfirmVisible(false);
     setInput('');
     onDelete?.();
@@ -56,7 +58,9 @@ export default function ListRow({
   const renderRightActions = () => (
     <TouchableOpacity
       style={{ height: rowHeight }}
-      onPress={() => setConfirmVisible(true)}
+      onPress={() => {
+        haptics.warning();
+        setConfirmVisible(true)}}
       activeOpacity={0.8}
       className="w-20 items-center justify-center bg-red-500">
       <Trash2 size={24} color="white" />

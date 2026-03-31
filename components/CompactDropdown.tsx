@@ -3,6 +3,7 @@ import { View, Text, Pressable, Modal, ScrollView, LayoutRectangle } from 'react
 import { ChevronDown } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { BlurView } from 'expo-blur';
+import { haptics } from '~/utils/haptics';
 
 export default function CompactDropdown({
   label,
@@ -11,7 +12,7 @@ export default function CompactDropdown({
   onSelect,
   getLabel,
   getValue,
-  disabled = false
+  disabled = false,
 }: {
   label: string;
   items: any[];
@@ -42,14 +43,21 @@ export default function CompactDropdown({
       {/* Trigger button */}
       <Pressable
         ref={buttonRef}
-        onPress={!disabled ? openDropdown : null}
+        onPress={() => {
+          if (disabled || isDisabled) {
+            haptics.error();
+            return;
+          }
+
+          haptics.action();
+          openDropdown();
+        }}
         style={{ backgroundColor: theme.primaryOpacity[950] }}
-        disabled={isDisabled}
         className="flex-1 flex-row items-center justify-between rounded-lg px-3 py-2">
         <Text className="text-md font-SpaceGrotesk-SemiBold text-primary-900 dark:text-primary-200">
           {selectedLabel}
         </Text>
-        {(!isDisabled && !disabled) && <ChevronDown size={14} color={theme.primary[600]} />}
+        {!isDisabled && !disabled && <ChevronDown size={14} color={theme.primary[600]} />}
       </Pressable>
 
       {/* Dropdown modal */}
@@ -77,6 +85,7 @@ export default function CompactDropdown({
                     <Pressable
                       key={value}
                       onPress={() => {
+                        haptics.action();
                         onSelect(value);
                         setOpen(false);
                       }}

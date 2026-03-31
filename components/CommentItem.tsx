@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import CommentEditModal from './CommentEditModal';
 import ReportModal from './ReportModal';
+import { haptics } from '~/utils/haptics';
 
 interface CommentItemProps {
   comment: CommentWithUser;
@@ -65,6 +66,7 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
     });
 
     if (!result.success) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to like the comment.',
@@ -82,6 +84,8 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
       episodeNumber: comment.episode_number ?? undefined,
     });
     if (!result.success) {
+      haptics.error();
+
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to delete the comment.',
@@ -109,6 +113,8 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
     });
     setEditModalVisible(false);
     if (!result.success) {
+      haptics.error();
+
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to update your comment.',
@@ -122,6 +128,8 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
     const result = await reportComment(comment.id, reason, details);
     setReportModalVisible(false);
     if (!result.success) {
+      haptics.error();
+
       Toast.show({
         type: 'error',
         text1: result.error || 'Failed to report the comment.',
@@ -129,6 +137,8 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
         autoHide: true,
       });
     } else {
+      haptics.success();
+
       Toast.show({
         type: 'success',
         text1: 'Report submitted!',
@@ -193,7 +203,13 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
                 </View>
 
                 {/* ✅ 3-dot menu */}
-                <Pressable className="pl-4" onPress={() => setOptionsVisible(true)} hitSlop={8}>
+                <Pressable
+                  className="pl-4"
+                  onPress={() => {
+                    haptics.action();
+                    setOptionsVisible(true);
+                  }}
+                  hitSlop={8}>
                   <MoreHorizontal size={18} color={theme.primary[500]} />
                 </Pressable>
               </View>
@@ -222,7 +238,13 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
 
                 {/* Like */}
                 {!isUser && (
-                  <Pressable disabled={likeLoading} onPress={handleCommentLike} hitSlop={8}>
+                  <Pressable
+                    disabled={likeLoading}
+                    onPress={() => {
+                      haptics.action();
+                      handleCommentLike();
+                    }}
+                    hitSlop={8}>
                     <View className="flex-row items-center gap-x-[4px]">
                       {comment.like_count > 0 && (
                         <Text className="font-SpaceGrotesk-Light text-sm text-primary-500 dark:text-primary-400">

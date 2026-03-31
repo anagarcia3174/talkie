@@ -12,8 +12,10 @@ import ListInfoModal from './ListInfoModal';
 import { getPublicUrl } from '~/utils/storageUrl';
 import { ScrollView } from 'react-native-gesture-handler';
 
+import { haptics } from '~/utils/haptics';
+
 interface ListActions {
-  updateItemStatus: (item: ListItemWithMedia, status: Status) => Promise<boolean>;
+  updateItemStatus: (item: ListItemWithMedia, status: Status) => Promise<void>;
   deleteItem: (item: ListItemWithMedia) => Promise<boolean>;
   updateList: (updates: Partial<List>) => Promise<boolean>;
   deleteList: () => Promise<void>;
@@ -105,18 +107,18 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950" edges={['top']}>
       {/* Collapsing Header */}
       <View className="flex-row items-center justify-between  px-2">
-        <TouchableOpacity onPress={() => router.back()} className=' p-2'>
+        <TouchableOpacity onPress={() => router.back()} className=" p-2">
           <ChevronLeft color={theme.primary[950]} size={24} />
         </TouchableOpacity>
         <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           List
         </Text>
         <TouchableOpacity
-        className=' p-2'
+          className=" p-2"
           disabled={isOwner || loadingAction === 'like-toggle'}
           onPress={async () => {
             if (isOwner || loadingAction === 'like-toggle') return;
-
+            haptics.action();
             try {
               setLoadingAction('like-toggle');
 
@@ -192,6 +194,7 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
             <TouchableOpacity
               disabled={list.owner.is_private}
               onPress={() => {
+                haptics.action();
                 if (list.owner && !list.owner.is_private) {
                   router.push({
                     pathname: '/profile/[id]',
@@ -252,7 +255,10 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
             />
             <ArrowDownUp
               size={22}
-              onPress={() => setModalVisible(true)}
+              onPress={() => {
+                haptics.action();
+                setModalVisible(true);
+              }}
               color={theme.primary[950]}
             />
           </View>
@@ -262,7 +268,10 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
               <SegmentedControl
                 values={FILTERS}
                 selectedIndex={selected}
-                onChange={(e) => setSelected(e.nativeEvent.selectedSegmentIndex as FilterIndex)}
+                onChange={(e) => {
+                  haptics.action();
+                  setSelected(e.nativeEvent.selectedSegmentIndex as FilterIndex);
+                }}
                 tintColor={theme.primaryOpacity[950]}
                 fontStyle={{
                   color: theme.primary[600],
@@ -308,17 +317,19 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
           }}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() =>
+              onPress={() => {
                 router.push({
                   pathname: '/media/[id]',
                   params: {
                     id: item.media_id.toString(),
                     mediaData: JSON.stringify(item.media),
                   },
-                })
-              }
+                });
+              }}
               onLongPress={() => {
                 if (isOwner) {
+                  haptics.action();
+
                   setActiveItem(item);
                   setStatusPickerModalVisible(true);
                 }
@@ -381,17 +392,15 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
           setListInfoModalVisible(false);
           actions.updateList(updates);
         }}
-        onDelete={() => {
-          async () => {
-            if (loadingAction) return;
+        onDelete={async () => {
+          if (loadingAction) return;
 
-            try {
-              setLoadingAction('delete-list');
-              await actions.deleteList();
-            } finally {
-              setLoadingAction(null);
-            }
-          };
+          try {
+            setLoadingAction('delete-list');
+            await actions.deleteList();
+          } finally {
+            setLoadingAction(null);
+          }
         }}
       />
     </SafeAreaView>

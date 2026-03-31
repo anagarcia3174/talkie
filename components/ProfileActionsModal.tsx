@@ -18,6 +18,7 @@ import Toast from 'react-native-toast-message';
 import { toastConfig } from './ToastConfig';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SaveFormat, ImageManipulator } from 'expo-image-manipulator';
+import { haptics } from '~/utils/haptics';
 
 interface ProfileActionsModalProps {
   visible: boolean;
@@ -161,7 +162,7 @@ export default function ProfileActionsModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       {/* Overlay */}
       <TouchableWithoutFeedback onPress={onClose}>
-        <View className="flex-1 bg-black/20" />
+        <View className="flex-1 bg-black/40" />
       </TouchableWithoutFeedback>
 
       {/* Floating Card */}
@@ -175,7 +176,10 @@ export default function ProfileActionsModal({
           </Text>
 
           {/* Avatar */}
-          <Pressable className="mb-4 self-center" onPress={pickImage}>
+          <Pressable className="mb-4 self-center" onPress={() => {
+            haptics.action();
+            pickImage();
+          }}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} className="h-20 w-20 rounded-full" />
             ) : (
@@ -251,7 +255,10 @@ export default function ProfileActionsModal({
             className={`rounded-xl px-4 py-3 ${
               hasChanges ? 'bg-green-700 dark:bg-green-800' : 'bg-gray-300 dark:bg-primary-800'
             }`}
-            onPress={hasChanges ? handleSubmit : onClose}>
+            onPress={() => {
+              haptics.action();
+              handleSubmit();
+            }}>
             <Text className="text-center font-SpaceGrotesk-Medium text-white">Save Changes</Text>
           </Pressable>
         </View>

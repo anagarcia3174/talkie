@@ -20,6 +20,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useLists } from '~/store/listStore';
 import SearchSortModal from '~/components/SearchSortModal';
 import { getPublicUrl } from '~/utils/storageUrl';
+import { haptics } from '~/utils/haptics';
 
 const SEARCH_OPTIONS = ['Media', 'Lists'];
 const ROW_GAP = 16;
@@ -58,6 +59,7 @@ export default function Search() {
     order: 'asc',
   });
   const onSegmentChange = (index: number) => {
+    haptics.action();
     setSelected(index);
     setQuery('');
 
@@ -203,7 +205,12 @@ export default function Search() {
           onChangeText={setQuery}
           onSubmitEditing={onSubmitSearch}
         />
-        <TouchableOpacity className='p-2' onPress={() => setSortModalVisible(true)}>
+        <TouchableOpacity
+          className="p-2"
+          onPress={() => {
+            haptics.action();
+            setSortModalVisible(true);
+          }}>
           <ArrowDownUp color={theme.primary[950]} />
         </TouchableOpacity>
       </View>
@@ -320,7 +327,11 @@ export default function Search() {
                   <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
                     {item.like_count}
                   </Text>
-                  <Bookmark size={12} color={theme.primary[700]} fill={ item.is_liked ? theme.primary[700] : theme.primary[100]}/>
+                  <Bookmark
+                    size={12}
+                    color={theme.primary[700]}
+                    fill={item.is_liked ? theme.primary[700] : theme.primary[100]}
+                  />
                 </View>
               </View>
 
@@ -355,7 +366,9 @@ export default function Search() {
       <SearchSortModal
         isVisible={sortModalVisible}
         context={selected === 0 ? 'media' : 'lists'}
-        onClose={() => setSortModalVisible(false)}
+        onClose={() => {
+          setSortModalVisible(false);
+        }}
         onSelect={(sort, order) => {
           if (selected === 0) {
             setMediaSort({ sort, order });

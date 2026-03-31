@@ -9,6 +9,7 @@ import ErrorScreen from './ErrorScreen';
 import ReviewForm from './ReviewForm';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { haptics } from '~/utils/haptics';
 
 interface MediaReviewSectionProps {
   mediaId: number;
@@ -51,6 +52,7 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
       });
 
       if (result.success) {
+        haptics.success();
         Toast.show({
           type: 'success',
           text1: 'Review Posted!',
@@ -60,6 +62,7 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
           onPress: () => Toast.hide(),
         });
       } else {
+        haptics.error();
         Toast.show({
           type: 'error',
           text1: result.error || 'Failed to post your review',
@@ -70,6 +73,7 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
         });
       }
     } else {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: 'An unexpected error ocurred while posting your review',
@@ -89,7 +93,7 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
           color={theme.primary[950]}
         />
       ) : error ? (
-        <ErrorScreen fullScreen={false} title="Error!" message={error} />
+        <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
         <FlatList
           style={{ flex: 1 }}

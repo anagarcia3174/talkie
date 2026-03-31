@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { ImageOff, Star } from 'lucide-react-native';
 import MediaOverview from './MediaOverview';
 import { useTheme } from '~/hooks/useTheme';
+import { haptics } from '~/utils/haptics';
 
 interface MediaHeaderProps {
   media: Media;
@@ -20,7 +21,9 @@ export default function MediaHeader({ media, onPosterPress }: MediaHeaderProps) 
       <View className="flex-row">
         {/* Poster */}
         {poster ? (
-          <TouchableOpacity activeOpacity={0.9} onPress={() => onPosterPress?.()}>
+          <TouchableOpacity activeOpacity={0.9} onPress={() => {
+            haptics.action();
+            onPosterPress?.()}}>
             <Image
               source={{ uri: poster }}
               style={{ height: 144, width: 96 }}

@@ -4,6 +4,7 @@ import { Star, SendHorizonal, Check, UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useProfile } from '~/store/profileStore';
 import Toast from 'react-native-toast-message';
+import { haptics } from '~/utils/haptics';
 
 export interface ReviewFormProps {
   mode?: 'create' | 'edit';
@@ -33,6 +34,7 @@ export default function ReviewForm({
 
   const handleSubmit = async () => {
     if (!reviewText.trim() || reviewText.trim().length < 15) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: 'Review must be at least 15 characters long.',
@@ -62,7 +64,9 @@ export default function ReviewForm({
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
           <TouchableOpacity
             key={star}
-            onPress={() => handleSetRating(star)}
+            onPress={() => {
+              haptics.action();
+              handleSetRating(star)}}
             className="items-center">
             <View className="relative items-center justify-center">
               <Star
@@ -110,7 +114,10 @@ export default function ReviewForm({
         />
 
         <TouchableOpacity
-          onPress={handleSubmit}
+          onPress={() => {
+            haptics.action();
+            handleSubmit();
+          }}
           disabled={loading || (mode === 'edit' && !isDirty)}
           className="ml-2 h-11 w-11 items-center justify-center rounded-full">
           {loading ? (

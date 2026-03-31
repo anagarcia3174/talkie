@@ -4,7 +4,7 @@ import { getPublicUrl } from '~/utils/storageUrl';
 import FollowButton from './FollowButton';
 import { useTheme } from '~/hooks/useTheme';
 import { useFollow } from '~/store/followStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '~/context/AuthContext';
 import { useRouter } from 'expo-router';
 
@@ -20,32 +20,64 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
   const theme = useTheme();
   const { user } = useAuth();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!visible || !user) return;
+    const loadFollows = async () => {
+      if (!visible || !user) return;
 
-    if (checking === 'followers') {
-      const profileIds = new Set(followers.map((u) => u.id));
+      setError(null);
 
-      const isOutOfSync =
-        followerIds.size !== profileIds.size || [...followerIds].some((id) => !profileIds.has(id));
+      if (checking === 'followers') {
+        const profileIds = new Set(followers.map((u) => u.id));
 
-      if (isOutOfSync) {
-        getFollowers(user.id);
+        const isOutOfSync =
+          followerIds.size !== profileIds.size ||
+          [...followerIds].some((id) => !profileIds.has(id));
+
+        if (!isOutOfSync) return;
+
+        setLoading(true);
+        const result = await getFollowers(user.id);
+
+        if (!result.success) {
+          setError(result.error);
+        }
+        setLoading(false);
       }
-    }
 
-    if (checking === 'following') {
-      const profileIds = new Set(following.map((u) => u.id));
+      if (checking === 'following') {
+        const profileIds = new Set(following.map((u) => u.id));
 
-      const isOutOfSync =
-        followingIds.size !== profileIds.size ||
-        [...followingIds].some((id) => !profileIds.has(id));
+        const isOutOfSync =
+          followingIds.size !== profileIds.size ||
+          [...followingIds].some((id) => !profileIds.has(id));
 
-      if (isOutOfSync) {
-        getFollowing(user.id);
+        if (!isOutOfSync) return;
+
+        setLoading(true);
+        const result = await getFollowing(user.id);
+
+        if (!result.success) {
+          setError(result.error);
+        }
+        setLoading(false);
       }
-    }
-  }, [visible, user, checking, followerIds, followingIds, followers, following]);
+    };
+
+    loadFollows();
+  }, [
+    visible,
+    user,
+    checking,
+    followerIds,
+    followingIds,
+    followers,
+    following,
+    getFollowers,
+    getFollowing,
+  ]);
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -57,13 +89,34 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
             {checking === 'followers' ? 'Followers' : 'Following'}
           </Text>
 
-          {/* Empty State */}
-          {checking === 'followers' && followers.length === 0 && (
+          {loading &&
+            ((checking === 'followers' && followers.length === 0) ||
+              (checking === 'following' && following.length === 0)) && (
+              <Text className="text-base text-neutral-500 dark:text-neutral-400">Loading...</Text>
+            )}
+
+          {error &&
+            ((checking === 'followers' && followers.length === 0) ||
+              (checking === 'following' && following.length === 0)) && (
+              <View>
+                <Text className="mb-2 text-base text-red-500">{error}</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!user) return;
+                    checking === 'followers' ? getFollowers(user.id) : getFollowing(user.id);
+                  }}>
+                  <Text className="text-primary-600">Retry</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+          {!loading && !error && checking === 'followers' && followers.length === 0 && (
             <Text className="text-base text-neutral-500 dark:text-neutral-400">
               No followers yet.
             </Text>
           )}
-          {checking === 'following' && following.length === 0 && (
+
+          {!loading && !error && checking === 'following' && following.length === 0 && (
             <Text className="text-base text-neutral-500 dark:text-neutral-400">
               You're not following anyone yet.
             </Text>

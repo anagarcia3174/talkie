@@ -3,6 +3,7 @@ import Toast from 'react-native-toast-message';
 import { useAuth } from '~/context/AuthContext';
 import { useLists } from '~/store/listStore';
 import { Status, List, ListItem, ListItemWithMedia } from '~/types/supabaseTypes';
+import { haptics } from '~/utils/haptics';
 
 export default function useListScreenActions(listId: number) {
   const { updateItemStatus, removeItemFromList, updateList, deleteList, likeList, unlikeList } =
@@ -19,6 +20,9 @@ export default function useListScreenActions(listId: number) {
   ) => {
     const result = await action();
 
+    if (result.success) haptics.success();
+    else haptics.error();
+
     Toast.show({
       type: result.success ? 'success' : 'error',
       text1: result.success ? successMsg : result.error || errorMsg,
@@ -31,15 +35,15 @@ export default function useListScreenActions(listId: number) {
   };
 
   return {
-    updateItemStatus: (item: ListItemWithMedia | ListItem, status: Status) =>
-     { 
+    updateItemStatus: async (item: ListItemWithMedia | ListItem, status: Status) => {
       if (!userId) return;
-      
+
       withToast(
         () => updateItemStatus(userId, item, status),
         "The item's status was updated!",
         "Failed to change the item's status."
-      )},
+      );
+    },
 
     deleteItem: (item: ListItem) =>
       withToast(

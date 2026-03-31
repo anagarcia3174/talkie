@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
 import { SearchSortType, SortOrder } from '~/app/(protected)/(tabs)/Search';
+import { haptics } from '~/utils/haptics';
 
 interface SearchSortModalProps {
   isVisible: boolean;
@@ -67,8 +68,8 @@ export default function SearchSortModal({
   );
   const isOrderDisabled = selectedSort === 'relevance';
 
-
   function apply() {
+    haptics.success();
     onSelect(selectedSort, selectedOrder);
     onClose();
   }
@@ -91,7 +92,10 @@ export default function SearchSortModal({
             return (
               <TouchableOpacity
                 key={opt.value}
-                onPress={() => setSelectedSort(opt.value)}
+                onPress={() => {
+                  haptics.action();
+                  setSelectedSort(opt.value);
+                }}
                 className={`mb-3 flex-row items-center justify-between rounded-lg px-3 py-3 ${
                   active ? 'bg-primary-300 dark:bg-primary-800' : ''
                 }`}>
@@ -125,10 +129,13 @@ export default function SearchSortModal({
               <TouchableOpacity
                 key={opt.value}
                 disabled={isOrderDisabled}
-  onPress={() => setSelectedOrder(opt.value)}
-  className={`mb-3 flex-row items-center justify-between rounded-lg px-3 py-3 ${
-    active ? 'bg-primary-300 dark:bg-primary-800' : ''
-  } ${isOrderDisabled ? 'opacity-40' : ''}`}>
+                onPress={() => {
+                  haptics.action();
+                  setSelectedOrder(opt.value);
+                }}
+                className={`mb-3 flex-row items-center justify-between rounded-lg px-3 py-3 ${
+                  active ? 'bg-primary-300 dark:bg-primary-800' : ''
+                } ${isOrderDisabled ? 'opacity-40' : ''}`}>
                 <View>
                   <Text
                     className={`text-lg ${
@@ -139,9 +146,7 @@ export default function SearchSortModal({
                     {opt.label}
                   </Text>
 
-                  <Text className="text-xs text-primary-600 dark:text-primary-400">
-                    {hint}
-                  </Text>
+                  <Text className="text-xs text-primary-600 dark:text-primary-400">{hint}</Text>
                 </View>
 
                 {active && (

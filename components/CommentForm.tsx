@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 import { useTheme } from '~/hooks/useTheme';
 import { useProfile } from '~/store/profileStore';
 import { useUI } from '~/store/uiStore';
+import { haptics } from '~/utils/haptics';
 
 export interface CommentFormProps {
   mode?: 'create' | 'edit';
@@ -29,6 +30,7 @@ export default function CommentForm({
 
   const handleSubmit = async () => {
     if (!commentText.trim() || commentText.trim().length < 15) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: 'Comment text must be at least 15 characters long.',
@@ -37,6 +39,7 @@ export default function CommentForm({
       });
       return;
     } else if (commentText.trim().length > 1000) {
+      haptics.error();
       Toast.show({
         type: 'error',
         text1: 'Comment text must be at most 1000 characters long.',
@@ -101,7 +104,10 @@ export default function CommentForm({
 
       {/* Send Button */}
       <TouchableOpacity
-        onPress={handleSubmit}
+        onPress={() => {
+          haptics.action();
+          handleSubmit();
+        }}
         disabled={loading || (mode === 'edit' && !isDirty)}
         className="h-11 w-11 items-center justify-center rounded-full">
         {loading ? (

@@ -177,14 +177,15 @@ export async function addListItem(
   try {
     const { error } = await supabase
       .from('list_items')
-      .insert([{ list_id: listId, media_id: mediaId, user_id: userId }]);
+      .insert([{ list_id: listId, media_id: mediaId }]);
 
-    if (error)
+    if (error){
       return errorVoid(error, {
         operation: 'add_list_item',
         table: 'list_items',
         isWrite: true,
       });
+    }
     return successVoid();
   } catch (err) {
     return errorVoid(err, {

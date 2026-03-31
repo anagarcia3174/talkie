@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Modal, Text, TouchableOpacity, View, TextInput } from 'react-native';
+import { Modal, Text, TouchableOpacity, View, TextInput, Pressable } from 'react-native';
 import { useTheme } from '~/hooks/useTheme';
+import { haptics } from '~/utils/haptics';
 
 interface DeleteAccountModalProps {
   visible: boolean;
@@ -16,7 +17,9 @@ export default function DeleteAccountModal({ visible, onClose, email }: DeleteAc
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => onClose(false)}>
-      <View className="flex-1 items-center justify-center bg-black/50 px-6">
+      <Pressable
+        onPress={() => onClose(false)}
+        className="flex-1 items-center justify-center bg-black/50 px-6">
         <View className="w-full rounded-2xl bg-primary-50 p-5 dark:bg-primary-900">
           {/* Header */}
           <Text className="mb-1 font-SpaceGrotesk-Bold text-xl text-red-500">Delete Account</Text>
@@ -65,13 +68,16 @@ export default function DeleteAccountModal({ visible, onClose, email }: DeleteAc
             </TouchableOpacity>
             <TouchableOpacity
               disabled={!isMatch}
-              onPress={() => onClose(true)}
+              onPress={() => {
+                haptics.warning();
+                onClose(true);
+              }}
               className={`flex-1 items-center rounded-xl py-3 ${isMatch ? 'bg-red-500' : 'bg-red-300'}`}>
               <Text className="font-SpaceGrotesk-Bold text-white">Delete Account</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 }
