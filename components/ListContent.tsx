@@ -13,6 +13,7 @@ import { getPublicUrl } from '~/utils/storageUrl';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { haptics } from '~/utils/haptics';
+import DeleteItemModal from './DeleteItemModal';
 
 interface ListActions {
   updateItemStatus: (item: ListItemWithMedia, status: Status) => Promise<void>;
@@ -48,6 +49,8 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
   const [listInfoModalVisible, setListInfoModalVisible] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [deleteItemModalVisible, setDeleteItemModalVisible] = useState(false);
+  const [deleteListModalVisible, setDeleteListModalVisible] = useState(false);
   const router = useRouter();
 
   const statusMap: Record<FilterIndex, Status | null> = {
@@ -98,6 +101,28 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
         return <Globe size={14} color={theme.primary[600]} />;
       default:
         return null;
+    }
+  };
+
+  const handleItemDelete = async () => {
+    if (!activeItem || loadingAction === `delete-item-${activeItem.id}`) return;
+
+    try {
+      setLoadingAction(`delete-item-${activeItem.id}`);
+      await actions.deleteItem(activeItem);
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleDeleteList = async () => {
+    if (loadingAction) return;
+
+    try {
+      setLoadingAction('delete-list');
+      await actions.deleteList();
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -371,16 +396,9 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
               setLoadingAction(null);
             }
           }}
-          onDelete={async () => {
-            if (!activeItem || loadingAction === `delete-item-${activeItem.id}`) return;
-
-            try {
-              setLoadingAction(`delete-item-${activeItem.id}`);
-              await actions.deleteItem(activeItem);
-              setStatusPickerModalVisible(false);
-            } finally {
-              setLoadingAction(null);
-            }
+          onDelete={() => {
+            setStatusPickerModalVisible(false);
+            setDeleteItemModalVisible(true);
           }}
         />
       )}
@@ -392,15 +410,25 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
           setListInfoModalVisible(false);
           actions.updateList(updates);
         }}
-        onDelete={async () => {
-          if (loadingAction) return;
-
-          try {
-            setLoadingAction('delete-list');
-            await actions.deleteList();
-          } finally {
-            setLoadingAction(null);
-          }
+        onDelete={() => {
+          setListInfoModalVisible(false);
+          setDeleteListModalVisible(true);
+        }}
+      />
+      <DeleteItemModal
+        item={activeItem?.media.media_type}
+        visible={deleteItemModalVisible}
+        onClose={(deleteItem: boolean) => {
+          setDeleteItemModalVisible(false);
+          if (deleteItem) handleItemDelete();
+        }}
+      />
+      <DeleteItemModal
+        item="list"
+        visible={deleteListModalVisible}
+        onClose={(deleteItem: boolean) => {
+          setDeleteListModalVisible(false);
+          if (deleteItem) handleDeleteList();
         }}
       />
     </SafeAreaView>

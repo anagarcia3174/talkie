@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import CommentEditModal from './CommentEditModal';
 import ReportModal from './ReportModal';
 import { haptics } from '~/utils/haptics';
+import DeleteItemModal from './DeleteItemModal';
 
 interface CommentItemProps {
   comment: CommentWithUser;
@@ -53,6 +54,7 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [deleteItemModalVisible, setDeleteItemModalVisible] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const router = useRouter();
 
@@ -272,7 +274,7 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
         onClose={() => setOptionsVisible(false)}
         onDelete={() => {
           setOptionsVisible(false);
-          handleCommentDelete();
+          setDeleteItemModalVisible(true);
         }}
         onEdit={() => {
           setOptionsVisible(false);
@@ -305,6 +307,14 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
         visible={reportModalVisible}
         onClose={() => setReportModalVisible(false)}
         onSubmit={handleCommentReport}
+      />
+      <DeleteItemModal
+        item="comment"
+        visible={deleteItemModalVisible}
+        onClose={(deleteItem: boolean) => {
+          setDeleteItemModalVisible(false);
+          if (deleteItem) handleCommentDelete();
+        }}
       />
     </>
   );

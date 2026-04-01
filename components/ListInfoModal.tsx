@@ -11,7 +11,7 @@ interface ListInfoModalProps {
   visible: boolean;
   onClose: () => void;
   onConfirm: (updates: Partial<List>) => void;
-  onDelete: () => Promise<void>;
+  onDelete: () => void;
 }
 
 export default function ListInfoModal({

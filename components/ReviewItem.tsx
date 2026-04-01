@@ -11,6 +11,7 @@ import ReviewEditModal from './ReviewEditModal';
 import ItemOptions from './ItemOptions';
 import ReportModal from './ReportModal';
 import { haptics } from '~/utils/haptics';
+import DeleteItemModal from './DeleteItemModal';
 
 interface ReviewItemProps {
   review: ReviewWithUser;
@@ -43,6 +44,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [ deleteItemModalVisible, setDeleteItemModalVisible ] = useState(false);
   const hasAvatar = uri && uri.length > 0;
   const theme = useTheme();
   const router = useRouter();
@@ -233,7 +235,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
         onClose={() => setOptionsVisible(false)}
         onDelete={() => {
           setOptionsVisible(false);
-          handleReviewDelete();
+          setDeleteItemModalVisible(true);
         }}
         onEdit={() => {
           setOptionsVisible(false);
@@ -260,6 +262,14 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
         visible={reportModalVisible}
         onClose={() => setReportModalVisible(false)}
         onSubmit={handleReviewReport}
+      />
+      <DeleteItemModal 
+      item='review'
+      visible={deleteItemModalVisible}
+      onClose={(deleteItem: boolean) => {
+        setDeleteItemModalVisible(false);
+        if(deleteItem) handleReviewDelete();
+      }}
       />
     </>
   );
