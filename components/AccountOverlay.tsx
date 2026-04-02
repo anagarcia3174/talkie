@@ -17,28 +17,15 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
   const translateY = useRef(new Animated.Value(50)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
-  const primaryOptions = [
-    {
-      id: 'edit_profile',
-      title: 'Edit Profile',
-      onPress: () => {
-        onSubmit('edit_profile');
-      },
-    },
-    {
-      id: 'blocked_users',
-      title: 'Blocked Users',
-      onPress: () => {
-        onSubmit('blocked_users');
-      },
-    },
-    {
-      id: 'sign_out',
-      title: 'Sign Out',
-      onPress: () => {
-        onSubmit('sign_out');
-      },
-    },
+  const accountOptions = [
+    { id: 'edit_profile', title: 'Edit Profile', onPress: () => onSubmit('edit_profile') },
+    { id: 'blocked_users', title: 'Blocked Users', onPress: () => onSubmit('blocked_users') },
+    { id: 'sign_out', title: 'Sign Out', onPress: () => onSubmit('sign_out') },
+  ];
+
+  const supportOptions = [
+    { id: 'feedback', title: 'Send Feedback', onPress: () => onSubmit('feedback') },
+    { id: 'bug_report', title: 'Report a Bug', onPress: () => onSubmit('bug_report') },
   ];
 
   const destructiveOption = {
@@ -92,7 +79,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
           tint={theme.isDark ? 'dark' : 'light'}
           className="flex-1">
           <SafeAreaView className="flex-1 px-4">
-            <View className='flex items-end'>
+            <View className="flex items-end">
               <TouchableOpacity onPress={onClose} className="p-2">
                 <X size={24} color={theme.primary[800]} />
               </TouchableOpacity>
@@ -104,27 +91,58 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
                   transform: [{ translateY }],
                 }}
                 className="w-full">
-                {/* Primary actions */}
-                {primaryOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option.id}
-                    onPress={option.onPress}
-                    className="border-b border-neutral-200 py-4 dark:border-neutral-800">
-                    <Text className="font-SpaceGrotesk-Regular text-xl text-primary-900 dark:text-primary-200">
-                      {option.title}
+                {/* ACCOUNT */}
+                <View>
+                  <Text className="mb-3 text-xs uppercase tracking-widest text-primary-500 dark:text-primary-400">
+                    Account
+                  </Text>
+
+                  <View className="gap-3">
+                    {accountOptions.map((option) => (
+                      <TouchableOpacity key={option.id} onPressIn={() => haptics.action()} onPress={option.onPress} className="active:opacity-60 py-1">
+                        <Text className="font-SpaceGrotesk-Regular text-xl text-primary-900 dark:text-primary-200">
+                          {option.title}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Divider */}
+                <View className="my-6 h-px bg-neutral-200 dark:bg-neutral-800" />
+
+                {/* SUPPORT */}
+                <View>
+                  <Text className="mb-3 text-xs uppercase tracking-widest text-primary-500 dark:text-primary-400">
+                    Help & Feedback
+                  </Text>
+
+                  <View className="gap-3">
+                    {supportOptions.map((option) => (
+                      <TouchableOpacity key={option.id} onPressIn={() => haptics.action()} onPress={option.onPress} className="active:opacity-60 py-1">
+                        <Text className="font-SpaceGrotesk-Regular text-lg text-primary-800 dark:text-primary-300">
+                          {option.title}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Divider */}
+                <View className="my-6 h-px bg-neutral-200 dark:bg-neutral-800" />
+
+                {/* DANGER */}
+                <View>
+                  <Text className="mb-3 text-xs uppercase tracking-widest text-red-400">
+                    Danger
+                  </Text>
+
+                  <TouchableOpacity onPress={destructiveOption.onPress} className="active:opacity-60">
+                    <Text className="font-SpaceGrotesk-Regular text-lg text-red-500">
+                      {destructiveOption.title}
                     </Text>
                   </TouchableOpacity>
-                ))}
-
-                {/* Spacer */}
-                <View className="h-6" />
-
-                {/* Delete Account */}
-                <TouchableOpacity onPress={destructiveOption.onPress} className="py-4">
-                  <Text className="font-SpaceGrotesk-Regular text-lg text-red-500">
-                    {destructiveOption.title}
-                  </Text>
-                </TouchableOpacity>
+                </View>
               </Animated.View>
             </View>
           </SafeAreaView>

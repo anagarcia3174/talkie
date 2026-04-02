@@ -15,6 +15,11 @@ import AccountOverlay from '~/components/AccountOverlay';
 import BlockedUsersModal from '~/components/BlockedUsersModal';
 import FollowsModal from '~/components/FollowsModal';
 import { haptics } from '~/utils/haptics';
+import BugReportModal from '~/components/BugReportModal';
+import { CreateBugReportInput, CreateFeedbackInput } from '~/types/supabaseTypes';
+import { createBugReport } from '~/services/bugService';
+import FeedbackModal from '~/components/FeedbackModal';
+import { createFeedback } from '~/services/feedbackService';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -29,6 +34,8 @@ export default function Profile() {
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [followModal, setFollowModal] = useState<null | 'followers' | 'following'>(null);
   const [followModalVisible, setFollowModalVisible] = useState(false);
+  const [reportBugModalVisible, setReportBugModalVisible] = useState(false);
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const subtitle =
     user?.email ??
     (user?.created_at
@@ -81,6 +88,52 @@ export default function Profile() {
       Toast.show({
         type: 'error',
         text1: 'Failed to sign you out.',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    }
+  };
+
+  const handleBugReport = async (bug: CreateBugReportInput) => {
+    setReportBugModalVisible(false);
+    const result = await createBugReport(bug);
+
+    if (!result.success) {
+      haptics.error();
+      Toast.show({
+        type: 'error',
+        text1: result.error || 'There was an error submitting your bug report.',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    } else {
+      haptics.success();
+      Toast.show({
+        type: 'success',
+        text1: 'Bug report submitted! Thanks for helping us improve Noat.',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    }
+  };
+
+  const handleFeedbackSubmit = async (feedback: CreateFeedbackInput) => {
+    setReportBugModalVisible(false);
+    const result = await createFeedback(feedback);
+
+    if (!result.success) {
+      haptics.error();
+      Toast.show({
+        type: 'error',
+        text1: result.error || 'There was an error submitting your feedback.',
+        visibilityTime: 4000,
+        autoHide: true,
+      });
+    } else {
+      haptics.success();
+      Toast.show({
+        type: 'success',
+        text1: 'Feedback submitted! Thanks for helping us improve Noat.',
         visibilityTime: 4000,
         autoHide: true,
       });
@@ -218,6 +271,18 @@ export default function Profile() {
         onClose={() => setFollowModalVisible(false)}
         checking={followModal ?? 'followers'}
       />
+      <BugReportModal
+        visible={reportBugModalVisible}
+        onClose={() => setReportBugModalVisible(false)}
+        onSubmit={handleBugReport}
+      />
+      <FeedbackModal
+        visible={feedbackModalVisible}
+        onClose={() => {
+          setFeedbackModalVisible(false);
+        }}
+        onSubmit={handleFeedbackSubmit}
+      />
       <AccountOverlay
         visible={overlayVisible}
         onClose={() => setOverlayVisible(false)}
@@ -234,6 +299,12 @@ export default function Profile() {
           } else if (operation === 'delete_account' && !updateLoading) {
             setOverlayVisible(false);
             setDeleteAccountModal(true);
+          } else if (operation === 'bug_report') {
+            setOverlayVisible(false);
+            setReportBugModalVisible(true);
+          } else if (operation === 'feedback') {
+            setOverlayVisible(false);
+            setFeedbackModalVisible(true);
           } else {
             setOverlayVisible(false);
           }

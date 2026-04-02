@@ -262,3 +262,19 @@ export interface ProfileStats {
   lists: number;
   totalLogged: number;
 }
+
+export interface CreateBugReportInput {
+  description: string;
+  steps_to_reproduce?: string;
+}
+
+export type FeedbackCategory =
+  | 'general'
+  | 'feature_request'
+  | 'bug'
+  | 'other';
+
+export interface CreateFeedbackInput {
+  message: string;
+  category?: FeedbackCategory;
+}
