@@ -49,10 +49,10 @@ export default function CommentEditModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
-      <Pressable className="flex-1 items-center justify-center bg-black/40 px-6" onPress={onClose}>
+      <Pressable className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-6" onPress={onClose}>
         {/* Card — stop propagation so tapping inside doesn't close the modal */}
         <Pressable className="w-full" onPress={(e) => e.stopPropagation()}>
-          <View className="w-full rounded-2xl bg-primary-50 p-4 shadow-2xl dark:bg-primary-900">
+          <View className="w-full rounded-2xl bg-primary-100 p-4 shadow-2xl dark:bg-primary-900">
             <Text className="mb-4 font-SpaceGrotesk-SemiBold text-lg text-primary-950 dark:text-primary-50">
               Edit Comment
             </Text>

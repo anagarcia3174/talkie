@@ -38,11 +38,10 @@ export default function ItemOptions({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
-      <Pressable className="flex-1 bg-primary-950/60" onPress={onClose} />
+      <Pressable className="flex-1 bg-black/60 dark:bg-black/70" onPress={onClose} />
 
       {/* Bottom Sheet */}
       <View className="absolute bottom-0 w-full rounded-t-2xl bg-primary-100 pb-10 dark:bg-primary-900">
-        {/* Drag Handle + Close */}
         <View className="flex-row items-center justify-between border-b border-primary-200 px-6 py-4 dark:border-primary-800">
           <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
             Options

@@ -38,7 +38,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
         className="flex-1">
         {/* Overlay */}
         <Pressable
-          className="flex-1 items-center justify-center bg-black/50 px-4"
+          className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-4"
           onPress={() => {
             if (keyboardOpen) {
               Keyboard.dismiss();
@@ -53,7 +53,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
                 Keyboard.dismiss();
               }
             }}
-            className="w-full max-w-sm rounded-3xl bg-primary-50 p-6 shadow-2xl dark:bg-primary-900">
+            className="w-full max-w-sm rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
             {/* Header */}
             <Text className="mb-4 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
               Create new list
@@ -64,7 +64,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
               <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">Name</Text>
               <TextInput
                 autoFocus
-                className="rounded-xl border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+                className="rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
                 value={listName}
                 onChangeText={setListName}
                 cursorColor={theme.primary[700]}
@@ -82,7 +82,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
                 Description (optional)
               </Text>
               <TextInput
-                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
                 value={listDescription}
                 onChangeText={setListDescription}
                 cursorColor={theme.primary[700]}

@@ -30,9 +30,9 @@ export default function DeleteItemModal({ item, visible, onClose }: DeleteItemMo
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => onClose(false)}>
       <Pressable
-        className="flex-1 items-center justify-center bg-black/50 px-6"
+        className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-6"
         onPress={() => onClose(false)}>
-        <View className="w-full rounded-2xl bg-primary-50 p-5 dark:bg-primary-900">
+        <View className="w-full rounded-2xl bg-primary-100 p-5 dark:bg-primary-900">
           <Text className="mb-2 font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
             {verb} {label === 'this' ? label : label}?
           </Text>

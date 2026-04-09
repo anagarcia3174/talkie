@@ -50,7 +50,7 @@ export default function ReportModal({ type, visible, onClose, onSubmit }: Report
       <TouchableOpacity
         activeOpacity={1}
         onPress={handleClose}
-        className="flex-1 bg-primary-950/60"
+        className="flex-1 bg-black/60 dark:bg-black/70"
       />
 
       {/* Centered Card */}
@@ -102,7 +102,7 @@ export default function ReportModal({ type, visible, onClose, onSubmit }: Report
             multiline
             numberOfLines={3}
             maxLength={500}
-            className="mb-4 rounded-lg border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Light text-sm text-primary-900 dark:border-primary-700 dark:bg-primary-800 dark:text-primary-100"
+            className="mb-4 rounded-lg border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Light text-sm text-primary-900 dark:border-primary-700 dark:bg-primary-800 dark:text-primary-100"
             style={{ minHeight: 80, textAlignVertical: 'top' }}
             submitBehavior="blurAndSubmit"
           />

@@ -63,9 +63,9 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1 items-center justify-center bg-black/40 px-6">
+      <View className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-6">
         <TouchableOpacity activeOpacity={1} onPress={onClose} className="absolute inset-0" />
-        <View className="max-h-[70%] w-full rounded-3xl bg-white p-6 dark:bg-neutral-900">
+        <View className="max-h-[70%] w-full rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
           {/* Header */}
           <Text className="mb-5 font-SpaceGrotesk-Medium text-xl text-primary-900 dark:text-primary-100">
             Blocked Users

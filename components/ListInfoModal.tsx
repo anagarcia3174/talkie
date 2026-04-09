@@ -56,7 +56,7 @@ export default function ListInfoModal({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1">
         <Pressable
-          className="flex-1 items-center justify-center bg-black/50 px-4"
+          className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-4"
           onPress={() => {
             if (keyboardOpen) {
               Keyboard.dismiss();
@@ -71,7 +71,7 @@ export default function ListInfoModal({
                 Keyboard.dismiss();
               }
             }}
-            className="w-full max-w-sm rounded-3xl bg-primary-50 p-6 shadow-2xl dark:bg-primary-900">
+            className="w-full max-w-sm rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
             {/* Header */}
             <Text className="mb-4 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
               Edit List
@@ -85,7 +85,7 @@ export default function ListInfoModal({
                 className={`rounded-xl border px-4 py-3 font-SpaceGrotesk-Regular ${
                   list.is_default
                     ? 'border-primary-300 bg-primary-200 text-primary-500 dark:border-primary-700 dark:bg-primary-800 dark:text-primary-400'
-                    : 'border-primary-300 bg-primary-50 text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50'
+                    : 'border-primary-300 bg-primary-100 text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50'
                 }`}
                 value={listName}
                 onChangeText={setListName}
@@ -104,7 +104,7 @@ export default function ListInfoModal({
                 Description (optional)
               </Text>
               <TextInput
-                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
                 value={listDescription}
                 onChangeText={setListDescription}
                 cursorColor={theme.primary[700]}

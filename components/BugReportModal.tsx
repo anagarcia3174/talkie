@@ -47,7 +47,7 @@ export default function BugReportModal({
         
         {/* Overlay */}
         <Pressable
-          className="flex-1 items-center justify-center bg-black/50 px-4"
+          className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-4"
           onPress={() => {
             if (keyboardOpen) {
               Keyboard.dismiss();
@@ -62,7 +62,7 @@ export default function BugReportModal({
             onPress={() => {
               if (keyboardOpen) Keyboard.dismiss();
             }}
-            className="w-full max-w-sm rounded-3xl bg-primary-50 p-6 shadow-2xl dark:bg-primary-900">
+            className="w-full max-w-sm rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
             
             {/* Header */}
             <Text className="mb-4 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
@@ -76,7 +76,7 @@ export default function BugReportModal({
               </Text>
               <TextInput
                 autoFocus
-                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
                 value={description}
                 onChangeText={setDescription}
                 cursorColor={theme.primary[700]}
@@ -98,7 +98,7 @@ export default function BugReportModal({
                 Steps to reproduce (optional)
               </Text>
               <TextInput
-                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
                 value={steps}
                 onChangeText={setSteps}
                 cursorColor={theme.primary[700]}

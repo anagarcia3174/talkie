@@ -50,11 +50,11 @@ export default function StatusPickerModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
-      <Pressable className="flex-1 items-center justify-center bg-black/40" onPress={onClose}>
+      <Pressable className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70" onPress={onClose}>
         {/* Card */}
         <Pressable
           onPress={() => {}}
-          className="w-[85%] max-w-sm rounded-2xl bg-primary-50 p-2 shadow-2xl dark:bg-primary-900">
+          className="w-[85%] max-w-sm rounded-2xl bg-primary-100 p-2 shadow-2xl dark:bg-primary-900">
           <Text className="mb-2 text-center font-SpaceGrotesk-SemiBold text-lg text-primary-950 dark:text-primary-50">
             Change Status
           </Text>

@@ -87,8 +87,8 @@ export default function ListRow({
         transparent
         animationType="fade"
         onRequestClose={() => setConfirmVisible(false)}>
-        <View className="flex-1 items-center justify-center bg-black/50 px-6">
-          <View className="w-full rounded-2xl bg-primary-50 p-5 dark:bg-primary-900">
+        <View className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-6">
+          <View className="w-full rounded-2xl bg-primary-100 p-5 dark:bg-primary-900">
             <Text className="mb-2 font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
               Delete list?
             </Text>
@@ -105,7 +105,7 @@ export default function ListRow({
               placeholderTextColor={theme.primary[500]}
               cursorColor={theme.primary[700]}
               selectionColor={theme.primary[700]}
-              className="mb-4 rounded-xl border border-primary-300 bg-primary-50 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+              className="mb-4 rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
             />
 
             <View className="flex-row justify-end gap-x-3">

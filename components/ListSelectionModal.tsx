@@ -35,7 +35,7 @@ export default function ListSelectionModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
-      <Pressable className="flex-1 bg-primary-950/60" onPress={onClose} />
+      <Pressable className="flex-1 bg-black/60 dark:bg-black/70" onPress={onClose} />
 
       {/* Bottom Sheet */}
       <View className="absolute bottom-0 h-[60vh] w-full rounded-t-2xl  bg-primary-100 shadow-2xl dark:bg-primary-900">

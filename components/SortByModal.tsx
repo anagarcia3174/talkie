@@ -31,7 +31,7 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
   return (
     <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Background Overlay */}
-      <TouchableOpacity activeOpacity={1} onPress={onClose} className="flex-1 bg-primary-950/60" />
+      <TouchableOpacity activeOpacity={1} onPress={onClose} className="flex-1 bg-black/60 dark:bg-black/70" />
 
       {/* Bottom Sheet */}
       <View className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-primary-100 p-6 pb-8 shadow-2xl dark:bg-primary-900">

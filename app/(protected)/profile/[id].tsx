@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import LoadingScreen from '~/components/LoadingScreen';
-import { ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import ProfileSection from '~/components/ProfileSection';
@@ -10,7 +9,6 @@ import StatsSection from '~/components/StatsSection';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { Bookmark, ChevronLeft, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { getPublicListsByUserId } from '~/services/listService';
 import { useLists } from '~/store/listStore';
 import FollowButton from '~/components/FollowButton';
 import { useBlock } from '~/store/blockStore';
@@ -189,11 +187,11 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
       <Modal visible={!!previewImage} transparent animationType="fade">
-        <View className="flex-1 items-center justify-center bg-primary-950 px-4">
+        <View className="flex-1 items-center justify-center bg-primary-100 dark:bg-primary-950 px-4">
           <TouchableOpacity
             onPress={() => setPreviewImage(null)}
             className="absolute left-6 top-16 z-10 py-2">
-            <X size={28} color="white" />
+            <X size={28} color={theme.primary[900]} />
           </TouchableOpacity>
 
           {previewImage && (
