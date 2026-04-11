@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Noat",
-    "slug": "Noat",
+    "name": "Talkie",
+    "slug": "talkie",
     "version": "1.0.0",
-    "scheme": "noat",
+    "scheme": "talkie",
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -58,7 +58,7 @@
     "ios": {
       "usesAppleSignIn": true,
       "supportsTablet": true,
-      "bundleIdentifier": "com.noatapp.mobile",
+      "bundleIdentifier": "app.gettalkie.talkie",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },

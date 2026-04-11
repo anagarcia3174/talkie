@@ -110,7 +110,7 @@ export default function Profile() {
       haptics.success();
       Toast.show({
         type: 'success',
-        text1: 'Bug report submitted! Thanks for helping us improve Noat.',
+        text1: 'Bug report submitted! Thanks for helping us improve Talkie.',
         visibilityTime: 4000,
         autoHide: true,
       });
@@ -133,7 +133,7 @@ export default function Profile() {
       haptics.success();
       Toast.show({
         type: 'success',
-        text1: 'Feedback submitted! Thanks for helping us improve Noat.',
+        text1: 'Feedback submitted! Thanks for helping us improve Talkie.',
         visibilityTime: 4000,
         autoHide: true,
       });

@@ -9,7 +9,7 @@ export function Header() {
   return (
     <View className="flex-row items-center justify-between px-4">
       <View className="flex-row items-center">
-        <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">Noat</Text>
+        <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">Talkie</Text>
       </View>
       <View>
         <TouchableOpacity disabled={true}>

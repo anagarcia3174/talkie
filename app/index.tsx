@@ -9,14 +9,14 @@ export default function Index() {
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
       <View className="flex-1 justify-center px-8">
         <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50 text-6xl font-CourierPrime-Regular">
-          Noat
+          Talkie
         </Text>
         <View className="mb-12">
         <Text className="font-SpaceGrotesk-Regular text-primary-950 dark:text-primary-50 text-start text-xl leading-relaxed">
           Track what you watch.
         </Text>
         <Text className="font-SpaceGrotesk-Regular text-primary-950 dark:text-primary-50 text-start text-xl leading-relaxed">
-          Noat the moments that matter.
+          Talk about every moment.
         </Text>
       </View>
       </View>
