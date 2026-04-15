@@ -1,19 +1,49 @@
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { View, Text } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { ListItemWithMedia } from '~/types/supabaseTypes';
 
 interface LibraryProgressChartProps {
   items: ListItemWithMedia[];
+  libraryId: number;
 }
 
-const LibraryProgressChart = ({ items }: LibraryProgressChartProps) => {
-  const total = items.length;
-  const radius = 45;
-  const circumference = 2 * Math.PI * radius;
-  const gapSize = 3; // space between arcs (degrees)
-  const gapPercent = gapSize / 360;
+type StatKey = 'total' | 'watched' | 'watching' | 'pending';
 
+const STAT_TILES: {
+  key: StatKey;
+  label: string;
+  badgeBgClass: string;
+  badgeTextClass: string;
+}[] = [
+  {
+    key: 'total',
+    label: 'Total',
+    badgeBgClass: 'bg-primary-600/15 dark:bg-primary-400/20',
+    badgeTextClass: 'text-primary-700 dark:text-primary-300',
+  },
+  {
+    key: 'watched',
+    label: 'Watched',
+    badgeBgClass: 'bg-emerald-500/20 dark:bg-emerald-400/25',
+    badgeTextClass: 'text-emerald-700 dark:text-emerald-400',
+  },
+  {
+    key: 'watching',
+    label: 'Watching',
+    badgeBgClass: 'bg-amber-500/20 dark:bg-amber-400/25',
+    badgeTextClass: 'text-amber-700 dark:text-amber-400',
+  },
+  {
+    key: 'pending',
+    label: 'Pending',
+    badgeBgClass: 'bg-red-500/20 dark:bg-red-400/25',
+    badgeTextClass: 'text-red-700 dark:text-red-400',
+  },
+];
+
+const LibraryProgressChart = ({ items, libraryId }: LibraryProgressChartProps) => {
+  const router = useRouter();
   const counts = useMemo(() => {
     return items.reduce(
       (acc, item) => {
@@ -24,91 +54,43 @@ const LibraryProgressChart = ({ items }: LibraryProgressChartProps) => {
     );
   }, [items]);
 
-  const segments = [
-    {
-      label: 'Watched',
-      value: counts.watched,
-      hexColor: '#10b981',
-      lightClass: 'bg-emerald-500',
-      darkClass: 'dark:bg-emerald-400',
-    },
-    {
-      label: 'Watching',
-      value: counts.watching,
-      hexColor: '#f59e0b',
-      lightClass: 'bg-amber-500',
-      darkClass: 'dark:bg-amber-400',
-    },
-    {
-      label: 'Pending',
-      value: counts.pending,
-      hexColor: '#ef4444',
-      lightClass: 'bg-red-500',
-      darkClass: 'dark:bg-red-400',
-    },
-  ];
+  const total = items.length;
 
-  let cumulativePercent = 0;
+  const values: Record<StatKey, number> = {
+    total,
+    watched: counts.watched,
+    watching: counts.watching,
+    pending: counts.pending,
+  };
 
   return (
     <View className="px-4">
-      <Text className="-mb-3 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+      <Text className="mb-3 font-SpaceGrotesk-SemiBold text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
         Library Progress
       </Text>
-      <View className="flex-row items-center gap-x-10 ">
-        {/* Chart */}
-        <View className="relative">
-          <Svg width={150} height={150} viewBox="0 0 150 150">
-            {/* Background track */}
-            <Circle cx="75" cy="75" r={radius} fill="none" strokeWidth={12} stroke="#d1d5db" />
-            {/* Segments */}
-            {segments.map((seg, index) => {
-              if (seg.value === 0) return null;
-              const percent = total > 0 ? seg.value / total : 0;
-              const adjustedPercent = Math.max(percent - gapPercent, 0);
-              const dashLength = adjustedPercent * circumference;
-              const gapLength = circumference - dashLength;
-              const rotation = cumulativePercent * 360 + gapSize / 2 - 90;
-              cumulativePercent += percent;
-
-              return (
-                <Circle
-                  key={index}
-                  cx="75"
-                  cy="75"
-                  r={radius}
-                  fill="none"
-                  strokeWidth={12}
-                  strokeLinecap="square"
-                  stroke={seg.hexColor}
-                  strokeDasharray={`${dashLength} ${gapLength}`}
-                  transform={`rotate(${rotation}, 75, 75)`}
-                />
-              );
-            })}
-          </Svg>
-          {/* Center text */}
-          <View className="absolute inset-0 items-center justify-center">
-            <Text className="font-SpaceGrotesk-Bold text-xl font-bold text-primary-900 dark:text-primary-50">
-              {total}
+      <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => router.push(`/list/${libraryId}`)}
+      className="flex-row gap-2">
+        {STAT_TILES.map(({ key, label, badgeBgClass, badgeTextClass }) => (
+          <View
+            key={key}
+            className="min-w-0 flex-1 rounded-2xl border border-primary-200 bg-primary-100 px-1.5 py-3 dark:border-primary-800 dark:bg-primary-900">
+            <Text className="mb-2 text-center font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
+              {values[key]}
             </Text>
-            <Text className="font-SpaceGrotesk-Regular text-xs text-primary-600 dark:text-primary-400">
-              Total
-            </Text>
-          </View>
-        </View>
-        {/* Legend */}
-        <View className="flex-1 gap-y-3">
-          {segments.map((seg, i) => (
-            <View key={i} className="flex-row items-center gap-2">
-              <View className={`h-4 w-4 rounded-full ${seg.lightClass} ${seg.darkClass}`} />
-              <Text className="font-SpaceGrotesk-Medium text-md text-primary-900 dark:text-primary-50">
-                {seg.label}:  {seg.value}
+            <View className={`self-center rounded-full px-2 py-1 ${badgeBgClass}`}>
+              <Text
+                className={`text-center font-SpaceGrotesk-SemiBold text-[10px] ${badgeTextClass}`}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.85}>
+                {label}
               </Text>
             </View>
-          ))}
-        </View>
-      </View>
+          </View>
+        ))}
+      </TouchableOpacity>
     </View>
   );
 };

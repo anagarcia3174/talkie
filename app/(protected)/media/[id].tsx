@@ -2,16 +2,15 @@ import {
   View,
   TouchableOpacity,
   ImageBackground,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Plus, X } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ArrowLeft, Plus } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Media } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
@@ -19,7 +18,6 @@ import Toast from 'react-native-toast-message';
 import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
 import { useLists } from '~/store/listStore';
-import { useMedia } from '~/store/mediaStore';
 import PosterPreviewModal from '~/components/PosterPreviewModal';
 import MediaCommentSection from '~/components/MediaCommentSection';
 import MediaReviewSection from '~/components/MediaReviewSection';
@@ -103,7 +101,8 @@ export default function MediaScreen() {
                 disabled={loading}
                 onPress={() => {
                   haptics.action();
-                  setListModalVisible(true)}}
+                  setListModalVisible(true);
+                }}
                 className="p-2">
                 <Plus color={theme.primary[950]} size={24} />
               </TouchableOpacity>
@@ -124,9 +123,13 @@ export default function MediaScreen() {
             <KeyboardAvoidingView
               className="flex-1 px-2"
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-              {selectedSegment === 0 && <MediaReviewSection mediaId={media.id} />}
+              {selectedSegment === 0 && <MediaReviewSection mediaId={media.id} releaseDate={media.release_date} />}
               {selectedSegment === 1 && (
-                <MediaCommentSection mediaType={media.media_type} mediaId={media.id} />
+                <MediaCommentSection
+                  mediaType={media.media_type}
+                  mediaId={media.id}
+                  releaseDate={media.release_date}
+                />
               )}
             </KeyboardAvoidingView>
             <ListSelectionModal

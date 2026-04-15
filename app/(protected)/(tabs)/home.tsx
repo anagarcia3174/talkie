@@ -13,6 +13,7 @@ import Toast from 'react-native-toast-message';
 import LoadingScreen from '~/components/LoadingScreen';
 import ErrorScreen from '~/components/ErrorScreen';
 import { haptics } from '~/utils/haptics';
+import RecentCommentsSection from '~/components/RecentCommentsSection';
 
 export default function Home() {
   const { fetchHomeData, trendingMovies, trendingShows } = useMedia();
@@ -21,6 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isInitialLoading = loading && trendingMovies.length === 0 && trendingShows.length === 0;
+
   useEffect(() => {
     const loadHomeData = async () => {
       if (trendingMovies.length > 0 && trendingShows.length > 0) return;
@@ -114,8 +116,8 @@ export default function Home() {
         ) : error ? (
           <ErrorScreen title="Oops!" message={error} />
         ) : (
-          <View className="flex-1 justify-around px-0">
-            {library && <LibraryProgressChart items={listItems[library.id] || []} />}
+          <View className="flex-1 gap-y-4">
+            {library && <LibraryProgressChart items={listItems[library.id] || []} libraryId={library.id} />}
             <TrendingSection
               title="Trending Movies"
               movies={trendingMovies}
@@ -126,6 +128,7 @@ export default function Home() {
               title="Trending Shows"
               onAddToLibrary={addMediaToLibrary}
             />
+            <RecentCommentsSection />
           </View>
         )}
       </ScrollView>

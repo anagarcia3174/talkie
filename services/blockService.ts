@@ -95,7 +95,6 @@ export async function getBlockedIds(
     }
 
     const ids = (data ?? []).map((row) => row.blocked_id);
-
     return successData(ids);
   } catch (err: any) {
     return errorData(err, {

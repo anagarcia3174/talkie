@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
+import { MovieDetails, TVDetails, TVEpisode } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import CompactDropdown from './CompactDropdown';
 
@@ -28,9 +28,21 @@ export default function TimestampPicker({
   onTimestampChange,
   onSeasonChange,
   onEpisodeChange,
-  pickersDisabled = false
+  pickersDisabled = false,
 }: TimestampPickerProps) {
   const theme = useTheme();
+  const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+  const tvDetails = mediaType === 'tv' ? (details as TVDetails) : null;
+
+  const availableEpisodes = useMemo((): TVEpisode[] => {
+    if (!tvDetails || selectedSeason === undefined) {
+      return [];
+    }
+
+    return (tvDetails.episodes?.[selectedSeason] ?? []).filter(
+      (episode) => episode.air_date !== null && episode.air_date <= today
+    );
+  }, [tvDetails, selectedSeason, today]);
 
   // --------------------------------------------------
   // Duration Calculation
@@ -42,33 +54,28 @@ export default function TimestampPicker({
       return (movie.runtime_minutes ?? 0) * 60;
     }
 
-    if (mediaType === 'tv' && selectedSeason !== undefined && selectedEpisode !== undefined) {
-      const tv = details as TVDetails;
-
-      const seasonEpisodes = tv.episodes?.[selectedSeason];
-      const episode = seasonEpisodes?.find((ep) => ep.episode_number === selectedEpisode);
+    if (mediaType === 'tv' && selectedEpisode !== undefined) {
+      const episode = availableEpisodes.find((ep) => ep.episode_number === selectedEpisode);
 
       return (episode?.runtime_minutes ?? 0) * 60;
     }
 
     return 0;
-  }, [mediaType, details, selectedSeason, selectedEpisode]);
+  }, [mediaType, details, selectedEpisode, availableEpisodes]);
 
   const formatTime = (seconds: number) => {
-  if (seconds >= 3600) {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
+    if (seconds >= 3600) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const isDisabled = durationSeconds === 0;
-
-  const tvDetails = mediaType === 'tv' ? (details as TVDetails) : null;
 
   return (
     <View className="">
@@ -87,10 +94,10 @@ export default function TimestampPicker({
             }}
             disabled={pickersDisabled}
           />
-          {selectedSeason && tvDetails.episodes?.[selectedSeason] && (
+          {selectedSeason !== undefined && availableEpisodes.length > 0 && (
             <CompactDropdown
               label="Episode"
-              items={tvDetails.episodes[selectedSeason]}
+              items={availableEpisodes}
               selectedValue={selectedEpisode}
               getLabel={(ep) => `Episode ${ep.episode_number}`}
               getValue={(ep) => ep.episode_number}

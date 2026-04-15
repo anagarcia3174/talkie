@@ -1,6 +1,7 @@
 import {
   Comment,
   CommentWithUser,
+  CommentWithUserAndMedia,
   CreateCommentInput,
   DataResult,
   errorData,
@@ -106,9 +107,12 @@ export async function toggleCommentLike(commentId: number): Promise<DataResult<b
   }
 }
 
-export async function updateComment(commentId: number, updates: Partial<Pick<Comment, 'content' | 'timestamp_seconds'>>): Promise<VoidResult> {
+export async function updateComment(
+  commentId: number,
+  updates: Partial<Pick<Comment, 'content' | 'timestamp_seconds'>>
+): Promise<VoidResult> {
   try {
-     if (Object.keys(updates).length === 0) {
+    if (Object.keys(updates).length === 0) {
       return successVoid();
     }
     const { error } = await supabase
@@ -127,11 +131,36 @@ export async function updateComment(commentId: number, updates: Partial<Pick<Com
     }
 
     return successVoid();
-  }catch (err) {
+  } catch (err) {
     return errorData(err, {
       operation: 'update_comment',
       table: 'comments',
       isWrite: true,
+    });
+  }
+}
+
+export async function getRecentCommentsFeed(
+  limit: number = 10
+): Promise<DataResult<CommentWithUserAndMedia[]>> {
+  try {
+    const { data, error } = await supabase.rpc('get_recent_comments_feed', {
+      p_limit: limit,
+    });
+
+    if (error) {
+      return errorData(error, {
+        operation: 'get_recent_comments_feed',
+        table: 'comments',
+        isWrite: false,
+      });
+    }
+    return successData(data as CommentWithUserAndMedia[]);
+  } catch (err) {
+    return errorData(err, {
+      operation: 'get_recent_comments_feed',
+      table: 'comments',
+      isWrite: false,
     });
   }
 }

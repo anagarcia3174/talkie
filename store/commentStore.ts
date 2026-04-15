@@ -5,9 +5,10 @@ import {
   deleteComment as deleteCommentService,
   toggleCommentLike,
   updateComment as updateCommentService,
+  getRecentCommentsFeed,
 } from '~/services/commentService';
 import { reportComment } from '~/services/reportService';
-import { CommentWithUser, Comment, CreateCommentInput, ReportReason } from '~/types/supabaseTypes';
+import { CommentWithUser, Comment, CreateCommentInput, ReportReason, CommentWithUserAndMedia } from '~/types/supabaseTypes';
 
 type StoreResult<T = void> = { success: true } | { success: false; error: string };
 
@@ -24,15 +25,23 @@ interface MediaCommentsState {
   error: string | null;
 }
 
+interface RecentCommentsFeedState { 
+  recentComments: CommentWithUserAndMedia[];
+  isLoading: boolean;
+  hasFetched: boolean;
+  error: string | null;
+}
+
 interface CommentState {
   fetchedComments: Record<string, MediaCommentsState>;
-
+  recentCommentsFeed: RecentCommentsFeedState;
   fetchCommentsForMedia: (params: {
     mediaId: number;
     seasonNumber?: number;
     episodeNumber?: number;
     force?: boolean;
   }) => Promise<StoreResult<void>>;
+  getRecentCommentsFeed: () => Promise<StoreResult<void>>;
   postComment: (comment: CreateCommentInput) => Promise<StoreResult<void>>;
   deleteComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult<void>>;
   toggleLikeComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult<void>>;
@@ -50,6 +59,12 @@ interface CommentState {
 
 export const useComments = create<CommentState>((set, get) => ({
   fetchedComments: {},
+  recentCommentsFeed: {
+    recentComments: [],
+    isLoading: false,
+    hasFetched: false,
+    error: null,
+  },
   fetchCommentsForMedia: async ({ mediaId, seasonNumber, episodeNumber, force = false }) => {
     const baseKey = `media-${mediaId}`;
     const contextKey =
@@ -153,6 +168,51 @@ export const useComments = create<CommentState>((set, get) => ({
       return { success: true };
     }
 
+    return { success: true };
+  },
+  getRecentCommentsFeed: async () => {
+    const cachedRecentCommentsFeed = get().recentCommentsFeed;
+
+    if (cachedRecentCommentsFeed.isLoading) {
+      return { success: true };
+    }
+
+    if (cachedRecentCommentsFeed.hasFetched) {
+      return { success: true };
+    }
+
+    set((state) => ({
+      recentCommentsFeed: {
+        ...state.recentCommentsFeed,
+        isLoading: true,
+        hasFetched: false,
+        error: null,
+      },
+    }));
+
+    const result = await getRecentCommentsFeed();
+    if (!result.success) {
+      set((state) => ({
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          isLoading: false,
+          hasFetched: false,
+          error: result.error,
+        },
+      }));
+      return result;
+    }
+
+    const recentComments = result.data ?? [];
+
+    set((state) => ({
+      recentCommentsFeed: {
+        recentComments: recentComments,
+        isLoading: false,
+        hasFetched: true,
+        error: null,
+      },
+    }));
     return { success: true };
   },
 

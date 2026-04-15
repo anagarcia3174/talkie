@@ -13,6 +13,8 @@ export interface CommentFormProps {
   timestamp: number;
   onSubmit: (content: string) => Promise<void>;
   showAvatar?: boolean;
+  disabled?: boolean;
+  disabledReason?: string | null;
 }
 
 export default function CommentForm({
@@ -21,6 +23,8 @@ export default function CommentForm({
   initialContent = '',
   onSubmit,
   showAvatar = true,
+  disabled = false,
+  disabledReason = null,
 }: CommentFormProps) {
   const { profile } = useProfile();
   const [commentText, setCommentText] = useState(initialContent);
@@ -87,7 +91,9 @@ export default function CommentForm({
 
       {/* Input */}
       <TextInput
-        placeholder={`Leave a comment at ${formatTime(timestamp)}...`}
+        placeholder={
+          disabledReason ? disabledReason : `Leave a comment at ${formatTime(timestamp)}...`
+        }
         value={commentText}
         onChangeText={setCommentText}
         multiline
@@ -100,15 +106,18 @@ export default function CommentForm({
         submitBehavior="blurAndSubmit"
         onFocus={() => setOverviewExpanded(false)}
         numberOfLines={2}
+        editable={!disabled}
       />
 
       {/* Send Button */}
       <TouchableOpacity
         onPress={() => {
-          haptics.action();
-          handleSubmit();
+          if (!disabled) {
+            haptics.action();
+            handleSubmit();
+          }
         }}
-        disabled={loading || (mode === 'edit' && !isDirty)}
+        disabled={loading || (mode === 'edit' && !isDirty) || disabled}
         className="h-11 w-11 items-center justify-center rounded-full">
         {loading ? (
           <ActivityIndicator size="small" color={theme.primary[950]} />

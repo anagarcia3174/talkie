@@ -12,6 +12,8 @@ export interface ReviewFormProps {
   initialContent?: string;
   onSubmit: (rating: number, content: string) => Promise<void>;
   showAvatar?: boolean;
+  disabled?: boolean;
+  disabledReason?: string | null;
 }
 
 export default function ReviewForm({
@@ -20,6 +22,8 @@ export default function ReviewForm({
   initialContent = '',
   onSubmit,
   showAvatar = true,
+  disabled = false,
+  disabledReason = null,
 }: ReviewFormProps) {
   const { profile } = useProfile();
   const theme = useTheme();
@@ -66,7 +70,8 @@ export default function ReviewForm({
             key={star}
             onPress={() => {
               haptics.action();
-              handleSetRating(star)}}
+              handleSetRating(star);
+            }}
             className="items-center">
             <View className="relative items-center justify-center">
               <Star
@@ -102,7 +107,7 @@ export default function ReviewForm({
           ))}
 
         <TextInput
-          placeholder="Write your review..."
+          placeholder={disabledReason ? disabledReason : "Write your review..."}
           value={reviewText}
           onChangeText={setReviewText}
           multiline
@@ -111,14 +116,17 @@ export default function ReviewForm({
           selectionColor={theme.primary[700]}
           placeholderTextColor={theme.primary[500]}
           maxLength={1000}
+          editable={!disabled}
         />
 
         <TouchableOpacity
           onPress={() => {
-            haptics.action();
-            handleSubmit();
+            if (!disabled) {
+              haptics.action();
+              handleSubmit();
+            }
           }}
-          disabled={loading || (mode === 'edit' && !isDirty)}
+          disabled={loading || (mode === 'edit' && !isDirty) || disabled}
           className="ml-2 h-11 w-11 items-center justify-center rounded-full">
           {loading ? (
             <ActivityIndicator size="small" color={theme.primary[950]} />

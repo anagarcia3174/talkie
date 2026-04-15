@@ -87,7 +87,6 @@ export const useProfile = create<ProfileState>((set, get) => ({
       },
     },
   }));
-
     const [profileResult, statsResult, listsResult] = await Promise.all([
       getProfileById(userId),
       getProfileStats(userId),

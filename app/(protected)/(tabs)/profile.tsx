@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import StatsSection from '~/components/StatsSection';
 import ProfileSection from '~/components/ProfileSection';
 import { useProfile } from '~/store/profileStore';
@@ -305,6 +305,11 @@ export default function Profile() {
           } else if (operation === 'feedback') {
             setOverlayVisible(false);
             setFeedbackModalVisible(true);
+          } else if (operation === 'contact_us') {
+            setOverlayVisible(false);
+            Linking.openURL(
+              'mailto:support@gettalkie.app?subject=Talkie Support Request&body=Hi Talkie team,%0D%0A%0D%0AI need help with...'
+            );
           } else {
             setOverlayVisible(false);
           }

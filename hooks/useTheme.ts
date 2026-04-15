@@ -5,17 +5,17 @@ export const useTheme = () => {
   const isDark = colorScheme === 'dark';
 
   const primary = {
-    50: isDark ? '#1a1a1a' : '#fafafa',
-    100: isDark ? '#262626' : '#f4f4f5',
-    200: isDark ? '#404040' : '#e4e4e7',
-    300: isDark ? '#3f3f46' : '#d4d4d8',
-    400: isDark ? '#52525b' : '#a1a1aa',
-    500: '#71717a',
-    600: isDark ? '#a1a1aa' : '#52525b',
-    700: isDark ? '#d4d4d8' : '#3f3f46',
-    800: isDark ? '#e4e4e7' : '#404040',
-    900: isDark ? '#f4f4f5' : '#262626',
-    950: isDark ? '#fafafa' : '#1a1a1a',
+    50: isDark ? '#111111' : '#f4f4f5',
+    100: isDark ? '#1f1f23' : '#e7e7ea',
+    200: isDark ? '#34343a' : '#d6d6da',
+    300: isDark ? '#4a4a52' : '#b9b9bf',
+    400: isDark ? '#63636d' : '#9a9aa3',
+    500: '#7c7c86',
+    600: isDark ? '#9a9aa3' : '#63636d',
+    700: isDark ? '#b9b9bf' : '#4a4a52',
+    800: isDark ? '#d6d6da' : '#34343a',
+    900: isDark ? '#e7e7ea' : '#1f1f23',
+    950: isDark ? '#f4f4f5' : '#111111',
   };
 
   const hexToRgba = (hex: string, opacity: number) => {

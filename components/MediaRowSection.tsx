@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Plus } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { Media } from '~/types/supabaseTypes';
 import { useState } from 'react';
@@ -20,8 +19,9 @@ interface MediaRowSectionProps {
   onAddToLibrary: (mediaId: number) => Promise<void>;
 }
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.38;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const BENTO_CARD_WIDTH = Math.round((SCREEN_WIDTH - 32) * 0.4);
+const ITEM_GAP = 12;
 
 export default function MediaRowSection({ title, movies, onAddToLibrary }: MediaRowSectionProps) {
   const router = useRouter();
@@ -29,8 +29,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
 
   return (
     <View className="px-4">
-      {/* Section Title */}
-      <Text className="mb-3 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+      <Text className="mb-2 font-SpaceGrotesk-SemiBold text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
         {title}
       </Text>
 
@@ -39,12 +38,14 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
         keyExtractor={(item) => item.id.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH + 16}
+        snapToInterval={BENTO_CARD_WIDTH + ITEM_GAP}
+        snapToAlignment="start"
         decelerationRate="fast"
+        contentContainerStyle={{ paddingRight: 4 }}
         renderItem={({ item }) => (
           <TouchableOpacity
-            className="mr-3"
-            activeOpacity={0.85}
+            activeOpacity={0.7}
+            style={{ width: BENTO_CARD_WIDTH, marginRight: ITEM_GAP }}
             onPress={() => {
               router.push({
                 pathname: '/media/[id]',
@@ -54,15 +55,15 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
                 },
               });
             }}>
-            <View className="relative w-32 overflow-hidden rounded-xl">
-              {/* Poster */}
-              <Image
-                source={{ uri: `https://image.tmdb.org/t/p/w342${item.poster_path}` }}
-                className="h-48 w-full"
-                resizeMode="cover"
-              />
+            <View className="relative rounded-2xl border border-primary-200 bg-primary-100 p-1 dark:border-primary-800 dark:bg-primary-900">
+              <View className="overflow-hidden rounded-xl bg-primary-200 dark:bg-primary-800">
+                <Image
+                  source={{ uri: `https://image.tmdb.org/t/p/w342${item.poster_path}` }}
+                  style={{ width: '100%', aspectRatio: 2 / 3 }}
+                  resizeMode="cover"
+                />
+              </View>
 
-              {/* Add Button */}
               <TouchableOpacity
                 disabled={loadingId === item.id}
                 onPress={async () => {
@@ -71,19 +72,13 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
                   await onAddToLibrary(item.id);
                   setLoadingId(null);
                 }}
-                className="absolute right-2 top-2 rounded-full  "
-                activeOpacity={0.7}>
-                <BlurView
-                  intensity={75}
-                  className="p-2"
-                  tint="systemMaterialDark"
-                  style={{ borderRadius: 50, overflow: 'hidden' }}>
-                  {loadingId === item.id ? (
-                    <ActivityIndicator size={16} />
-                  ) : (
-                    <Plus size={16} color="white" />
-                  )}
-                </BlurView>
+                className="absolute right-3 top-3 rounded-full border border-primary-50/20 bg-primary-950/45 px-2.5 py-2"
+                activeOpacity={0.85}>
+                {loadingId === item.id ? (
+                  <ActivityIndicator size="small" color="#fafafa" />
+                ) : (
+                  <Plus size={17} color="#fafafa" strokeWidth={2.25} />
+                )}
               </TouchableOpacity>
             </View>
           </TouchableOpacity>

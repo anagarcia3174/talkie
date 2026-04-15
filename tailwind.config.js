@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./app/**/*.{js,ts,tsx}', './components/**/*.{js,ts,tsx}'],
-
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
@@ -10,22 +9,22 @@ module.exports = {
         'SpaceGrotesk-Light': ['SpaceGrotesk-Light'],
         'SpaceGrotesk-Medium': ['SpaceGrotesk-Medium'],
         'SpaceGrotesk-Regular': ['SpaceGrotesk-Regular'],
-        'SpaceGrotesk-SemiBold': ['SpaceGrotesk-SemiBold']
+        'SpaceGrotesk-SemiBold': ['SpaceGrotesk-SemiBold'],
       },
       colors: {
-       primary: {
-          50: '#fafafa',
-          100: '#f4f4f5',
-          200: '#e4e4e7',
-          300: '#d4d4d8',
-          400: '#a1a1aa',
-          500: '#71717a', 
-          600: '#52525b',
-          700: '#3f3f46',
-          800: '#404040', 
-          900: '#262626', 
-          950: '#1a1a1a', 
-        },    
+        primary: {
+          50:  '#f4f4f5',
+          100: '#e7e7ea',
+          200: '#d6d6da',
+          300: '#b9b9bf',
+          400: '#9a9aa3',
+          500: '#7c7c86',
+          600: '#63636d',
+          700: '#4a4a52',
+          800: '#34343a',
+          900: '#1f1f23',
+          950: '#111111',
+        }
       },
     },
   },

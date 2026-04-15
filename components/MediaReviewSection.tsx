@@ -13,9 +13,20 @@ import { haptics } from '~/utils/haptics';
 
 interface MediaReviewSectionProps {
   mediaId: number;
+  releaseDate?: string | null;
 }
 
-export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps) {
+
+const hasDatePassed = (dateString?: string | null) => {
+  if (!dateString) return false;
+
+  const now = new Date();
+  const date = new Date(dateString + 'T00:00:00'); // 👈 normalize
+
+  return date <= now;
+};
+
+export default function MediaReviewSection({ mediaId, releaseDate }: MediaReviewSectionProps) {
   const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReviews();
   const { user } = useAuth();
   const theme = useTheme();
@@ -85,6 +96,16 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
     }
   };
 
+  const disabledReason = useMemo(() => {
+    if (!releaseDate) return 'Release date unknown';
+  
+    if (!hasDatePassed(releaseDate)) {
+      return 'Not released yet';
+    }
+  
+    return null;
+  }, [releaseDate]);
+
   return (
     <View className="flex-1">
       {isLoading ? (
@@ -124,7 +145,7 @@ export default function MediaReviewSection({ mediaId }: MediaReviewSectionProps)
               tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
               className="overflow-hidden rounded-3xl border border-white/15">
               <View className="px-4 py-4">
-                <ReviewForm mode="create" onSubmit={handleSubmitReview} />
+                <ReviewForm mode="create" onSubmit={handleSubmitReview} disabled={!!disabledReason} disabledReason={disabledReason}/>
               </View>
             </BlurView>
           </View>

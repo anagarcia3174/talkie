@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import TimestampPicker from './TimestampPicker';
 import { useComments } from '~/store/commentStore';
 import { useTheme } from '~/hooks/useTheme';
@@ -14,13 +13,24 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CommentForm from './CommentForm';
 import { useMedia } from '~/store/mediaStore';
 import { haptics } from '~/utils/haptics';
+import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
 
 interface MediaCommentSectionProps {
   mediaType: 'movie' | 'tv';
   mediaId: number;
+  releaseDate?: string | null;
 }
 
-export default function MediaCommentSection({ mediaType, mediaId }: MediaCommentSectionProps) {
+const hasDatePassed = (dateString?: string | null) => {
+  if (!dateString) return false;
+
+  const now = new Date();
+  const date = new Date(dateString + 'T00:00:00'); // 👈 normalize
+
+  return date <= now;
+};
+
+export default function MediaCommentSection({ mediaType, mediaId, releaseDate }: MediaCommentSectionProps) {
   const { fetchedComments, fetchCommentsForMedia, postComment } = useComments();
   const { mediaDetails, fetchMediaDetails } = useMedia();
   const { user } = useAuth();
@@ -43,6 +53,45 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
+    if (!details) return;
+  
+    // MOVIE
+    if (mediaType === 'movie') {
+      const runtime = (details as MovieDetails).runtime_minutes;
+  
+      if (runtime == null) {
+        if (timestamp !== 0) setTimestamp(0);
+        return;
+      }
+  
+      const maxSeconds = runtime * 60;
+      if (timestamp > maxSeconds) {
+        setTimestamp(maxSeconds); // or maxSeconds if you prefer clamping
+      }
+  
+      return;
+    }
+  
+    // TV
+    const tvDetails = details as TVDetails;
+    const episodeList = tvDetails.episodes?.[season];
+    const selectedEpisode = episodeList?.find(
+      (ep) => ep.episode_number === episode
+    );
+  
+    if (!selectedEpisode || selectedEpisode.runtime_minutes == null) {
+      if (timestamp !== 0) setTimestamp(0);
+      return;
+    }
+  
+    const maxSeconds = selectedEpisode.runtime_minutes * 60;
+  
+    if (timestamp > maxSeconds) {
+      setTimestamp(maxSeconds); // or maxSeconds
+    }
+  }, [details, mediaType, season, episode, timestamp]);
+
+  useEffect(() => {
     if (!hasFetchedDetails) {
       fetchMediaDetails(mediaId);
     }
@@ -59,6 +108,7 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
       });
     }
   }, [mediaId, mediaType, season, episode]);
+
 
   const handleSubmitComment = async (content: string) => {
     const result = await postComment({
@@ -100,6 +150,44 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
       <View className="h-6 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
     </View>
   );
+
+  const disabledReason = useMemo(() => {
+    if (!details) return 'Loading...';
+  
+    // 🎬 MOVIE
+    if (mediaType === 'movie') {
+      const movieDetails = details as MovieDetails;
+  
+      if (movieDetails.runtime_minutes == null) {
+        return 'Runtime not available yet';
+      }
+  
+      if (!hasDatePassed(releaseDate)) {
+        return 'Movie not released yet';
+      }
+  
+      return null;
+    }
+  
+    // 📺 TV
+    const tvDetails = details as TVDetails;
+    const episodeList = tvDetails.episodes?.[season];
+    const selectedEpisode = episodeList?.find(
+      (ep) => ep.episode_number === episode
+    );
+  
+    if (!selectedEpisode) return 'Episode not available';
+  
+    if (selectedEpisode.runtime_minutes == null) {
+      return 'Episode runtime not available yet';
+    }
+  
+    if (!hasDatePassed(selectedEpisode.air_date)) {
+      return 'Episode not aired yet';
+    }
+  
+    return null;
+  }, [details, mediaType, season, episode, releaseDate]);
 
   return (
     <View className="flex-1">
@@ -167,7 +255,7 @@ export default function MediaCommentSection({ mediaType, mediaId }: MediaComment
               elevation: 10,
             }}>
             <View className="px-4 py-3">
-              <CommentForm mode="create" timestamp={timestamp} onSubmit={handleSubmitComment} />
+              <CommentForm mode="create" timestamp={timestamp} onSubmit={handleSubmitComment} disabled={!!disabledReason} disabledReason={disabledReason}/>
             </View>
           </BlurView>
         </View>

@@ -124,6 +124,10 @@ export interface TVSeason {
 export interface TVEpisode {
   episode_number: number;
   runtime_minutes: number | null;
+  overview: string | null;
+  name: string | null;
+  still_path: string | null;
+  air_date: string | null;
 }
 
 export interface Comment {
@@ -137,14 +141,13 @@ export interface Comment {
   parent_comment_id: number | null;
   is_spoiler: boolean;
   like_count: number;
-  reply_count: number;
   created_at: string;
   updated_at: string;
 }
 
 export type CreateCommentInput = Omit<
   Comment,
-  'id' | 'user_id' | 'created_at' | 'updated_at' | 'like_count' | 'reply_count' 
+  'id' | 'user_id' | 'created_at' | 'updated_at' | 'like_count'
 >;
 
 export interface CommentWithUser extends Comment {
@@ -156,6 +159,10 @@ export interface CommentWithUser extends Comment {
     is_private: boolean;
   };
 }
+
+export type CommentWithUserAndMedia = CommentWithUser & {
+  media: Media;
+};
 
 export interface CommentLike {
   id: number;
@@ -184,6 +191,41 @@ export interface ReviewWithUser extends Review {
     avatar_url: string | null;
     is_private: boolean;
   };
+}
+
+/** Review + author + media; matches `get_community_thoughts_feed` review-shaped tiles and RPC helpers. */
+export type ReviewWithUserAndMedia = ReviewWithUser & {
+  media: Media;
+};
+
+/** `get_community_thoughts_feed` — rolling 7-day comment/review totals. */
+export interface CommunityThoughtsActivityStrip {
+  comments_7d: number;
+  reviews_7d: number;
+}
+
+/** `get_community_thoughts_feed` — average of review ratings (0–10) in the last 7 days. */
+export interface CommunityThoughtsCommunityMood {
+  avg_rating: number | null;
+  review_count: number;
+}
+
+/** `get_community_thoughts_feed` — high community avg on lower-popularity titles not in trending_collection. */
+export interface CommunityThoughtsHiddenGem {
+  media: Media;
+  community_avg_rating: number;
+  review_count: number;
+}
+
+/** Payload from `get_community_thoughts_feed()` (single JSON object). */
+export interface CommunityThoughtsFeed {
+  featured_review: ReviewWithUserAndMedia | null;
+  hot_take_review: ReviewWithUserAndMedia | null;
+  community_mood: CommunityThoughtsCommunityMood;
+  hidden_gem: CommunityThoughtsHiddenGem | null;
+  top_comment: CommentWithUserAndMedia | null;
+  top_review: ReviewWithUserAndMedia | null;
+  activity_strip: CommunityThoughtsActivityStrip;
 }
 
 export interface ReviewLike {

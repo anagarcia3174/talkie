@@ -26,6 +26,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
   const supportOptions = [
     { id: 'feedback', title: 'Send Feedback', onPress: () => onSubmit('feedback') },
     { id: 'bug_report', title: 'Report a Bug', onPress: () => onSubmit('bug_report') },
+    {id: 'contact_us', title: 'Contact Us', onPress: () => onSubmit('contact_us')}
   ];
 
   const destructiveOption = {
