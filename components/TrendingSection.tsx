@@ -125,7 +125,7 @@ export default function TrendingSection({
                       await onAddToLibrary(item.id);
                       setLoadingId(null);
                     }}
-                    className="shrink-0 rounded-full border border-primary-50/20 bg-primary-950/45 px-3.5 py-2">
+                    className="shrink-0 rounded-lg border border-primary-50/20 bg-primary-950/45 px-3 py-1">
                     {loadingId === item.id ? (
                       <ActivityIndicator size="small" color="#fafafa" />
                     ) : (

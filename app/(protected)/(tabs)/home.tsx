@@ -117,7 +117,9 @@ export default function Home() {
           <ErrorScreen title="Oops!" message={error} />
         ) : (
           <View className="flex-1 gap-y-4">
-            {library && <LibraryProgressChart items={listItems[library.id] || []} libraryId={library.id} />}
+            {library && (
+              <LibraryProgressChart items={listItems[library.id] || []} libraryId={library.id} />
+            )}
             <TrendingSection
               title="Trending Movies"
               movies={trendingMovies}

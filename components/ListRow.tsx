@@ -40,9 +40,9 @@ export default function ListRow({
       onLayout={(e) => setRowHeight(e.nativeEvent.layout.height)}
       onPress={onPress}
       activeOpacity={0.85}
-      className="flex-row items-center justify-between bg-primary-200 p-4 dark:bg-primary-900">
+      className="flex-row items-center justify-between border border-primary-200 dark:border-primary-800 bg-primary-100 p-4 dark:bg-primary-900">
       <View className="flex-1">
-        <Text className="font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
+        <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           {title}
         </Text>
         {items != null && (
@@ -51,7 +51,7 @@ export default function ListRow({
           </Text>
         )}
       </View>
-      <ChevronRight size={20} color={theme.primary[950]} />
+      <ChevronRight size={20} color={theme.primary[400]} />
     </TouchableOpacity>
   );
 

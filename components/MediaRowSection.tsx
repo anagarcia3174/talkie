@@ -72,7 +72,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
                   await onAddToLibrary(item.id);
                   setLoadingId(null);
                 }}
-                className="absolute right-3 top-3 rounded-full border border-primary-50/20 bg-primary-950/45 px-2.5 py-2"
+                className="absolute right-3 top-3 rounded-lg border border-primary-50/20 bg-primary-950/45 p-1"
                 activeOpacity={0.85}>
                 {loadingId === item.id ? (
                   <ActivityIndicator size="small" color="#fafafa" />

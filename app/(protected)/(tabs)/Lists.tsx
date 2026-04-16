@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useLists } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Plus } from 'lucide-react-native';
+import { Heart, Lock, Plus, List as ListIcon } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import CreateListModal from '~/components/CreateListModal';
@@ -132,7 +132,7 @@ export default function Lists() {
       <View className="flex-row items-center justify-between px-4">
         <View className="flex-row items-center">
           <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
-            My Lists
+            Lists
           </Text>
         </View>
         <View>
@@ -143,8 +143,8 @@ export default function Lists() {
                 haptics.action();
                 setCreateListModalVisible(true);
               }}
-              className="rounded-full p-2 ">
-              <Plus size={24} color={theme.primary[950]} />
+              className="rounded-lg border border-primary-200 bg-primary-100 p-1 dark:border-primary-800 dark:bg-primary-900">
+              <Plus size={20} color={theme.primary[600]} />
             </TouchableOpacity>
           )}
         </View>
@@ -156,23 +156,81 @@ export default function Lists() {
         <Text className="mb-2 mt-4 font-SpaceGrotesk-Medium text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
           Default
         </Text>
-        {library && (
-          <ListRow
-            title={library.name}
-            items={library.item_count}
-            onPress={() => router.push(`/list/${library.id}`)}
-            deletable={false}
-          />
-        )}
+        <View className="flex-row gap-x-2">
+          {library && (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              className="aspect-square max-h-36 flex-1 rounded-2xl border border-primary-200 bg-primary-100 px-4 py-3 dark:border-primary-800 dark:bg-primary-900">
+              <View className="flex-1 justify-between">
+                {/* Top */}
+                <View className="flex-row items-start justify-between">
+                  <Text
+                    numberOfLines={2}
+                    className="flex-1 pr-2 font-SpaceGrotesk-Bold text-xl uppercase text-primary-900 dark:text-primary-100">
+                    {library.name}
+                  </Text>
 
-        {favorites && (
-          <ListRow
-            title={favorites.name}
-            items={favorites.item_count}
-            onPress={() => router.push(`/list/${favorites.id}`)}
-            deletable={false}
-          />
-        )}
+                  {library.is_private && (
+                    <Lock size={14} className="text-primary-500 dark:text-primary-400" />
+                  )}
+                </View>
+
+                <View className="mt-auto flex-row items-center justify-between">
+                  <View>
+                    <Text className="ml-1 text-sm text-primary-500 dark:text-primary-400">
+                      {library.item_count} {library.item_count === 1 ? 'item' : 'items'}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-1">
+                    <Heart size={12} color={theme.primary[700]} />
+                    <Text className="text-sm text-primary-500 dark:text-primary-400">
+                      {library.like_count}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {favorites && (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              className="aspect-square max-h-36 flex-1 rounded-2xl border border-primary-200 bg-primary-100 px-4 py-3 dark:border-primary-800 dark:bg-primary-900">
+              <View className='flex-1 justify-between'>
+                {/* Top */}
+                <View className="flex-row items-start justify-between">
+                  <Text
+                    numberOfLines={2}
+                    className="flex-1 pr-2 font-SpaceGrotesk-Bold text-xl uppercase text-primary-900 dark:text-primary-100">
+                    {favorites.name}
+                  </Text>
+
+                  {favorites.is_private && (
+                    <Lock size={14} className="text-primary-500 dark:text-primary-400" />
+                  )}
+                </View>
+
+              
+
+                {/* Bottom Right */}
+                <View className="mt-auto flex-row items-center justify-between">
+                  <View>
+                    <Text className="ml-1 text-sm text-primary-500 dark:text-primary-400">
+                      {favorites.item_count} {favorites.item_count === 1 ? 'item' : 'items'}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-1">
+                    <Heart size={12} color={theme.primary[700]} />
+                    <Text className="text-sm text-primary-500 dark:text-primary-400">
+                      {favorites.like_count}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+
         {/* Custom Lists */}
         {customListIds.length > 0 && (
           <Text className="mb-2 mt-6 font-SpaceGrotesk-Medium text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
