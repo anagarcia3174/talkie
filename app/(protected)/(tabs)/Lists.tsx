@@ -3,9 +3,9 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useLists } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Heart, Lock, Plus, List as ListIcon } from 'lucide-react-native';
+import { Lock, Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CreateListModal from '~/components/CreateListModal';
 import { List } from '~/types/supabaseTypes';
 import { useAuth } from '~/context/AuthContext';
@@ -14,19 +14,66 @@ import ListRow from '~/components/ListRow';
 import { useBlock } from '~/store/blockStore';
 import { haptics } from '~/utils/haptics';
 
+const STATUS_TILES = [
+  {
+    key: 'watched' as const,
+    label: 'Watched',
+    badgeBgClass: 'bg-emerald-500/20 dark:bg-emerald-400/25',
+    badgeTextClass: 'text-emerald-700 dark:text-emerald-400',
+  },
+  {
+    key: 'watching' as const,
+    label: 'Watching',
+    badgeBgClass: 'bg-amber-500/20 dark:bg-amber-400/25',
+    badgeTextClass: 'text-amber-700 dark:text-amber-400',
+  },
+  {
+    key: 'pending' as const,
+    label: 'Pending',
+    badgeBgClass: 'bg-red-500/20 dark:bg-red-400/25',
+    badgeTextClass: 'text-red-700 dark:text-red-400',
+  },
+];
+
 export default function Lists() {
   const theme = useTheme();
   const router = useRouter();
   const [createListModalVisible, setCreateListModalVisible] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const { listsById, defaultListIds, customListIds, createList, deleteList } = useLists();
+  const {
+    listsById,
+    defaultListIds,
+    customListIds,
+    createList,
+    deleteList,
+    listItems,
+    hydrateDefaultLists,
+  } = useLists();
   const { user } = useAuth();
   const { blockedIds } = useBlock();
 
-  const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
+  useEffect(() => {
+    hydrateDefaultLists();
+  }, []);
 
+  const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
   const favorites = defaultListIds.favorites != null ? listsById[defaultListIds.favorites] : null;
+
+  const libraryItems =
+    defaultListIds.library != null ? (listItems[defaultListIds.library] ?? []) : [];
+
+  const statusCounts = useMemo(
+    () =>
+      libraryItems.reduce(
+        (acc, item) => {
+          acc[item.status] += 1;
+          return acc;
+        },
+        { watched: 0, watching: 0, pending: 0 }
+      ),
+    [libraryItems]
+  );
 
   const likedLists = Object.values(listsById).filter(
     (list) =>
@@ -143,8 +190,8 @@ export default function Lists() {
                 haptics.action();
                 setCreateListModalVisible(true);
               }}
-              className="rounded-lg border border-primary-200 bg-primary-100 p-1 dark:border-primary-800 dark:bg-primary-900">
-              <Plus size={20} color={theme.primary[600]} />
+              className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
+              <Plus size={20} color={theme.primary[950]} strokeWidth={2} />
             </TouchableOpacity>
           )}
         </View>
@@ -156,80 +203,77 @@ export default function Lists() {
         <Text className="mb-2 mt-4 font-SpaceGrotesk-Medium text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
           Default
         </Text>
-        <View className="flex-row gap-x-2">
-          {library && (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              className="aspect-square max-h-36 flex-1 rounded-2xl border border-primary-200 bg-primary-100 px-4 py-3 dark:border-primary-800 dark:bg-primary-900">
-              <View className="flex-1 justify-between">
-                {/* Top */}
-                <View className="flex-row items-start justify-between">
-                  <Text
-                    numberOfLines={2}
-                    className="flex-1 pr-2 font-SpaceGrotesk-Bold text-xl uppercase text-primary-900 dark:text-primary-100">
-                    {library.name}
+
+        {library && (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push(`/list/${library.id}`)}
+            className="mb-2 rounded-xl  bg-primary-100 px-4 py-3 dark:bg-primary-900">
+            <View className="mb-3 flex-row items-center justify-between">
+              <Text
+                numberOfLines={1}
+                className="flex-1 pr-2 font-SpaceGrotesk-Bold text-xl uppercase text-primary-900 dark:text-primary-100">
+                {library.name}
+              </Text>
+              <View className="flex-row items-center gap-1.5">
+                {library.is_private && (
+                  <Lock size={14} className="text-primary-500 dark:text-primary-400" />
+                )}
+                <View className="rounded-full bg-primary-200 px-2.5 py-0.5 dark:bg-primary-800">
+                  <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-600 dark:text-primary-400">
+                    {library.item_count} {library.item_count === 1 ? 'item' : 'items'}
                   </Text>
-
-                  {library.is_private && (
-                    <Lock size={14} className="text-primary-500 dark:text-primary-400" />
-                  )}
-                </View>
-
-                <View className="mt-auto flex-row items-center justify-between">
-                  <View>
-                    <Text className="ml-1 text-sm text-primary-500 dark:text-primary-400">
-                      {library.item_count} {library.item_count === 1 ? 'item' : 'items'}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center gap-1">
-                    <Heart size={12} color={theme.primary[700]} />
-                    <Text className="text-sm text-primary-500 dark:text-primary-400">
-                      {library.like_count}
-                    </Text>
-                  </View>
                 </View>
               </View>
-            </TouchableOpacity>
-          )}
+            </View>
 
-          {favorites && (
-            <TouchableOpacity
-              activeOpacity={0.85}
-              className="aspect-square max-h-36 flex-1 rounded-2xl border border-primary-200 bg-primary-100 px-4 py-3 dark:border-primary-800 dark:bg-primary-900">
-              <View className='flex-1 justify-between'>
-                {/* Top */}
-                <View className="flex-row items-start justify-between">
-                  <Text
-                    numberOfLines={2}
-                    className="flex-1 pr-2 font-SpaceGrotesk-Bold text-xl uppercase text-primary-900 dark:text-primary-100">
-                    {favorites.name}
+            <View className="mb-3 flex-row gap-2">
+              {STATUS_TILES.map(({ key, label, badgeBgClass, badgeTextClass }) => (
+                <View
+                  key={key}
+                  className="min-w-0 flex-1 rounded-xl bg-primary-200 px-2 py-2.5 dark:bg-primary-800">
+                  <Text className="mb-1.5 text-center font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+                    {statusCounts[key]}
                   </Text>
-
-                  {favorites.is_private && (
-                    <Lock size={14} className="text-primary-500 dark:text-primary-400" />
-                  )}
+                  <View className={`self-center rounded-full px-2 py-0.5 ${badgeBgClass}`}>
+                    <Text
+                      className={`text-center font-SpaceGrotesk-SemiBold text-[10px] ${badgeTextClass}`}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.85}>
+                      {label}
+                    </Text>
+                  </View>
                 </View>
+              ))}
+            </View>
+          </TouchableOpacity>
+        )}
 
-              
-
-                {/* Bottom Right */}
-                <View className="mt-auto flex-row items-center justify-between">
-                  <View>
-                    <Text className="ml-1 text-sm text-primary-500 dark:text-primary-400">
-                      {favorites.item_count} {favorites.item_count === 1 ? 'item' : 'items'}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center gap-1">
-                    <Heart size={12} color={theme.primary[700]} />
-                    <Text className="text-sm text-primary-500 dark:text-primary-400">
-                      {favorites.like_count}
-                    </Text>
-                  </View>
+        {favorites && (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push(`/list/${favorites.id}`)}
+            className="rounded-xl bg-primary-100 px-4 py-4 dark:bg-primary-900 min-h-16">
+            <View className="flex-row items-center justify-between">
+              <Text
+                numberOfLines={1}
+                className="flex-1 pr-2 font-SpaceGrotesk-Bold text-xl uppercase text-primary-900 dark:text-primary-100">
+                {favorites.name}
+              </Text>
+              <View className="flex-row items-center gap-1.5">
+                {favorites.is_private && (
+                  <Lock size={14} className="text-primary-500 dark:text-primary-400" />
+                )}
+                <View className="rounded-full bg-primary-200 px-2.5 py-0.5 dark:bg-primary-800">
+                  <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-600 dark:text-primary-400">
+                    {favorites.item_count} {favorites.item_count === 1 ? 'item' : 'items'}
+                  </Text>
                 </View>
               </View>
-            </TouchableOpacity>
-          )}
-        </View>
+            </View>
+          </TouchableOpacity>
+        )}
 
         {/* Custom Lists */}
         {customListIds.length > 0 && (
@@ -238,15 +282,14 @@ export default function Lists() {
           </Text>
         )}
 
-        {customListIds.map((id) => {
+        {customListIds.map((id, idx) => {
           const list = listsById[id];
           if (!list) return null;
 
           return (
             <ListRow
               key={id}
-              title={list.name}
-              items={list.item_count}
+              list={list}
               onPress={() => router.push(`/list/${id}`)}
               deletable={!deleteLoading}
               onDelete={() => handleDeleteList(list.id)}
@@ -264,8 +307,7 @@ export default function Lists() {
             {likedLists.map((list) => (
               <ListRow
                 key={list.id}
-                title={list.name}
-                items={list.item_count}
+                list={list}
                 onPress={() => {
                   router.push({
                     pathname: '/list/[id]',

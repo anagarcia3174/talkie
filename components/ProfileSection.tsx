@@ -1,5 +1,5 @@
 import { View, Text, Image, Pressable, TouchableOpacity } from 'react-native';
-import { UserRound } from 'lucide-react-native';
+import { MoreVertical, SquarePen, UserRound } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { haptics } from '~/utils/haptics';
 
@@ -21,7 +21,7 @@ export default function ProfileSection({
   const theme = useTheme();
 
   return (
-    <View className="mb-6 mt-2 rounded-lg bg-primary-200 p-3 dark:bg-primary-900">
+    <View className="mb-6 mt-2 rounded-lg bg-primary-100 p-3 dark:bg-primary-900">
         <View className="mb-4 flex-row items-center">
           {avatar ? (
             <TouchableOpacity activeOpacity={0.9} onPress={() => {
@@ -46,6 +46,7 @@ export default function ProfileSection({
             )}
           </View>
         </View>
+          <View className="my-3 h-[2px] bg-primary-200 dark:bg-primary-800" />
 
         <View>
           <Text className="text-md font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">

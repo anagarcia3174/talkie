@@ -73,7 +73,7 @@ export default function TrendingSection({
                     },
                   });
                 }}
-                className="rounded-2xl border border-primary-200 bg-primary-100 dark:border-primary-800 dark:bg-primary-900"
+                className="rounded-2xl  border-primary-200 bg-primary-100 dark:border-primary-800 dark:bg-primary-900"
                 style={{ width: CARD_WIDTH, height: CARD_HEIGHT, overflow: 'hidden' }}>
                 <Image
                   source={{ uri: `https://image.tmdb.org/t/p/w500${item.backdrop_path}` }}
@@ -125,7 +125,7 @@ export default function TrendingSection({
                       await onAddToLibrary(item.id);
                       setLoadingId(null);
                     }}
-                    className="shrink-0 rounded-lg border border-primary-50/20 bg-primary-950/45 px-3 py-1">
+                    className="shrink-0 rounded-lg  bg-primary-400/20 px-3 py-1">
                     {loadingId === item.id ? (
                       <ActivityIndicator size="small" color="#fafafa" />
                     ) : (

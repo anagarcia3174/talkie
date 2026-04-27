@@ -71,11 +71,11 @@ const LibraryProgressChart = ({ items, libraryId }: LibraryProgressChartProps) =
       <TouchableOpacity
       activeOpacity={0.7}
       onPress={() => router.push(`/list/${libraryId}`)}
-      className="flex-row gap-2">
+      className="flex-row gap-1">
         {STAT_TILES.map(({ key, label, badgeBgClass, badgeTextClass }) => (
           <View
             key={key}
-            className="min-w-0 flex-1 rounded-2xl border border-primary-200 bg-primary-100 px-1.5 py-3 dark:border-primary-800 dark:bg-primary-900">
+            className="min-w-0 flex-1 rounded-2xl  border-primary-100 bg-primary-100 px-1.5 py-3 dark:border-primary-800 dark:bg-primary-900">
             <Text className="mb-2 text-center font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
               {values[key]}
             </Text>

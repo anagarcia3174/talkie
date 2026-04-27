@@ -16,6 +16,7 @@ import {
   UserRound,
   Search as SearchIcon,
   Star,
+  Heart,
 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
@@ -201,7 +202,7 @@ export default function Search() {
       </View>
 
       {/* Bento tile: search + sort | segment */}
-      <View className="mx-4 mb-1 overflow-hidden rounded-2xl border border-primary-200/90 bg-primary-100 shadow-sm dark:border-primary-800 dark:bg-primary-900">
+      <View className="mx-3 mb-1 overflow-hidden rounded-2xl  bg-primary-100 shadow-sm  dark:bg-primary-900">
         <View className="flex-row items-center gap-x-2.5 px-3 py-2">
           <SearchIcon size={17} color={theme.primary[500]} />
           <TextInput
@@ -216,16 +217,16 @@ export default function Search() {
             numberOfLines={1}
           />
           <TouchableOpacity
-            className="rounded-lg bg-primary-200/90 p-1.5 dark:bg-primary-800/90"
+            className="rounded-lg bg-primary-300 p-1.5 dark:bg-primary-800"
             onPress={() => {
               haptics.action();
               setSortModalVisible(true);
             }}>
-            <ArrowDownUp size={17} color={theme.primary[700]} />
+            <ArrowDownUp size={17} color={theme.primary[950]} />
           </TouchableOpacity>
         </View>
         <View className="h-px w-full bg-primary-200 dark:bg-primary-800" />
-        <View className="flex-row gap-0.5 p-1">
+        <View className="flex-row gap-0.5 pt-1 px-1.5 pb-1.5">
           <TouchableOpacity
             onPress={() => onSegmentChange(0)}
             className={`flex-1 items-center rounded-lg rounded-bl-xl ${selected === 0 ? 'bg-primary-300 dark:bg-primary-800' : ''} py-1.5`}>
@@ -294,7 +295,7 @@ export default function Search() {
                       },
                     });
                   }}
-                  className="w-full overflow-hidden rounded-md border border-primary-200 bg-primary-100 dark:border-primary-800 dark:bg-primary-900">
+                  className="w-full overflow-hidden rounded-md bg-primary-100  dark:bg-primary-900">
                   {heroUri ? (
                     <Image
                       source={{ uri: heroUri }}
@@ -359,7 +360,7 @@ export default function Search() {
                   }}
                   activeOpacity={0.85}
                   style={{ flex: 1 }}>
-                  <View className="relative w-full overflow-hidden rounded border border-primary-200 bg-primary-100 p-1 dark:border-primary-800 dark:bg-primary-900">
+                  <View className="relative w-full overflow-hidden rounded  bg-primary-100 p-1 dark:bg-primary-900">
                     {item.poster_path ? (
                       <Image
                         source={{ uri: `https://image.tmdb.org/t/p/w185${item.poster_path}` }}
@@ -432,7 +433,7 @@ export default function Search() {
                       <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
                         {item.like_count}
                       </Text>
-                      <Bookmark
+                      <Heart
                         size={14}
                         color={theme.primary[700]}
                         fill={item.is_liked ? theme.primary[700] : theme.primary[100]}
@@ -467,7 +468,7 @@ export default function Search() {
                   ) : (
                     <View className="flex-1" />
                   )}
-                  <View className="shrink-0 rounded-lg border border-primary-300 bg-primary-200 px-2 py-1 dark:border-primary-700 dark:bg-primary-800">
+                  <View className="shrink-0 rounded-lg bg-primary-200 px-2 py-1 dark:bg-primary-800">
                     <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-400">
                       {item.item_count} {item.item_count === 1 ? 'Item' : 'Items'}
                     </Text>

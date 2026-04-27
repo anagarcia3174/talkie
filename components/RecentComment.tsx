@@ -69,7 +69,7 @@ export default function RecentComment({ comment }: RecentCommentProps) {
           },
         });
       }}
-      className="mr-4 w-80 overflow-hidden rounded-2xl border border-primary-200 bg-primary-100 dark:border-primary-800 dark:bg-primary-900">
+      className="mr-4 w-80 overflow-hidden rounded-2xl  bg-primary-100 dark:bg-primary-900">
       {/* Hero Strip */}
       <View className="relative h-24 w-full overflow-hidden">
         {image && (
@@ -96,7 +96,7 @@ export default function RecentComment({ comment }: RecentCommentProps) {
           </Text>
 
           {episodeLabel && (
-            <View className="self-start rounded-full bg-primary-50/30 px-2 py-0.5">
+            <View className="self-start rounded-full bg-primary-400/20 px-2 py-0.5">
               <Text className="font-SpaceGrotesk-Medium text-xs text-primary-50">
                 {episodeLabel}
               </Text>

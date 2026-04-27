@@ -147,12 +147,12 @@ export default function Profile() {
           Profile
         </Text>
         <TouchableOpacity
-          className="p-2"
+          className="rounded-lg bg-primary-100 p-1 dark:bg-primary-900"
           onPress={() => {
             haptics.action();
             setOverlayVisible(true);
           }}>
-          <MoreVertical size={24} color={theme.primary[950]} />
+          <MoreVertical size={20} color={theme.primary[950]} strokeWidth={2} />
         </TouchableOpacity>
       </View>
       <ScrollView className="px-4">

@@ -55,7 +55,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
                 },
               });
             }}>
-            <View className="relative rounded-2xl border border-primary-200 bg-primary-100 p-1 dark:border-primary-800 dark:bg-primary-900">
+            <View className="relative rounded-2xl  border-primary-200 bg-primary-100 p-1 dark:border-primary-800 dark:bg-primary-900">
               <View className="overflow-hidden rounded-xl bg-primary-200 dark:bg-primary-800">
                 <Image
                   source={{ uri: `https://image.tmdb.org/t/p/w342${item.poster_path}` }}
@@ -72,7 +72,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
                   await onAddToLibrary(item.id);
                   setLoadingId(null);
                 }}
-                className="absolute right-3 top-3 rounded-lg border border-primary-50/20 bg-primary-950/45 p-1"
+                className="absolute right-3 top-3 rounded-lg bg-primary-400/40 p-1"
                 activeOpacity={0.85}>
                 {loadingId === item.id ? (
                   <ActivityIndicator size="small" color="#fafafa" />
