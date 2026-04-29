@@ -84,11 +84,11 @@ export default function MediaScreen() {
   return (
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
       <ImageBackground
-        source={{ uri: backdrop || poster || undefined }}
+        source={{ uri: poster || backdrop || undefined }}
         resizeMode="cover"
         className="h-full w-full">
         <BlurView
-          intensity={theme.isDark ? 90 : 80}
+          intensity={theme.isDark ? 100 : 90}
           tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
           className="flex-1 bg-primary-50/30 dark:bg-primary-950/40">
           <SafeAreaView className="flex-1" edges={['top']}>

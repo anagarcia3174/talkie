@@ -143,7 +143,7 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
             <BlurView
               intensity={40}
               tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
-              className="overflow-hidden rounded-3xl border border-white/15">
+              className="overflow-hidden rounded-3xl border border-primary-200 dark:border-primary-800">
               <View className="px-4 py-4">
                 <ReviewForm mode="create" onSubmit={handleSubmitReview} disabled={!!disabledReason} disabledReason={disabledReason}/>
               </View>

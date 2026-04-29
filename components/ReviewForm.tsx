@@ -117,6 +117,7 @@ export default function ReviewForm({
           placeholderTextColor={theme.primary[500]}
           maxLength={1000}
           editable={!disabled}
+          numberOfLines={2}
         />
 
         <TouchableOpacity

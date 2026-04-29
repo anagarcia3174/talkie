@@ -1,6 +1,15 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, View, TextInput, TouchableOpacity, Image, FlatList } from 'react-native';
-import { ArrowDownUp, Bookmark, ChevronLeft, Globe, Lock, UserRound } from 'lucide-react-native';
+import {
+  ArrowDownUp,
+  Bookmark,
+  ChevronLeft,
+  Globe,
+  Heart,
+  Lock,
+  SquarePen,
+  UserRound,
+} from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import SegmentedControl from '@react-native-segmented-control/segmented-control';
@@ -96,9 +105,9 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
   const getIsPrivateIcon = () => {
     switch (list.is_private) {
       case true:
-        return <Lock size={14} color={theme.primary[600]} />;
+        return <Lock size={14} color={theme.primary[950]} strokeWidth={2.5} />;
       case false:
-        return <Globe size={14} color={theme.primary[600]} />;
+        return <Globe size={14} color={theme.primary[950]} strokeWidth={2.5} />;
       default:
         return null;
     }
@@ -138,179 +147,180 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
         <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           List
         </Text>
-        <TouchableOpacity
-          className=" p-2"
-          disabled={isOwner || loadingAction === 'like-toggle'}
-          onPress={async () => {
-            if (isOwner || loadingAction === 'like-toggle') return;
-            haptics.action();
-            try {
-              setLoadingAction('like-toggle');
+        {isOwner ? (
+          <TouchableOpacity
+            className=" p-2"
+            disabled={!isOwner}
+            onPress={() => isOwner && setListInfoModalVisible(true)}>
+            <SquarePen color={isOwner ? theme.primary[950] : theme.primary[50]} size={20} />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            className=" p-2"
+            disabled={isOwner || loadingAction === 'like-toggle'}
+            onPress={async () => {
+              if (isOwner || loadingAction === 'like-toggle') return;
+              haptics.action();
+              try {
+                setLoadingAction('like-toggle');
 
-              if (list.is_liked) {
-                await actions.unlike();
-              } else {
-                await actions.like();
+                if (list.is_liked) {
+                  await actions.unlike();
+                } else {
+                  await actions.like();
+                }
+              } finally {
+                setLoadingAction(null);
               }
-            } finally {
-              setLoadingAction(null);
-            }
-          }}>
-          <Bookmark
-            color={isOwner ? theme.primary[50] : theme.primary[950]}
-            fill={isOwner ? theme.primary[50] : theme.primary[950]}
-            fillOpacity={list.is_liked ? 1 : 0}
-            size={24}
-          />
-        </TouchableOpacity>
+            }}>
+            <Heart
+              color={list.is_liked ? '#e11d48' : theme.primary[950]}
+              fill={list.is_liked ? '#e11d48' : 'transparent'}
+              fillOpacity={list.is_liked ? 1 : 0}
+              size={20}
+            />
+          </TouchableOpacity>
+        )}
       </View>
       <ScrollView stickyHeaderIndices={[1]}>
         <View>
-          <View className="px-4 pb-2">
-            <TouchableOpacity
-              disabled={!isOwner}
-              onPress={() => isOwner && setListInfoModalVisible(true)}
-              activeOpacity={0.8}>
-              <Text className="mb-2 font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
-                {list.name}
-              </Text>
-
-              {/* Stats row */}
-              <View className="mb-2 flex-row flex-wrap items-center">
-                <Text className="text-sm text-primary-600 dark:text-primary-400">
-                  {list.item_count} {list.item_count === 1 ? 'item' : 'items'}
+          <View className="px-4 pb-3">
+            <View className="overflow-hidden rounded-2xl border border-primary-200 bg-primary-100 dark:border-primary-800 dark:bg-primary-900">
+              {/* Title + owner + description */}
+              <View className="p-4">
+                <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+                  {list.name}
                 </Text>
 
-                <DotSeparator />
+                {!isOwner && list.owner && (
+                  <TouchableOpacity
+                    disabled={list.owner.is_private}
+                    onPress={() => {
+                      haptics.action();
+                      if (list.owner && !list.owner.is_private) {
+                        router.push({
+                          pathname: '/profile/[id]',
+                          params: { id: list.owner.id },
+                        });
+                      }
+                    }}
+                    activeOpacity={0.85}
+                    className="mt-1 flex-row items-center gap-2">
+                    {list.owner.avatar_url ? (
+                      <Image
+                        source={{ uri: getPublicUrl(list.owner.avatar_url) }}
+                        className="h-5 w-5 rounded-full"
+                      />
+                    ) : (
+                      <UserRound size={14} color={theme.primary[600]} />
+                    )}
+                    <Text className="text-sm text-primary-600 dark:text-primary-400">
+                      {list.owner.display_name}
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
-                <View className="flex-row items-center gap-1">
-                  {getIsPrivateIcon()}
-                  <Text className="text-sm capitalize text-primary-600 dark:text-primary-400">
+                {list.description && (
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => setDescExpanded((prev) => !prev)}
+                    className="">
+                    <Text
+                      numberOfLines={descExpanded ? undefined : 2}
+                      className="text-sm text-primary-700 dark:text-primary-300">
+                      {list.description}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Divider */}
+              <View className="mx-2 border-t border-primary-200 dark:border-primary-800" />
+
+              {/* Stats row */}
+              <View className="flex-row">
+                <View className="flex-1 items-center p-3">
+                  <Text className="font-SpaceGrotesk-Bold text-lg text-primary-900 dark:text-primary-100">
+                    {list.item_count}
+                  </Text>
+                  <Text className="text-xs text-primary-600 dark:text-primary-400">items</Text>
+                </View>
+
+                <View className="my-2 border-l border-primary-200 dark:border-primary-800" />
+
+                <View className="flex-1 items-center p-3">
+                  <Text className="font-SpaceGrotesk-Bold text-lg text-primary-900 dark:text-primary-100">
+                    {list.like_count}
+                  </Text>
+                  <Text className="text-xs text-primary-600 dark:text-primary-400">likes</Text>
+                </View>
+
+                <View className="my-2 border-l border-primary-200 dark:border-primary-800" />
+
+                <View className="flex-1 items-center p-3">
+                  <View className=" py-1.5">{getIsPrivateIcon()}</View>
+                  <Text className="text-xs text-primary-600 dark:text-primary-400">
                     {list.is_private ? 'Private' : 'Public'}
                   </Text>
                 </View>
-
-                <DotSeparator />
-
-                <View className="flex-row items-center gap-1">
-                  <Text className="text-sm text-primary-600 dark:text-primary-400">
-                    {list.like_count}
-                  </Text>
-                  <Bookmark size={12} color={theme.primary[600]} />
-                </View>
               </View>
-
-              {/* Description */}
-              {list.description && (
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => setDescExpanded((prev) => !prev)}>
-                  <Text
-                    numberOfLines={descExpanded ? undefined : 2}
-                    ellipsizeMode={descExpanded ? undefined : 'tail'}
-                    className="text-base text-primary-700 dark:text-primary-300">
-                    {list.description}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          </View>
-          {!isOwner && list.owner && (
-            <TouchableOpacity
-              disabled={list.owner.is_private}
-              onPress={() => {
-                haptics.action();
-                if (list.owner && !list.owner.is_private) {
-                  router.push({
-                    pathname: '/profile/[id]',
-                    params: {
-                      id: list.owner.id,
-                    },
-                  });
-                }
-              }}
-              activeOpacity={0.85}
-              className="mx-4 mb-2 rounded-xl border border-primary-200 bg-primary-100 p-3 dark:border-primary-800 dark:bg-primary-900">
-              <View className="flex-row items-center justify-between">
-                {/* Left: avatar + name */}
-                <View className="flex-row items-center gap-3">
-                  {list.owner.avatar_url ? (
-                    <Image
-                      source={{ uri: getPublicUrl(list.owner.avatar_url) }}
-                      className="h-10 w-10 rounded-full"
-                    />
-                  ) : (
-                    <View className="h-10 w-10 items-center justify-center rounded-full bg-primary-300 dark:bg-primary-700">
-                      <UserRound size={16} color={theme.primary[900]} />
-                    </View>
-                  )}
-
-                  <View>
-                    <Text className="font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-100">
-                      {list.owner.display_name}
-                    </Text>
-                    <Text className="text-sm text-primary-600 dark:text-primary-400">
-                      List creator
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Right: action */}
-                <View className="rounded-full border border-primary-300 px-3 py-1.5 dark:border-primary-700">
-                  {list.owner.is_private ? (
-                    <Lock size={14} color={theme.primary[600]} />
-                  ) : (
-                    <Text className="font-SpaceGrotesk-Medium text-sm text-primary-900 dark:text-primary-100">
-                      View
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-        </View>
-        <View className=" bg-primary-50 px-4 pb-3 pt-2 dark:bg-primary-950">
-          <View className="flex-row items-center gap-x-2">
-            <TextInput
-              value={search}
-              onChangeText={setSearch}
-              className="flex-1 rounded-xl border border-primary-700 px-4 py-3 text-primary-950 dark:border-primary-400 dark:text-primary-200"
-              placeholder={`Search through ${list.name}`}
-              placeholderTextColor={theme.primary[500]}
-            />
-            <ArrowDownUp
-              size={22}
-              onPress={() => {
-                haptics.action();
-                setModalVisible(true);
-              }}
-              color={theme.primary[950]}
-            />
-          </View>
-
-          {isOwner && (
-            <View className="mt-3">
-              <SegmentedControl
-                values={FILTERS}
-                selectedIndex={selected}
-                onChange={(e) => {
-                  haptics.action();
-                  setSelected(e.nativeEvent.selectedSegmentIndex as FilterIndex);
-                }}
-                tintColor={theme.primaryOpacity[950]}
-                fontStyle={{
-                  color: theme.primary[600],
-                  fontSize: 15,
-                  fontFamily: 'SpaceGrotesk-Light',
-                }}
-                activeFontStyle={{
-                  color: theme.primary[950],
-                  fontSize: 15,
-                  fontFamily: 'SpaceGrotesk-Medium',
-                }}
-              />
             </View>
-          )}
+          </View>
+        </View>
+        <View className="px-4 pb-3 pt-1">
+          <View className="rounded-2xl border border-primary-200 bg-primary-100 p-3 dark:border-primary-800 dark:bg-primary-900">
+            {/* Search + sort */}
+            <View className="flex-row items-center gap-2">
+              <TextInput
+                value={search}
+                cursorColor={theme.primary[700]}
+                selectionColor={theme.primary[700]}
+                onChangeText={setSearch}
+                placeholder={`Search ${list.name}`}
+                placeholderTextColor={theme.primary[500]}
+                className="flex-1 rounded-xl bg-primary-50 px-4 py-2 text-primary-950 dark:bg-primary-800 dark:text-primary-200"
+              />
+
+              <TouchableOpacity
+                onPress={() => {
+                  haptics.action();
+                  setModalVisible(true);
+                }}>
+                <ArrowDownUp size={20} color={theme.primary[700]} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Filter chips */}
+            {isOwner && (
+              <View className="mt-3 flex-row gap-2">
+                {FILTERS.map((filter, index) => {
+                  const active = selected === index;
+                  return (
+                    <TouchableOpacity
+                      key={filter}
+                      onPress={() => {
+                        haptics.action();
+                        setSelected(index as FilterIndex);
+                      }}
+                      className={`flex-1 items-center rounded-full py-1.5 ${
+                        active
+                          ? 'bg-primary-900 dark:bg-primary-100'
+                          : 'bg-primary-200 dark:bg-primary-800'
+                      }`}>
+                      <Text
+                        className={`text-sm ${
+                          active
+                            ? 'text-primary-50 dark:text-primary-900'
+                            : 'text-primary-700 dark:text-primary-300'
+                        }`}>
+                        {filter}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+          </View>
         </View>
         {listItems.length === 0 && (
           <View className="mt-20 items-center px-4">
@@ -340,35 +350,48 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
             paddingBottom: 24,
             gap: ROW_GAP,
           }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                router.push({
-                  pathname: '/media/[id]',
-                  params: {
-                    id: item.media_id.toString(),
-                    mediaData: JSON.stringify(item.media),
-                  },
-                });
-              }}
-              onLongPress={() => {
-                if (isOwner) {
-                  haptics.action();
-
-                  setActiveItem(item);
-                  setStatusPickerModalVisible(true);
-                }
-              }}
-              delayLongPress={300}
-              style={{ flex: 1, maxWidth: '31%' }}>
-              <View className="overflow-hidden rounded-xl">
-                <Image
-                  source={{ uri: `https://image.tmdb.org/t/p/w342${item.media?.poster_path}` }}
-                  className="h-56 w-full"
-                />
-              </View>
-            </TouchableOpacity>
-          )}
+          renderItem={({ item }) => {
+            const statusBadgeClass =
+              item.status === 'watching'
+                ? 'bg-amber-400'
+                : item.status === 'watched'
+                  ? 'bg-green-400'
+                  : 'bg-red-400';
+            return (
+              <TouchableOpacity
+                onPress={() => {
+                  router.push({
+                    pathname: '/media/[id]',
+                    params: {
+                      id: item.media_id.toString(),
+                      mediaData: JSON.stringify(item.media),
+                    },
+                  });
+                }}
+                onLongPress={() => {
+                  if (isOwner) {
+                    haptics.action();
+                    setActiveItem(item);
+                    setStatusPickerModalVisible(true);
+                  }
+                }}
+                delayLongPress={300}
+                style={{ flex: 1, maxWidth: '31%' }}>
+                <View className="overflow-hidden rounded-2xl bg-primary-100 p-1 dark:bg-primary-900">
+                  {isOwner && item.status && (
+                    <View className={`absolute right-0 top-0 h-5 w-5 ${statusBadgeClass}`} />
+                  )}
+                  <View className="overflow-hidden rounded-xl bg-primary-200 dark:bg-primary-800">
+                    <Image
+                      source={{ uri: `https://image.tmdb.org/t/p/w342${item.media?.poster_path}` }}
+                      style={{ width: '100%', aspectRatio: 2 / 3 }}
+                      resizeMode="cover"
+                    />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }}
         />
       </ScrollView>
 

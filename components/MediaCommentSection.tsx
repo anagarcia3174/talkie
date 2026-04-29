@@ -240,20 +240,15 @@ export default function MediaCommentSection({ mediaType, mediaId, releaseDate }:
           elevation: 10,
         }}>
         <View
+        className='bg-primary-50 dark:bg-primary-950 rounded-3xl'
           style={{
             paddingBottom: insets.bottom * 0.2,
           }}>
           <BlurView
             intensity={40}
             tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
-            className="overflow-hidden rounded-3xl border border-white/15"
-            style={{
-              shadowColor: '#000',
-              shadowOpacity: 0.15,
-              shadowRadius: 14,
-              shadowOffset: { width: 0, height: 6 },
-              elevation: 10,
-            }}>
+              className="overflow-hidden rounded-3xl border border-primary-200 dark:border-primary-800">
+
             <View className="px-4 py-3">
               <CommentForm mode="create" timestamp={timestamp} onSubmit={handleSubmitComment} disabled={!!disabledReason} disabledReason={disabledReason}/>
             </View>
