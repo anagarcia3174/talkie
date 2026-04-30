@@ -76,7 +76,7 @@ export default function ReviewForm({
             <View className="relative items-center justify-center">
               <Star
                 size={30}
-                strokeWidth={1.2}
+                strokeWidth={2}
                 color={star <= rating ? 'gold' : theme.primary[500]}
                 fill={star <= rating ? 'gold' : 'transparent'}
               />
@@ -111,7 +111,7 @@ export default function ReviewForm({
           value={reviewText}
           onChangeText={setReviewText}
           multiline
-          className="flex-1 py-3 font-SpaceGrotesk-Light text-[15px] text-primary-950 dark:text-primary-200"
+          className="flex-1 py-3 font-SpaceGrotesk-Regular text-[16px] text-primary-950 dark:text-primary-50"
           cursorColor={theme.primary[700]}
           selectionColor={theme.primary[700]}
           placeholderTextColor={theme.primary[500]}
@@ -132,9 +132,9 @@ export default function ReviewForm({
           {loading ? (
             <ActivityIndicator size="small" color={theme.primary[950]} />
           ) : mode === 'edit' ? (
-            <Check size={20} strokeWidth={2} color={theme.primary[950]} />
+            <Check size={20} strokeWidth={3} color={theme.primary[950]} />
           ) : (
-            <SendHorizonal size={20} strokeWidth={2} color={theme.primary[950]} />
+            <SendHorizonal size={20} strokeWidth={3} color={theme.primary[950]} />
           )}
         </TouchableOpacity>
       </View>

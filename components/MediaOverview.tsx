@@ -12,9 +12,7 @@ export default function MediaOverview({ synopsis }: MediaOverviewProps) {
 
   return (
     <View className="mb-2 w-full">
-      <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-900 dark:text-primary-50">
-        Overview
-      </Text>
+      
       <Pressable
         onPress={() => {
           Keyboard.dismiss();
@@ -22,7 +20,7 @@ export default function MediaOverview({ synopsis }: MediaOverviewProps) {
         }}>
         <Text
           className="font-SpaceGrotesk-Regular text-primary-700 dark:text-primary-200"
-          numberOfLines={isLong && !overviewExpanded ? 2 : undefined}>
+          numberOfLines={isLong && !overviewExpanded ? 5 : undefined}>
           {synopsis}
         </Text>
       </Pressable>

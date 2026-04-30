@@ -3,12 +3,11 @@ import { Header } from '~/components/Header';
 import TrendingSection from '~/components/TrendingSection';
 import { useMedia } from '~/store/mediaStore';
 import { ScrollView, View } from 'react-native';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import MediaRowSection from '~/components/MediaRowSection';
 import { useEffect, useState } from 'react';
 import LibraryProgressChart from '~/components/LibraryProgressChart';
 import { useLists } from '~/store/listStore';
-
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '~/components/LoadingScreen';
 import ErrorScreen from '~/components/ErrorScreen';

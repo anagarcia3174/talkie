@@ -97,7 +97,7 @@ export default function CommentForm({
         value={commentText}
         onChangeText={setCommentText}
         multiline
-        className="mx-4 max-h-28 flex-1 py-3 font-SpaceGrotesk-Light text-[15px] text-primary-950 dark:text-primary-200"
+        className="mx-4 max-h-28 flex-1 py-3 font-SpaceGrotesk-Regular text-[16px] text-primary-950 dark:text-primary-50"
         cursorColor={theme.primary[700]}
         selectionColor={theme.primary[700]}
         placeholderTextColor={theme.primary[500]}
@@ -122,9 +122,9 @@ export default function CommentForm({
         {loading ? (
           <ActivityIndicator size="small" color={theme.primary[950]} />
         ) : mode === 'edit' ? (
-          <Check size={20} strokeWidth={2} color={theme.primary[950]} />
+          <Check size={20} strokeWidth={3} color={theme.primary[950]} />
         ) : (
-          <SendHorizonal size={20} strokeWidth={2} color={theme.primary[950]} />
+          <SendHorizonal size={20} strokeWidth={3} color={theme.primary[950]} />
         )}
       </TouchableOpacity>
     </View>

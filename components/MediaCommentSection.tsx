@@ -30,7 +30,11 @@ const hasDatePassed = (dateString?: string | null) => {
   return date <= now;
 };
 
-export default function MediaCommentSection({ mediaType, mediaId, releaseDate }: MediaCommentSectionProps) {
+export default function MediaCommentSection({
+  mediaType,
+  mediaId,
+  releaseDate,
+}: MediaCommentSectionProps) {
   const { fetchedComments, fetchCommentsForMedia, postComment } = useComments();
   const { mediaDetails, fetchMediaDetails } = useMedia();
   const { user } = useAuth();
@@ -54,38 +58,36 @@ export default function MediaCommentSection({ mediaType, mediaId, releaseDate }:
 
   useEffect(() => {
     if (!details) return;
-  
+
     // MOVIE
     if (mediaType === 'movie') {
       const runtime = (details as MovieDetails).runtime_minutes;
-  
+
       if (runtime == null) {
         if (timestamp !== 0) setTimestamp(0);
         return;
       }
-  
+
       const maxSeconds = runtime * 60;
       if (timestamp > maxSeconds) {
         setTimestamp(maxSeconds); // or maxSeconds if you prefer clamping
       }
-  
+
       return;
     }
-  
+
     // TV
     const tvDetails = details as TVDetails;
     const episodeList = tvDetails.episodes?.[season];
-    const selectedEpisode = episodeList?.find(
-      (ep) => ep.episode_number === episode
-    );
-  
+    const selectedEpisode = episodeList?.find((ep) => ep.episode_number === episode);
+
     if (!selectedEpisode || selectedEpisode.runtime_minutes == null) {
       if (timestamp !== 0) setTimestamp(0);
       return;
     }
-  
+
     const maxSeconds = selectedEpisode.runtime_minutes * 60;
-  
+
     if (timestamp > maxSeconds) {
       setTimestamp(maxSeconds); // or maxSeconds
     }
@@ -108,7 +110,6 @@ export default function MediaCommentSection({ mediaType, mediaId, releaseDate }:
       });
     }
   }, [mediaId, mediaType, season, episode]);
-
 
   const handleSubmitComment = async (content: string) => {
     const result = await postComment({
@@ -153,39 +154,37 @@ export default function MediaCommentSection({ mediaType, mediaId, releaseDate }:
 
   const disabledReason = useMemo(() => {
     if (!details) return 'Loading...';
-  
+
     // 🎬 MOVIE
     if (mediaType === 'movie') {
       const movieDetails = details as MovieDetails;
-  
+
       if (movieDetails.runtime_minutes == null) {
         return 'Runtime not available yet';
       }
-  
+
       if (!hasDatePassed(releaseDate)) {
         return 'Movie not released yet';
       }
-  
+
       return null;
     }
-  
+
     // 📺 TV
     const tvDetails = details as TVDetails;
     const episodeList = tvDetails.episodes?.[season];
-    const selectedEpisode = episodeList?.find(
-      (ep) => ep.episode_number === episode
-    );
-  
+    const selectedEpisode = episodeList?.find((ep) => ep.episode_number === episode);
+
     if (!selectedEpisode) return 'Episode not available';
-  
+
     if (selectedEpisode.runtime_minutes == null) {
       return 'Episode runtime not available yet';
     }
-  
+
     if (!hasDatePassed(selectedEpisode.air_date)) {
       return 'Episode not aired yet';
     }
-  
+
     return null;
   }, [details, mediaType, season, episode, releaseDate]);
 
@@ -238,22 +237,18 @@ export default function MediaCommentSection({ mediaType, mediaId, releaseDate }:
           bottom: 16,
           zIndex: 1000,
           elevation: 10,
-        }}>
-        <View
-        className='bg-primary-50 dark:bg-primary-950 rounded-3xl'
-          style={{
-            paddingBottom: insets.bottom * 0.2,
-          }}>
-          <BlurView
-            intensity={40}
-            tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
-              className="overflow-hidden rounded-3xl border border-primary-200 dark:border-primary-800">
+          marginBottom: insets.bottom * 0.2,
+        }}
+        className="overflow-hidden rounded-3xl border border-primary-200 dark:border-primary-800 bg-primary-100 px-4 py-3 dark:bg-primary-900">
 
-            <View className="px-4 py-3">
-              <CommentForm mode="create" timestamp={timestamp} onSubmit={handleSubmitComment} disabled={!!disabledReason} disabledReason={disabledReason}/>
-            </View>
-          </BlurView>
-        </View>
+          <CommentForm
+            mode="create"
+            timestamp={timestamp}
+            onSubmit={handleSubmitComment}
+            disabled={!!disabledReason}
+            disabledReason={disabledReason}
+          />
+
       </View>
     </View>
   );

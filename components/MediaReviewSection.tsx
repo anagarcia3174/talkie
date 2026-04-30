@@ -16,7 +16,6 @@ interface MediaReviewSectionProps {
   releaseDate?: string | null;
 }
 
-
 const hasDatePassed = (dateString?: string | null) => {
   if (!dateString) return false;
 
@@ -98,11 +97,11 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
 
   const disabledReason = useMemo(() => {
     if (!releaseDate) return 'Release date unknown';
-  
+
     if (!hasDatePassed(releaseDate)) {
       return 'Not released yet';
     }
-  
+
     return null;
   }, [releaseDate]);
 
@@ -138,17 +137,15 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
             bottom: 16,
             zIndex: 1000,
             elevation: 10,
-          }}>
-          <View style={{ paddingBottom: insets.bottom * 0.2 }}>
-            <BlurView
-              intensity={40}
-              tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
-              className="overflow-hidden rounded-3xl border border-primary-200 dark:border-primary-800">
-              <View className="px-4 py-4">
-                <ReviewForm mode="create" onSubmit={handleSubmitReview} disabled={!!disabledReason} disabledReason={disabledReason}/>
-              </View>
-            </BlurView>
-          </View>
+            marginBottom: insets.bottom * 0.2,
+          }}
+          className="overflow-hidden rounded-3xl border border-primary-200 bg-primary-100 px-4 py-3 dark:border-primary-800 dark:bg-primary-900">
+          <ReviewForm
+            mode="create"
+            onSubmit={handleSubmitReview}
+            disabled={!!disabledReason}
+            disabledReason={disabledReason}
+          />
         </View>
       )}
     </View>

@@ -77,7 +77,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
                 {loadingId === item.id ? (
                   <ActivityIndicator size="small" color="#fafafa" />
                 ) : (
-                  <Plus size={17} color="#fafafa" strokeWidth={2.25} />
+                  <Plus size={17} color="#fafafa" strokeWidth={3} />
                 )}
               </TouchableOpacity>
             </View>

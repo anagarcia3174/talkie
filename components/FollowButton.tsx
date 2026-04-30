@@ -145,7 +145,7 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
         <ActivityIndicator size={isSmall ? 'small' : 'small'} color={iconColor} />
       ) : (
         <>
-          <Icon size={sizeStyles.iconSize} color={iconColor} strokeWidth={2.2} />
+          <Icon size={sizeStyles.iconSize} color={iconColor} strokeWidth={3} />
           <Text className={`font-SpaceGrotesk-Bold ${sizeStyles.text} ${textClassName}`}>
             {label}
           </Text>

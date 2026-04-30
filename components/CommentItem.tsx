@@ -255,7 +255,7 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
                       )}
                       <Heart
                         size={16}
-                        strokeWidth={1.5}
+                        strokeWidth={3}
                         color={comment.is_liked ? '#e11d48' : theme.primary[400]}
                         fill={comment.is_liked ? '#e11d48' : 'transparent'}
                       />

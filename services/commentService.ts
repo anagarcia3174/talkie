@@ -91,14 +91,17 @@ export async function toggleCommentLike(commentId: number): Promise<DataResult<b
       p_comment_id: commentId,
     });
 
-    if (error)
+    if (error) {
       return errorData(error, {
         operation: 'toggle_comment_like',
         table: 'comment_likes',
         isWrite: true,
       });
+    }
     return successData(data);
   } catch (err) {
+    console.log(err);
+
     return errorData(err, {
       operation: 'toggle_comment_like',
       table: 'comment_likes',

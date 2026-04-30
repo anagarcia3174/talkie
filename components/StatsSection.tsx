@@ -44,7 +44,7 @@ export default function StatsSection({ stats, onTilePress }: StatsSectionProps) 
                   {value}
                 </Text>
                 <View className="flex-row items-center gap-1.5">
-                  <Icon size={15} color={color} strokeWidth={2.5}/>
+                  <Icon size={15} color={color} strokeWidth={3}/>
                   <Text className="font-SpaceGrotesk-Regular text-sm text-primary-600 dark:text-primary-400">
                     {label}
                   </Text>

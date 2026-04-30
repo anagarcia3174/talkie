@@ -17,60 +17,79 @@ export default function MediaHeader({ media, onPosterPress }: MediaHeaderProps) 
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
 
   return (
-    <View className="my-2">
-      <View className="flex-row">
-        {/* Poster */}
+    <View className="overflow-hidden rounded-t-2xl border-t border-x border-primary-200 bg-primary-100 dark:border-primary-800 dark:bg-primary-900">
+      {/* Title + overview | poster */}
+      <View className="flex-row py-2 px-2">
         {poster ? (
-          <TouchableOpacity activeOpacity={0.9} onPress={() => {
-            haptics.action();
-            onPosterPress?.()}}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => {
+              haptics.action();
+              onPosterPress?.();
+            }}>
             <Image
               source={{ uri: poster }}
               style={{ height: 144, width: 96 }}
-              className="mr-4 rounded-xl"
+              className="rounded-xl"
               resizeMode="cover"
             />
           </TouchableOpacity>
         ) : (
           <View
             style={{ height: 144, width: 96 }}
-            className="mr-4 items-center justify-center rounded-xl bg-primary-400 dark:bg-primary-800">
+            className="items-center justify-center rounded-xl bg-primary-400 dark:bg-primary-800">
             <ImageOff size={36} color={theme.primary[700]} />
           </View>
         )}
-
-        {/* Title + Meta + Synopsis all in one column */}
-        <View className="flex-1 justify-center">
+        <View className="flex-1 pl-3">
           <Text
             style={{ fontSize: 20 }}
             className="font-SpaceGrotesk-SemiBold text-primary-900 dark:text-primary-50">
             {media.title}
           </Text>
-
-          <View className="mt-1 flex-row items-center">
-            {year && (
-              <>
-                <Text className="font-SpaceGrotesk-Regular text-base text-primary-800 dark:text-primary-100">
-                  {year}
-                </Text>
-                <View className="mx-3 h-1 w-1 rounded-full bg-primary-700 dark:bg-primary-200" />
-              </>
-            )}
-            <Star
-              size={13}
-              color={theme.isDark ? 'gold' : 'yellow'}
-              fill={theme.isDark ? 'gold' : 'yellow'}
-            />
-            <Text className="ml-1 font-SpaceGrotesk-Medium text-base text-primary-900 dark:text-primary-50">
-              {rating}
-            </Text>
-          </View>
-
-          <View className="mt-2">
+          <View className="">
             <MediaOverview synopsis={media.synopsis || 'No overview available.'} />
           </View>
         </View>
+
+        
       </View>
+
+      {/* Divider */}
+      <View className="mx-2 border-t border-primary-200 dark:border-primary-800" />
+
+      {/* Stats row */}
+      <View className="flex-row">
+        <View className="flex-1 items-center p-3">
+          <Text className="font-SpaceGrotesk-Bold text-lg text-primary-900 dark:text-primary-100">
+            {year ?? '—'}
+          </Text>
+          <Text className="text-sm text-primary-600 dark:text-primary-400">released</Text>
+        </View>
+
+        <View className="my-2 border-l border-primary-200 dark:border-primary-800" />
+
+        <View className="flex-1 items-center p-3">
+          <View className="flex-row items-center gap-x-1 py-0.5">
+            <Star size={13} color={theme.isDark ? 'gold' : 'goldenrod'} fill={theme.isDark ? 'gold' : 'goldenrod'} />
+            <Text className="font-SpaceGrotesk-Bold text-lg text-primary-900 dark:text-primary-100">
+              {rating ?? '—'}
+            </Text>
+          </View>
+          <Text className="text-sm text-primary-600 dark:text-primary-400">rating</Text>
+        </View>
+
+        <View className="my-2 border-l border-primary-200 dark:border-primary-800" />
+
+        <View className="flex-1 items-center p-3">
+          <Text className="font-SpaceGrotesk-Bold text-lg text-primary-900 dark:text-primary-100">
+            {media.comment_count}
+          </Text>
+          <Text className="text-sm text-primary-600 dark:text-primary-400">comments</Text>
+        </View>
+      </View>
+      <View className="mx-2 border-t border-primary-200 dark:border-primary-800" />
+
     </View>
   );
 }

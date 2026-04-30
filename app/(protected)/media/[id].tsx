@@ -83,68 +83,62 @@ export default function MediaScreen() {
 
   return (
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
-      <ImageBackground
-        source={{ uri: poster || backdrop || undefined }}
-        resizeMode="cover"
-        className="h-full w-full">
-        <BlurView
-          intensity={theme.isDark ? 100 : 90}
-          tint={theme.isDark ? 'systemThickMaterialDark' : 'systemThickMaterialLight'}
-          className="flex-1 bg-primary-50/30 dark:bg-primary-950/40">
-          <SafeAreaView className="flex-1" edges={['top']}>
-            {/* Header Buttons */}
-            <View className="flex-row justify-between px-4">
-              <TouchableOpacity className="p-2" onPress={() => router.back()}>
-                <ArrowLeft color={theme.primary[950]} size={24} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                disabled={loading}
-                onPress={() => {
-                  haptics.action();
-                  setListModalVisible(true);
-                }}
-                className="p-2">
-                <Plus color={theme.primary[950]} size={24} />
-              </TouchableOpacity>
-            </View>
-            <View className="px-4">
-              <MediaHeader
-                media={media}
-                onPosterPress={() => {
-                  setPreviewImage(`https://image.tmdb.org/t/p/w780${media.poster_path}`);
-                }}
-              />
-              <MediaTabs
-                selectedIndex={selectedSegment}
-                onChange={setSelectedSegment}
-                options={CONTENT_OPTIONS}
-              />
-            </View>
-            <KeyboardAvoidingView
-              className="flex-1 px-2"
-              behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-              {selectedSegment === 0 && <MediaReviewSection mediaId={media.id} releaseDate={media.release_date} />}
-              {selectedSegment === 1 && (
-                <MediaCommentSection
-                  mediaType={media.media_type}
-                  mediaId={media.id}
-                  releaseDate={media.release_date}
-                />
-              )}
-            </KeyboardAvoidingView>
-            <ListSelectionModal
-              visible={listModalVisible}
-              onClose={() => setListModalVisible(false)}
-              onConfirm={handleAddToList}
+      <SafeAreaView className="flex-1" edges={['top']}>
+        {/* Header Buttons */}
+        <View className="flex-row justify-between px-4 mb-2">
+          <TouchableOpacity
+            className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
+            onPress={() => router.back()}>
+            <ArrowLeft color={theme.primary[950]} size={20} strokeWidth={3} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={loading}
+            onPress={() => {
+              haptics.action();
+              setListModalVisible(true);
+            }}
+            className="rounded-md bg-primary-100 p-1  dark:bg-primary-900">
+            <Plus color={theme.primary[950]} size={20} strokeWidth={3} />
+          </TouchableOpacity>
+        </View>
+        <View className="px-4">
+          <MediaHeader
+            media={media}
+            onPosterPress={() => {
+              setPreviewImage(`https://image.tmdb.org/t/p/w780${media.poster_path}`);
+            }}
+          />
+          <MediaTabs
+            selectedIndex={selectedSegment}
+            onChange={setSelectedSegment}
+            options={CONTENT_OPTIONS}
+          />
+        </View>
+        <KeyboardAvoidingView
+          className="flex-1 px-2"
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          {selectedSegment === 0 && (
+            <MediaReviewSection mediaId={media.id} releaseDate={media.release_date} />
+          )}
+          {selectedSegment === 1 && (
+            <MediaCommentSection
+              mediaType={media.media_type}
+              mediaId={media.id}
+              releaseDate={media.release_date}
             />
-            <PosterPreviewModal
-              visible={!!previewImage}
-              onClose={() => setPreviewImage(null)}
-              imageUri={previewImage}
-            />
-          </SafeAreaView>
-        </BlurView>
-      </ImageBackground>
+          )}
+        </KeyboardAvoidingView>
+        <ListSelectionModal
+          visible={listModalVisible}
+          onClose={() => setListModalVisible(false)}
+          onConfirm={handleAddToList}
+        />
+        <PosterPreviewModal
+          visible={!!previewImage}
+          onClose={() => setPreviewImage(null)}
+          imageUri={previewImage}
+        />
+      </SafeAreaView>
     </View>
   );
 }

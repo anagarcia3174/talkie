@@ -182,7 +182,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
                 </Text>
 
                 <Star
-                  strokeWidth={1.5}
+                  strokeWidth={3}
                   size={12}
                   color={theme.isDark ? 'gold' : 'yellow'}
                   fill={theme.isDark ? 'gold' : 'yellow'}
@@ -217,7 +217,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
                     )}
                     <Heart
                       size={16}
-                      strokeWidth={1.5}
+                      strokeWidth={3}
                       color={review.is_liked ? '#e11d48' : theme.primary[400]}
                       fill={review.is_liked ? '#e11d48' : 'transparent'}
                     />
