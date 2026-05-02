@@ -6,6 +6,7 @@ import { Media } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { haptics } from '~/utils/haptics';
+import { useTheme } from '~/hooks/useTheme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 /** Full width under `px-4` (16 + 16) */
@@ -27,6 +28,7 @@ export default function TrendingSection({
   onAddToLibrary,
   title,
 }: TrendingSectionProps) {
+  const theme = useTheme();
   const router = useRouter();
   const [isScrolling, setIsScrolling] = useState(false);
   const [loadingId, setLoadingId] = useState<number | null>(null);
@@ -110,7 +112,7 @@ export default function TrendingSection({
                       <Text className="font-SpaceGrotesk-Regular text-sm text-primary-300">
                         {item.release_date?.split('-')[0]}
                       </Text>
-                      <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                      <Star size={14} color={theme.isDark ? 'gold' : 'goldenrod' } fill={theme.isDark ? 'gold' : 'goldenrod' } />
                       <Text className="font-SpaceGrotesk-Regular text-sm text-primary-300">
                         {item.vote_average?.toFixed(1)}
                       </Text>

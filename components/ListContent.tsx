@@ -140,23 +140,23 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950" edges={['top']}>
       {/* Collapsing Header */}
-      <View className="flex-row items-center justify-between  px-2">
-        <TouchableOpacity onPress={() => router.back()} className=" p-2">
-          <ChevronLeft color={theme.primary[950]} size={24} />
+      <View className="flex-row items-center justify-between px-4 mb-2">
+        <TouchableOpacity onPress={() => router.back()} className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
+          <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2}/>
         </TouchableOpacity>
         <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           List
         </Text>
         {isOwner ? (
           <TouchableOpacity
-            className=" p-2"
+            className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
             disabled={!isOwner}
             onPress={() => isOwner && setListInfoModalVisible(true)}>
-            <SquarePen color={isOwner ? theme.primary[950] : theme.primary[50]} size={20} />
+            <SquarePen color={isOwner ? theme.primary[950] : theme.primary[50]} size={20} strokeWidth={2}/>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            className=" p-2"
+            className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
             disabled={isOwner || loadingAction === 'like-toggle'}
             onPress={async () => {
               if (isOwner || loadingAction === 'like-toggle') return;

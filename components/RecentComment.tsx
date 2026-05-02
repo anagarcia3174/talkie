@@ -116,7 +116,7 @@ export default function RecentComment({ comment }: RecentCommentProps) {
             />
           ) : (
             <View className="mr-2 h-8 w-8 items-center justify-center rounded-full bg-primary-600 dark:bg-primary-300">
-              <UserRound size={18} strokeWidth={3} color={theme.primary[50]} />
+              <UserRound size={18} strokeWidth={2} color={theme.primary[50]} />
             </View>
           )}
 
@@ -150,7 +150,7 @@ export default function RecentComment({ comment }: RecentCommentProps) {
         <View className="flex-row items-center gap-1">
           <Heart
             size={12}
-            strokeWidth={3}
+            strokeWidth={2}
             color={comment.is_liked ? '#e11d48' : theme.primary[400]}
             fill={comment.is_liked ? '#e11d48' : 'transparent'}
           />

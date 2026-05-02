@@ -333,11 +333,11 @@ export default function Search() {
                       </Text>
 
                       <View className="mt-1 flex-row flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <Text className="font-SpaceGrotesk-Regular text-sm text-primary-300">
+                        <Text className="font-SpaceGrotesk-Regular text-md text-primary-300">
                           {top.release_date?.split('-')[0]}
                         </Text>
-                        <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                        <Text className="font-SpaceGrotesk-Regular text-sm text-primary-300">
+                        <Star size={14} color={theme.isDark ? 'gold' : 'goldenrod'} fill={theme.isDark ? 'gold' : 'goldenrod'} />
+                        <Text className="font-SpaceGrotesk-Regular text-md text-primary-300">
                           {top.vote_average?.toFixed(1)}
                         </Text>
                       </View>
@@ -377,17 +377,17 @@ export default function Search() {
                     )}
 
                     {item.vote_average != null && (
-                      <View className="absolute right-1.5 top-2 flex-row items-center gap-x-0.5 rounded-full bg-primary-950/80 px-1 py-0.5">
-                        <Star size={8} color="#fbbf24" fill="#fbbf24" />
-                        <Text className="font-SpaceGrotesk-Medium text-xs text-primary-50">
+                      <View className="absolute right-1.5 top-2 flex-row items-center gap-x-0.5 rounded-full bg-primary-950/80 px-1.5 py-0.5">
+                        <Star size={10} color={theme.isDark ? 'gold' : 'goldenrod'} fill={theme.isDark ? 'gold' : 'goldenrod'} />
+                        <Text className="font-SpaceGrotesk-Medium text-sm text-primary-50">
                           {item.vote_average.toFixed(1)}
                         </Text>
                       </View>
                     )}
 
                     {item.release_date && (
-                      <View className="absolute bottom-2 left-2 rounded-full bg-primary-950/80 px-1 py-0.5">
-                        <Text className="font-SpaceGrotesk-Medium text-xs text-primary-50">
+                      <View className="absolute bottom-2 left-2 rounded-full bg-primary-950/80 px-1.5 py-0.5">
+                        <Text className="font-SpaceGrotesk-Medium text-sm text-primary-50">
                           {item.release_date.split('-')[0]}
                         </Text>
                       </View>

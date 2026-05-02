@@ -152,7 +152,7 @@ export default function Profile() {
             haptics.action();
             setOverlayVisible(true);
           }}>
-          <MoreVertical size={20} color={theme.primary[950]} strokeWidth={3} />
+          <MoreVertical size={20} color={theme.primary[950]} strokeWidth={2} />
         </TouchableOpacity>
       </View>
       <ScrollView className="px-4">

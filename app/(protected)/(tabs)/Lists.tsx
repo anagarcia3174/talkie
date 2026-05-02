@@ -191,7 +191,7 @@ export default function Lists() {
                 setCreateListModalVisible(true);
               }}
               className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
-              <Plus size={20} color={theme.primary[950]} strokeWidth={3} />
+              <Plus size={20} color={theme.primary[950]} strokeWidth={2} />
             </TouchableOpacity>
           )}
         </View>

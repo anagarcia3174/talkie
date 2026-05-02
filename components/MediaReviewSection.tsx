@@ -115,31 +115,29 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
       ) : error ? (
         <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
-        <FlatList
-          style={{ flex: 1 }}
-          data={sortedReviews}
-          keyExtractor={(item) => item.id.toString()}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 165,
-          }}
-          renderItem={({ item }) => <ReviewItem review={item} isUser={item.user_id === user?.id} />}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        />
+        <View  className={`mx-4 flex-1 overflow-hidden ${sortedReviews.length > 0 ? 'rounded-t-2xl bg-primary-100 dark:bg-primary-900' : ''}`}>
+          <FlatList
+            style={{ flex: 1 }}
+            data={sortedReviews}
+            keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: 165,
+            }}
+            renderItem={({ item }) => (
+              <ReviewItem review={item} isUser={item.user_id === user?.id} />
+            )}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          />
+        </View>
       )}
       {!hasReviewed && (
         <View
           style={{
-            position: 'absolute',
-            left: 4,
-            right: 4,
-            bottom: 16,
-            zIndex: 1000,
-            elevation: 10,
-            marginBottom: insets.bottom * 0.2,
+            marginBottom: insets.bottom * 0.3,
           }}
-          className="overflow-hidden rounded-3xl border border-primary-200 bg-primary-100 px-4 py-3 dark:border-primary-800 dark:bg-primary-900">
+          className="overflow-hidden border-t border-primary-200 bg-primary-50 px-3 py-4 dark:border-primary-800 dark:bg-primary-950">
           <ReviewForm
             mode="create"
             onSubmit={handleSubmitReview}

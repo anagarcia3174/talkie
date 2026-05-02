@@ -78,15 +78,14 @@ export default function TimestampPicker({
   const isDisabled = durationSeconds === 0;
 
   return (
-    <View className="">
-      {/* ---------------- TV PICKERS ---------------- */}
+    <View className="flex-row items-center gap-2  rounded-t-2xl bg-primary-100 px-4 py-2 dark:bg-primary-900">
       {mediaType === 'tv' && tvDetails && (
-        <View className="mb-3 flex-row gap-1">
+        <>
           <CompactDropdown
-            label="Season"
+            label="S?"
             items={tvDetails.seasons}
             selectedValue={selectedSeason}
-            getLabel={(s) => `Season ${s.season_number}`}
+            getLabel={(s) => `S${s.season_number}`}
             getValue={(s) => s.season_number}
             onSelect={(val) => {
               onSeasonChange?.(val);
@@ -96,10 +95,10 @@ export default function TimestampPicker({
           />
           {selectedSeason !== undefined && availableEpisodes.length > 0 && (
             <CompactDropdown
-              label="Episode"
+              label="E?"
               items={availableEpisodes}
               selectedValue={selectedEpisode}
-              getLabel={(ep) => `Episode ${ep.episode_number}`}
+              getLabel={(ep) => `E${ep.episode_number}`}
               getValue={(ep) => ep.episode_number}
               onSelect={(val) => {
                 onEpisodeChange?.(val);
@@ -108,32 +107,28 @@ export default function TimestampPicker({
               disabled={pickersDisabled}
             />
           )}
-        </View>
+        </>
       )}
-
-      {/* ---------------- SLIDER ---------------- */}
-      <View className="flex-row items-center gap-x-2">
-        <Text className="text-center font-SpaceGrotesk-Regular text-sm text-primary-700 dark:text-primary-400">
+      {mediaType === 'movie' && (
+        <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
           {formatTime(selectedTimestamp)}
         </Text>
-
-        <Slider
-          style={styles.slider}
-          minimumValue={0}
-          maximumValue={durationSeconds}
-          step={1}
-          value={selectedTimestamp}
-          onValueChange={onTimestampChange}
-          disabled={isDisabled}
-          minimumTrackTintColor={theme.primary[700]}
-          maximumTrackTintColor={theme.primaryOpacity[700]}
-          thumbTintColor={theme.primary[700]}
-        />
-
-        <Text className="text-center font-SpaceGrotesk-Regular text-sm text-primary-700 dark:text-primary-400">
-          {formatTime(durationSeconds)}
-        </Text>
-      </View>
+      )}
+      <Slider
+        style={styles.slider}
+        minimumValue={0}
+        maximumValue={durationSeconds}
+        step={1}
+        value={selectedTimestamp}
+        onValueChange={onTimestampChange}
+        disabled={isDisabled}
+        minimumTrackTintColor={theme.primary[800]}
+        maximumTrackTintColor={theme.primaryOpacity[800]}
+        thumbTintColor={theme.primary[800]}
+      />
+      <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
+        {formatTime(mediaType === 'tv' ? selectedTimestamp : durationSeconds)}
+      </Text>
     </View>
   );
 }

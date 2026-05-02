@@ -89,7 +89,7 @@ export default function MediaScreen() {
           <TouchableOpacity
             className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
             onPress={() => router.back()}>
-            <ArrowLeft color={theme.primary[950]} size={20} strokeWidth={3} />
+            <ArrowLeft color={theme.primary[950]} size={20} strokeWidth={2} />
           </TouchableOpacity>
           <TouchableOpacity
             disabled={loading}
@@ -98,7 +98,7 @@ export default function MediaScreen() {
               setListModalVisible(true);
             }}
             className="rounded-md bg-primary-100 p-1  dark:bg-primary-900">
-            <Plus color={theme.primary[950]} size={20} strokeWidth={3} />
+            <Plus color={theme.primary[950]} size={20} strokeWidth={2} />
           </TouchableOpacity>
         </View>
         <View className="px-4">
@@ -115,7 +115,7 @@ export default function MediaScreen() {
           />
         </View>
         <KeyboardAvoidingView
-          className="flex-1 px-2"
+          className="flex-1 "
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           {selectedSegment === 0 && (
             <MediaReviewSection mediaId={media.id} releaseDate={media.release_date} />

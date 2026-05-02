@@ -190,7 +190,7 @@ export default function MediaCommentSection({
 
   return (
     <View className="flex-1">
-      <View className="px-2">
+      <View className="px-4">
         {!details || detailsLoading ? (
           <TimestampSkeleton />
         ) : details ? (
@@ -214,41 +214,36 @@ export default function MediaCommentSection({
       ) : error ? (
         <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
-        <FlatList
-          style={{ flex: 1 }}
-          data={comments}
-          keyExtractor={(item) => item.id.toString()}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 110,
-          }}
-          renderItem={({ item, index }) => (
-            <CommentItem comment={item} isUser={item.user_id === user?.id} />
-          )}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        />
+        <View className={`mx-4 flex-1 overflow-hidden ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
+          <FlatList
+            style={{ flex: 1 }}
+            data={comments}
+            keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 110 }}
+            ItemSeparatorComponent={() => (
+              <View className="mx-2 h-px bg-primary-200 dark:bg-primary-700" />
+            )}
+            renderItem={({ item }) => (
+              <CommentItem comment={item} isUser={item.user_id === user?.id} />
+            )}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          />
+        </View>
       )}
       <View
         style={{
-          position: 'absolute',
-          left: 4,
-          right: 4,
-          bottom: 16,
-          zIndex: 1000,
-          elevation: 10,
-          marginBottom: insets.bottom * 0.2,
+          marginBottom: insets.bottom * 0.3,
         }}
-        className="overflow-hidden rounded-3xl border border-primary-200 dark:border-primary-800 bg-primary-100 px-4 py-3 dark:bg-primary-900">
-
-          <CommentForm
-            mode="create"
-            timestamp={timestamp}
-            onSubmit={handleSubmitComment}
-            disabled={!!disabledReason}
-            disabledReason={disabledReason}
-          />
-
+        className="overflow-hidden border-t border-primary-200 bg-primary-50 py-4 px-3 dark:border-primary-800 dark:bg-primary-950">
+        <CommentForm
+          mode="create"
+          timestamp={timestamp}
+          onSubmit={handleSubmitComment}
+          disabled={!!disabledReason}
+          disabledReason={disabledReason}
+        />
       </View>
     </View>
   );

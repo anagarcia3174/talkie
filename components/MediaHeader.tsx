@@ -17,7 +17,7 @@ export default function MediaHeader({ media, onPosterPress }: MediaHeaderProps) 
   const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
 
   return (
-    <View className="overflow-hidden rounded-t-2xl border-t border-x border-primary-200 bg-primary-100 dark:border-primary-800 dark:bg-primary-900">
+    <View className="overflow-hidden rounded-t-2xl  bg-primary-100 dark:bg-primary-900">
       {/* Title + overview | poster */}
       <View className="flex-row py-2 px-2">
         {poster ? (

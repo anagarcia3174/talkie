@@ -1,6 +1,6 @@
 import { Check, SendHorizonal, UserRound } from 'lucide-react-native';
 import { useState } from 'react';
-import { ActivityIndicator, Image, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useTheme } from '~/hooks/useTheme';
 import { useProfile } from '~/store/profileStore';
@@ -78,38 +78,45 @@ export default function CommentForm({
   };
 
   return (
-    <View className="flex-row items-end">
+    <View className="flex-row items-center gap-2">
       {/* Avatar */}
       {showAvatar &&
         (profile?.avatar_url ? (
-          <Image source={{ uri: profile.avatar_url }} className="h-11 w-11 rounded-full" />
+          <Image source={{ uri: profile.avatar_url }} className="h-10 w-10 rounded-full" />
         ) : (
-          <View className="h-11 w-11 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
-            <UserRound size={16} color={theme.primary[900]} />
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-primary-300 dark:bg-primary-700">
+            <UserRound size={18} color={theme.primary[600]} />
           </View>
         ))}
 
-      {/* Input */}
-      <TextInput
-        placeholder={
-          disabledReason ? disabledReason : `Leave a comment at ${formatTime(timestamp)}...`
-        }
-        value={commentText}
-        onChangeText={setCommentText}
-        multiline
-        className="mx-4 max-h-28 flex-1 py-3 font-SpaceGrotesk-Regular text-[16px] text-primary-950 dark:text-primary-50"
-        cursorColor={theme.primary[700]}
-        selectionColor={theme.primary[700]}
-        placeholderTextColor={theme.primary[500]}
-        maxLength={1000}
-        returnKeyType="done"
-        submitBehavior="blurAndSubmit"
-        onFocus={() => setOverviewExpanded(false)}
-        numberOfLines={2}
-        editable={!disabled}
-      />
+      {/* Pill input */}
+      <View className="flex-1 flex-row items-center gap-2 rounded-full border border-primary-200 bg-primary-100 px-3 py-2 dark:border-primary-800 dark:bg-primary-900">
+        {/* Timestamp badge */}
+        <View
+          className={`rounded-full px-2 py-0.5 ${disabled ? 'border-primary-400 dark:border-primary-600' : ' dark:bg-primary-800 bg-primary-200'}`}>
+          <Text
+            className={`font-SpaceGrotesk-Bold text-[11px] ${disabled ? 'text-primary-400 dark:text-primary-600' : 'text-primary-950 dark:text-primary-50'}`}>
+            {formatTime(timestamp)}
+          </Text>
+        </View>
 
-      {/* Send Button */}
+        <TextInput
+          placeholder={disabledReason ?? 'Add a comment...'}
+          value={commentText}
+          onChangeText={setCommentText}
+          className="flex-1 font-SpaceGrotesk-Regular text-md text-primary-950 dark:text-primary-50"
+          cursorColor={theme.primary[700]}
+          selectionColor={theme.primary[700]}
+          placeholderTextColor={theme.primary[500]}
+          maxLength={1000}
+          returnKeyType="done"
+          submitBehavior="blurAndSubmit"
+          onFocus={() => setOverviewExpanded(false)}
+          editable={!disabled}
+        />
+      </View>
+
+      {/* Send button */}
       <TouchableOpacity
         onPress={() => {
           if (!disabled) {
@@ -118,13 +125,18 @@ export default function CommentForm({
           }
         }}
         disabled={loading || (mode === 'edit' && !isDirty) || disabled}
-        className="h-11 w-11 items-center justify-center rounded-full">
+        className="h-10 w-10 items-center justify-center "
+        hitSlop={4}>
         {loading ? (
-          <ActivityIndicator size="small" color={theme.primary[950]} />
+          <ActivityIndicator size="small" color={theme.primary[700]} />
         ) : mode === 'edit' ? (
-          <Check size={20} strokeWidth={3} color={theme.primary[950]} />
+          <Check size={20} strokeWidth={2} color={theme.primary[950]} />
         ) : (
-          <SendHorizonal size={20} strokeWidth={3} color={theme.primary[950]} />
+          <SendHorizonal
+            size={20}
+            strokeWidth={2}
+            color={disabled ? theme.primary[400] : theme.primary[950]}
+          />
         )}
       </TouchableOpacity>
     </View>
