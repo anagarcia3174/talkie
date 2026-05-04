@@ -2,7 +2,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, View, TextInput, TouchableOpacity, Image, FlatList } from 'react-native';
 import {
   ArrowDownUp,
-  Bookmark,
   ChevronLeft,
   Globe,
   Heart,
@@ -11,8 +10,7 @@ import {
   UserRound,
 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useState } from 'react';
-import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import { act, useState } from 'react';
 import { useRouter } from 'expo-router';
 import SortByModal from '~/components/SortByModal';
 import { ListItemWithMedia, List, Status, ListWithMeta } from '~/types/supabaseTypes';
@@ -20,9 +18,8 @@ import StatusPickerModal from './StatusPickerModal';
 import ListInfoModal from './ListInfoModal';
 import { getPublicUrl } from '~/utils/storageUrl';
 import { ScrollView } from 'react-native-gesture-handler';
-
 import { haptics } from '~/utils/haptics';
-import DeleteItemModal from './DeleteItemModal';
+import ConfirmModal from './ConfirmModal';
 
 interface ListActions {
   updateItemStatus: (item: ListItemWithMedia, status: Status) => Promise<void>;
@@ -140,9 +137,11 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950" edges={['top']}>
       {/* Collapsing Header */}
-      <View className="flex-row items-center justify-between px-4 mb-2">
-        <TouchableOpacity onPress={() => router.back()} className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
-          <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2}/>
+      <View className="mb-2 flex-row items-center justify-between px-4">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
+          <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
         </TouchableOpacity>
         <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           List
@@ -152,7 +151,11 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
             className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
             disabled={!isOwner}
             onPress={() => isOwner && setListInfoModalVisible(true)}>
-            <SquarePen color={isOwner ? theme.primary[950] : theme.primary[50]} size={20} strokeWidth={2}/>
+            <SquarePen
+              color={isOwner ? theme.primary[950] : theme.primary[50]}
+              size={20}
+              strokeWidth={2}
+            />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -438,20 +441,34 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
           setDeleteListModalVisible(true);
         }}
       />
-      <DeleteItemModal
-        item={activeItem?.media.media_type}
+      <ConfirmModal
+        title={`Remove ${activeItem?.media?.media_type === 'movie' ? 'Movie' : 'TV Show'}?`}
+        message={`Are you sure you want to remove this ${activeItem?.media?.media_type === 'movie' ? 'movie' : 'TV show'} from the list?`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
         visible={deleteItemModalVisible}
-        onClose={(deleteItem: boolean) => {
+        onConfirm={() => {
           setDeleteItemModalVisible(false);
-          if (deleteItem) handleItemDelete();
+          handleItemDelete();
         }}
+        onCancel={() => {
+          setDeleteItemModalVisible(false);
+        }}
+        variant="danger"
       />
-      <DeleteItemModal
-        item="list"
+      <ConfirmModal
+        title="Delete List?"
+        message="Are you sure you want to delete this list? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
         visible={deleteListModalVisible}
-        onClose={(deleteItem: boolean) => {
+        onConfirm={() => {
           setDeleteListModalVisible(false);
-          if (deleteItem) handleDeleteList();
+          handleDeleteList();
+        }}
+        onCancel={() => {
+          setDeleteListModalVisible(false);
         }}
       />
     </SafeAreaView>

@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 import CommentEditModal from './CommentEditModal';
 import ReportModal from './ReportModal';
 import { haptics } from '~/utils/haptics';
-import DeleteItemModal from './DeleteItemModal';
+import ConfirmModal from './ConfirmModal';
 
 interface CommentItemProps {
   comment: CommentWithUser;
@@ -153,104 +153,104 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
     <>
       <View className={isReply ? 'py-4 pl-14 pr-4' : 'p-4'}>
         <View className="flex-row">
-            {/* Left column: all comment content */}
-            <View className="flex-1">
-              <View className="flex-row items-center gap-3">
-                <Pressable
-                  disabled={isUser}
-                  onPress={() =>
-                    router.push({ pathname: '/profile/[id]', params: { id: comment.user_id } })
-                  }
-                  hitSlop={8}>
-                  {hasAvatar ? (
-                    <Image source={{ uri }} className="h-9 w-9 rounded-full bg-primary-300" />
-                  ) : (
-                    <View className="flex h-9 w-9 items-center justify-center rounded-full border border-primary-300 bg-primary-200 dark:border-primary-700 dark:bg-primary-600">
-                      <UserRound size={20} color={theme.primary[700]} />
+          {/* Left column: all comment content */}
+          <View className="flex-1">
+            <View className="flex-row items-center gap-3">
+              <Pressable
+                disabled={isUser}
+                onPress={() =>
+                  router.push({ pathname: '/profile/[id]', params: { id: comment.user_id } })
+                }
+                hitSlop={8}>
+                {hasAvatar ? (
+                  <Image source={{ uri }} className="h-9 w-9 rounded-full bg-primary-300" />
+                ) : (
+                  <View className="flex h-9 w-9 items-center justify-center rounded-full border border-primary-300 bg-primary-200 dark:border-primary-700 dark:bg-primary-600">
+                    <UserRound size={20} color={theme.primary[700]} />
+                  </View>
+                )}
+              </Pressable>
+              <View>
+                <View className="flex-row items-center gap-2">
+                  <Pressable
+                    disabled={isUser}
+                    onPress={() =>
+                      router.push({ pathname: '/profile/[id]', params: { id: comment.user_id } })
+                    }
+                    hitSlop={8}>
+                    <Text className="text-sm font-semibold text-primary-950 dark:text-primary-50">
+                      {comment.owner.display_name}
+                    </Text>
+                  </Pressable>
+                  {isUser && (
+                    <View className="rounded-full bg-primary-600/20 px-2 py-0.5">
+                      <Text className="font-SpaceGrotesk-Bold text-[9px] tracking-wide text-primary-700 dark:text-primary-300">
+                        YOU
+                      </Text>
                     </View>
                   )}
-                </Pressable>
-                <View>
-                  <View className="flex-row items-center gap-2">
-                    <Pressable
-                      disabled={isUser}
-                      onPress={() =>
-                        router.push({ pathname: '/profile/[id]', params: { id: comment.user_id } })
-                      }
-                      hitSlop={8}>
-                      <Text className="text-sm font-semibold text-primary-950 dark:text-primary-50">
-                        {comment.owner.display_name}
+                  {comment.is_spoiler && (
+                    <View className="flex-row items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5">
+                      <AlertTriangle size={9} color={theme.isDark ? '#fbbf24' : '#d97706'} />
+                      <Text className="font-SpaceGrotesk-Bold text-[9px] tracking-wide text-amber-600 dark:text-amber-400">
+                        SPOILER
                       </Text>
-                    </Pressable>
-                    {isUser && (
-                      <View className="rounded-full bg-primary-600/20 px-2 py-0.5">
-                        <Text className="font-SpaceGrotesk-Bold text-[9px] tracking-wide text-primary-700 dark:text-primary-300">
-                          YOU
-                        </Text>
-                      </View>
-                    )}
-                    {comment.is_spoiler && (
-                      <View className="flex-row items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5">
-                        <AlertTriangle size={9} color={theme.isDark ? '#fbbf24' : '#d97706'} />
-                        <Text className="font-SpaceGrotesk-Bold text-[9px] tracking-wide text-amber-600 dark:text-amber-400">
-                          SPOILER
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
-                    {formatRelativeTime(comment.created_at)}
-                  </Text>
+                    </View>
+                  )}
                 </View>
+                <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
+                  {formatRelativeTime(comment.created_at)}
+                </Text>
               </View>
-              <Text className="mt-3 font-SpaceGrotesk-Light text-sm leading-5 text-primary-800 dark:text-primary-200">
-                {comment.timestamp_seconds !== null && (
-                  <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">
-                    {`${formatTimestamp(comment.timestamp_seconds)} — `}
-                  </Text>
-                )}
-                {comment.content ?? (
-                  <Text className="text-primary-500 dark:text-primary-400">No content</Text>
-                )}
-              </Text>
             </View>
+            <Text className="mt-3 font-SpaceGrotesk-Light text-sm leading-5 text-primary-800 dark:text-primary-200">
+              {comment.timestamp_seconds !== null && (
+                <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">
+                  {`${formatTimestamp(comment.timestamp_seconds)} — `}
+                </Text>
+              )}
+              {comment.content ?? (
+                <Text className="text-primary-500 dark:text-primary-400">No content</Text>
+              )}
+            </Text>
+          </View>
 
-            {/* Right column: three dots top, like bottom */}
-            <View className="ml-2 items-end">
+          {/* Right column: three dots top, like bottom */}
+          <View className="ml-2 items-end">
+            <Pressable
+              onPress={() => {
+                haptics.action();
+                setOptionsVisible(true);
+              }}
+              hitSlop={8}>
+              <MoreHorizontal size={18} color={theme.primary[500]} />
+            </Pressable>
+            {!isUser && (
               <Pressable
+                disabled={likeLoading}
                 onPress={() => {
                   haptics.action();
-                  setOptionsVisible(true);
+                  handleCommentLike();
                 }}
-                hitSlop={8}>
-                <MoreHorizontal size={18} color={theme.primary[500]} />
+                hitSlop={8}
+                style={{ marginTop: 'auto' }}>
+                <View className="flex-row items-end gap-x-1">
+                  {comment.like_count > 0 && (
+                    <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
+                      {comment.like_count}
+                    </Text>
+                  )}
+                  <Heart
+                    size={16}
+                    strokeWidth={2}
+                    color={comment.is_liked ? '#e11d48' : theme.primary[400]}
+                    fill={comment.is_liked ? '#e11d48' : 'transparent'}
+                  />
+                </View>
               </Pressable>
-              {!isUser && (
-                <Pressable
-                  disabled={likeLoading}
-                  onPress={() => {
-                    haptics.action();
-                    handleCommentLike();
-                  }}
-                  hitSlop={8}
-                  style={{ marginTop: 'auto' }}>
-                  <View className="items-end flex-row gap-x-1">
-                    {comment.like_count > 0 && (
-                      <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
-                        {comment.like_count}
-                      </Text>
-                    )}
-                    <Heart
-                      size={16}
-                      strokeWidth={2}
-                      color={comment.is_liked ? '#e11d48' : theme.primary[400]}
-                      fill={comment.is_liked ? '#e11d48' : 'transparent'}
-                    />
-                  </View>
-                </Pressable>
-              )}
-            </View>
+            )}
           </View>
+        </View>
       </View>
       <ItemOptions
         visible={optionsVisible}
@@ -293,13 +293,20 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
         onClose={() => setReportModalVisible(false)}
         onSubmit={handleCommentReport}
       />
-      <DeleteItemModal
-        item="comment"
+      <ConfirmModal
+        title="Delete Comment?"
+        message="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
         visible={deleteItemModalVisible}
-        onClose={(deleteItem: boolean) => {
+        onCancel={() => {
           setDeleteItemModalVisible(false);
-          if (deleteItem) handleCommentDelete();
         }}
+        onConfirm={() => {
+          setDeleteItemModalVisible(false);
+          handleCommentDelete();
+        }}
+        variant="danger"
       />
     </>
   );

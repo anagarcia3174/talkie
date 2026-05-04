@@ -190,7 +190,7 @@ export default function MediaSearchResults({
               onPress={() => onPressItem(item)}
               activeOpacity={0.85}
               style={{ flex: 1 }}>
-              <View className="relative w-full overflow-hidden rounded  bg-primary-100 p-1 dark:bg-primary-900">
+              <View className="relative w-full overflow-hidden rounded  bg-primary-100 px-1 pt-1 dark:bg-primary-900">
                 {item.poster_path ? (
                   <Image
                     source={{ uri: `https://image.tmdb.org/t/p/w185${item.poster_path}` }}
@@ -206,26 +206,20 @@ export default function MediaSearchResults({
                   </View>
                 )}
 
-                {item.vote_average != null && (
-                  <View className="absolute right-1.5 top-2 flex-row items-center gap-x-0.5 rounded-full bg-primary-950/80 px-1.5 py-0.5">
-                    <Star
-                      size={10}
-                      color={theme.isDark ? 'gold' : 'goldenrod'}
-                      fill={theme.isDark ? 'gold' : 'goldenrod'}
-                    />
-                    <Text className="font-SpaceGrotesk-Medium text-sm text-primary-50">
-                      {item.vote_average.toFixed(1)}
+                <View className="flex-row items-center p-1">
+                  <View className="flex-1 items-center">
+                    <Text className="font-SpaceGrotesk-Medium text-xs text-primary-950 dark:text-primary-50">
+                      {item.release_date ? item.release_date.split('-')[0] : 'N/A'}
                     </Text>
                   </View>
-                )}
-
-                {item.release_date && (
-                  <View className="absolute bottom-2 left-2 rounded-full bg-primary-950/80 px-1.5 py-0.5">
-                    <Text className="font-SpaceGrotesk-Medium text-sm text-primary-50">
-                      {item.release_date.split('-')[0]}
+                  <View className="h-3 w-px bg-primary-600" />
+                  <View className="flex-1 flex-row items-center justify-center gap-x-1">
+                    <Star size={10} color={theme.isDark ? 'gold' : 'goldenrod'} fill={theme.isDark ? 'gold' : 'goldenrod'} />
+                    <Text className="font-SpaceGrotesk-Medium text-xs text-primary-950 dark:text-primary-50">
+                      {item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}
                     </Text>
                   </View>
-                )}
+                </View>
               </View>
             </TouchableOpacity>
           );

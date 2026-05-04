@@ -9,7 +9,6 @@ import ProfileActionsModal from '~/components/ProfileActionsModal';
 import Toast from 'react-native-toast-message';
 import { MoreVertical } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import SignOutModal from '~/components/SignOutModal';
 import DeleteAccountModal from '~/components/DeleteAccountModal';
 import AccountOverlay from '~/components/AccountOverlay';
 import BlockedUsersModal from '~/components/BlockedUsersModal';
@@ -20,6 +19,7 @@ import { CreateBugReportInput, CreateFeedbackInput } from '~/types/supabaseTypes
 import { createBugReport } from '~/services/bugService';
 import FeedbackModal from '~/components/FeedbackModal';
 import { createFeedback } from '~/services/feedbackService';
+import ConfirmModal from '~/components/ConfirmModal';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -248,12 +248,20 @@ export default function Profile() {
           }
         }}
       />
-      <SignOutModal
+      <ConfirmModal
+        title="Sign Out"
+        message="Are you sure you want to sign out?"
+        confirmLabel="Sign Out"
+        cancelLabel="Cancel"
         visible={signOutModal}
-        onClose={(shouldSignOut) => {
+        onCancel={() => {
           setSignOutModal(false);
-          if (shouldSignOut) handleSignOut();
         }}
+        onConfirm={() => {
+          setSignOutModal(false);
+          handleSignOut();
+        }}
+        variant='danger'
       />
       <DeleteAccountModal
         visible={deleteAccountModal}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
 import { List } from '~/types/supabaseTypes';
 import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { haptics } from '~/utils/haptics';
+import { Globe, Lock } from 'lucide-react-native';
 
 interface CreateListModalProps {
   visible: boolean;
@@ -16,6 +17,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
   const theme = useTheme();
   const [listName, setListName] = useState('');
   const [listDescription, setListDescription] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
         className="flex-1">
         {/* Overlay */}
         <Pressable
-          className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-4"
+          className="flex-1 items-center justify-center bg-black/60 px-4 dark:bg-black/70"
           onPress={() => {
             if (keyboardOpen) {
               Keyboard.dismiss();
@@ -56,15 +58,15 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
             className="w-full max-w-sm rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
             {/* Header */}
             <Text className="mb-4 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
-              Create new list
+              Create New List
             </Text>
 
             {/* Name */}
-            <View className="mb-4">
-              <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">Name</Text>
+            <View className="mb-5">
+              <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">NAME</Text>
               <TextInput
                 autoFocus
-                className="rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+                className="rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950  dark:bg-primary-800 dark:text-primary-50 "
                 value={listName}
                 onChangeText={setListName}
                 cursorColor={theme.primary[700]}
@@ -77,12 +79,12 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
             </View>
 
             {/* Description */}
-            <View className="mb-6">
+            <View className="mb-5">
               <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">
-                Description (optional)
+                DESCRIPTION (optional)
               </Text>
               <TextInput
-                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
+                className="min-h-[90px] rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950  dark:bg-primary-800 dark:text-primary-50"
                 value={listDescription}
                 onChangeText={setListDescription}
                 cursorColor={theme.primary[700]}
@@ -90,6 +92,7 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
                 placeholder="What’s this list for?"
                 placeholderTextColor={theme.primary[500]}
                 multiline
+                numberOfLines={3}
                 maxLength={500}
                 submitBehavior="newline"
               />
@@ -98,10 +101,63 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
               </Text>
             </View>
 
+            <View className="mb-6">
+              <Text className="mb-2 text-sm text-primary-700 dark:text-primary-300">
+                VISIBILITY
+              </Text>
+              <View className="flex-row gap-x-2">
+                <TouchableOpacity
+                  onPress={() => setIsPrivate(false)}
+                  className={`flex-1 flex-row items-center gap-x-2 rounded-xl border px-3 py-2.5 ${
+                    !isPrivate
+                      ? 'border-primary-800 bg-primary-200 dark:border-primary-100 dark:bg-primary-800'
+                      : 'border-transparent bg-primary-200 dark:bg-primary-800'
+                  }`}>
+                  <Globe size={15} color={!isPrivate ? theme.primary[900] : theme.primary[500]} />
+                  <Text
+                    className={`font-SpaceGrotesk-Medium text-sm ${
+                      !isPrivate
+                        ? 'text-primary-900 dark:text-primary-100'
+                        : 'text-primary-500 dark:text-primary-500'
+                    }`}>
+                    Public
+                  </Text>
+                  {!isPrivate && (
+                    <View className="h-1.5 w-1.5 rounded-full bg-primary-800 dark:bg-primary-100" />
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setIsPrivate(true)}
+                  className={`flex-1 flex-row items-center gap-x-2 rounded-xl border px-3 py-2.5 ${
+                    isPrivate
+                      ? 'border-primary-800 bg-primary-200 dark:border-primary-100 dark:bg-primary-800'
+                      : 'border-transparent bg-primary-200 dark:bg-primary-800'
+                  }`}>
+                  <Lock size={15} color={isPrivate ? theme.primary[900] : theme.primary[500]} />
+                  <Text
+                    className={`font-SpaceGrotesk-Medium text-sm ${
+                      isPrivate
+                        ? 'text-primary-900 dark:text-primary-100'
+                        : 'text-primary-500 dark:text-primary-500'
+                    }`}>
+                    Private
+                  </Text>
+                  {isPrivate && (
+                    <View className="h-1.5 w-1.5 rounded-full bg-primary-800 dark:bg-primary-100" />
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
             {/* Actions */}
-            <View className="flex-row justify-end gap-3">
-              <Pressable onPress={onClose} className="rounded-xl px-4 py-2">
-                <Text className="text-primary-700 dark:text-primary-300">Cancel</Text>
+            <View className="flex-row gap-2">
+              <Pressable
+                onPress={onClose}
+                className="flex-1 items-center rounded-xl border border-primary-300 py-3 dark:border-primary-700">
+                <Text className="font-SpaceGrotesk-Medium text-primary-700 dark:text-primary-300">
+                  Cancel
+                </Text>
               </Pressable>
 
               <Pressable
@@ -111,11 +167,13 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
                   onSubmit({
                     name: listName.trim(),
                     description: listDescription.trim() || undefined,
+                    is_private: isPrivate,
                   });
                   setListName('');
                   setListDescription('');
+                  setIsPrivate(false);
                 }}
-                className={`rounded-xl px-5 py-2 ${
+                className={`flex-[2] items-center rounded-xl py-3 ${
                   canSubmit
                     ? 'bg-primary-900 dark:bg-primary-50'
                     : 'bg-primary-300 dark:bg-primary-700'

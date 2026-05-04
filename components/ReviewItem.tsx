@@ -11,7 +11,7 @@ import ReviewEditModal from './ReviewEditModal';
 import ItemOptions from './ItemOptions';
 import ReportModal from './ReportModal';
 import { haptics } from '~/utils/haptics';
-import DeleteItemModal from './DeleteItemModal';
+import ConfirmModal from './ConfirmModal';
 
 interface ReviewItemProps {
   review: ReviewWithUser;
@@ -257,13 +257,20 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
         onClose={() => setReportModalVisible(false)}
         onSubmit={handleReviewReport}
       />
-      <DeleteItemModal 
-      item='review'
+      <ConfirmModal 
+      title="Delete Review?"
+      message="Are you sure you want to delete this review? This action cannot be undone."
+      confirmLabel="Delete"
+      cancelLabel="Cancel"
       visible={deleteItemModalVisible}
-      onClose={(deleteItem: boolean) => {
+      onCancel={() => {
         setDeleteItemModalVisible(false);
-        if(deleteItem) handleReviewDelete();
       }}
+      onConfirm={() => {
+        setDeleteItemModalVisible(false);
+        handleReviewDelete();
+      }}
+      variant="danger"
       />
     </>
   );
