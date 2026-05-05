@@ -98,7 +98,7 @@ export default function ProfileScreen() {
         </Text>
         <FollowButton targetUserId={profile.id} />
       </View>
-      <ScrollView className="px-4">
+      <ScrollView className="px-4" showsVerticalScrollIndicator={false}>
         <ProfileSection
           avatar={profile.avatar_url}
           displayName={profile.display_name}
