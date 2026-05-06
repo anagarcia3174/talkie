@@ -64,7 +64,7 @@ export const useBlock = create<BlockState>((set, get) => ({
     }
 
     set((state) => {
-      const updated = new Set(state.blockedIds)
+      const updated = new Set(state.blockedIds);
       updated.delete(targetUserId);
 
       return {

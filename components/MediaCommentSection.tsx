@@ -8,7 +8,6 @@ import CommentItem from './CommentItem';
 import { useAuth } from '~/context/AuthContext';
 import ErrorScreen from './ErrorScreen';
 import Toast from 'react-native-toast-message';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CommentForm from './CommentForm';
 import { useMedia } from '~/store/mediaStore';
@@ -97,7 +96,7 @@ export default function MediaCommentSection({
     if (!hasFetchedDetails) {
       fetchMediaDetails(mediaId);
     }
-  }, [mediaId, hasFetchedDetails]);
+  }, [mediaId, hasFetchedDetails, fetchMediaDetails]);
 
   useEffect(() => {
     if (mediaType === 'movie') {
@@ -109,7 +108,7 @@ export default function MediaCommentSection({
         episodeNumber: episode,
       });
     }
-  }, [mediaId, mediaType, season, episode]);
+  }, [mediaId, mediaType, season, episode, fetchCommentsForMedia]);
 
   const handleSubmitComment = async (content: string) => {
     const result = await postComment({
@@ -214,7 +213,8 @@ export default function MediaCommentSection({
       ) : error ? (
         <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
-        <View className={`mx-4 flex-1 overflow-hidden ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
+        <View
+          className={`mx-4 flex-1 overflow-hidden ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
           <FlatList
             style={{ flex: 1 }}
             data={comments}
@@ -236,7 +236,7 @@ export default function MediaCommentSection({
         style={{
           marginBottom: insets.bottom * 0.3,
         }}
-        className="overflow-hidden border-t border-primary-200 bg-primary-50 py-4 px-3 dark:border-primary-800 dark:bg-primary-950">
+        className="overflow-hidden border-t border-primary-200 bg-primary-50 px-3 py-4 dark:border-primary-800 dark:bg-primary-950">
         <CommentForm
           mode="create"
           timestamp={timestamp}

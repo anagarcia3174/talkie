@@ -21,7 +21,7 @@ const REPORT_REASONS: { label: string; value: ReportReason }[] = [
 ];
 
 interface ReportModalProps {
-  type: 'review' | 'comment'
+  type: 'review' | 'comment';
   visible: boolean;
   onClose: () => void;
   onSubmit: (reason: ReportReason, details?: string) => void;

@@ -77,9 +77,7 @@ export async function getBlockedUsers(): Promise<DataResult<Profile[]>> {
     });
   }
 }
-export async function getBlockedIds(
-  currentUserId: string
-): Promise<DataResult<string[]>> {
+export async function getBlockedIds(currentUserId: string): Promise<DataResult<string[]>> {
   try {
     const { data, error } = await supabase
       .from('blocks')

@@ -23,11 +23,7 @@ interface TrendingSectionProps {
   title: string;
 }
 
-export default function TrendingSection({
-  movies,
-  onAddToLibrary,
-  title,
-}: TrendingSectionProps) {
+export default function TrendingSection({ movies, onAddToLibrary, title }: TrendingSectionProps) {
   const theme = useTheme();
   const router = useRouter();
   const [isScrolling, setIsScrolling] = useState(false);
@@ -112,7 +108,11 @@ export default function TrendingSection({
                       <Text className="font-SpaceGrotesk-Regular text-sm text-primary-300">
                         {item.release_date?.split('-')[0]}
                       </Text>
-                      <Star size={14} color={theme.isDark ? 'gold' : 'goldenrod' } fill={theme.isDark ? 'gold' : 'goldenrod' } />
+                      <Star
+                        size={14}
+                        color={theme.isDark ? 'gold' : 'goldenrod'}
+                        fill={theme.isDark ? 'gold' : 'goldenrod'}
+                      />
                       <Text className="font-SpaceGrotesk-Regular text-sm text-primary-300">
                         {item.vote_average?.toFixed(1)}
                       </Text>
@@ -131,7 +131,9 @@ export default function TrendingSection({
                     {loadingId === item.id ? (
                       <ActivityIndicator size="small" color="#fafafa" />
                     ) : (
-                      <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-50">+ Add</Text>
+                      <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-50">
+                        + Add
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>

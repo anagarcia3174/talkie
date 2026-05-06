@@ -43,7 +43,7 @@ export default function ProfileScreen() {
     if (!id) return;
 
     getOthersProfile(id);
-  }, [id]);
+  }, [id, getOthersProfile]);
 
   useEffect(() => {
     if (!profile) return;
@@ -177,17 +177,20 @@ export default function ProfileScreen() {
         />
       </ScrollView>
       <View className="items-center px-4 pb-4">
-        <TouchableOpacity className="p-2" disabled={blocking} onPress={() => {
-          haptics.warning();
-          handleBlock();
-        }}>
+        <TouchableOpacity
+          className="p-2"
+          disabled={blocking}
+          onPress={() => {
+            haptics.warning();
+            handleBlock();
+          }}>
           <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 underline dark:text-red-400">
             {blocking ? 'Blocking...' : 'Block User'}
           </Text>
         </TouchableOpacity>
       </View>
       <Modal visible={!!previewImage} transparent animationType="fade">
-        <View className="flex-1 items-center justify-center bg-primary-100 dark:bg-primary-950 px-4">
+        <View className="flex-1 items-center justify-center bg-primary-100 px-4 dark:bg-primary-950">
           <TouchableOpacity
             onPress={() => setPreviewImage(null)}
             className="absolute left-6 top-16 z-10 py-2">

@@ -96,18 +96,17 @@ export default function ItemOptions({
                 className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-red-500/10">
                 <Trash2 size={22} color="#ef4444" />
                 <Text className="font-SpaceGrotesk-Medium text-base text-red-500">
-                 Delete {item.type === 'review' ? 'Review' : 'Comment'}
+                  Delete {item.type === 'review' ? 'Review' : 'Comment'}
                 </Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <TouchableOpacity
-                onPress={() =>{
+                onPress={() => {
                   onClose();
-                  router.push({ pathname: '/profile/[id]', params: { id: userId } })
-                }
-                }
+                  router.push({ pathname: '/profile/[id]', params: { id: userId } });
+                }}
                 className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-primary-200 dark:active:bg-primary-800">
                 <UserCircle size={22} color={theme.primary[500]} />
                 <Text className="font-SpaceGrotesk-Medium text-base text-primary-950 dark:text-primary-50">

@@ -1,6 +1,5 @@
-import { VoidResult, errorVoid, successVoid } from '~/types/supabaseTypes';
+import { VoidResult, errorVoid, successVoid, CreateBugReportInput } from '~/types/supabaseTypes';
 import { supabase } from '~/utils/supabase';
-import { CreateBugReportInput } from '~/types/supabaseTypes';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 

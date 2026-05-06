@@ -52,8 +52,7 @@ export default function CompactDropdown({
           haptics.action();
           openDropdown();
         }}
-        
-        className="flex-row items-center gap-1 rounded-xl px-2.5 py-1 bg-primary-200 dark:bg-primary-800">
+        className="flex-row items-center gap-1 rounded-xl bg-primary-200 px-2.5 py-1 dark:bg-primary-800">
         <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-900 dark:text-primary-200 ">
           {selectedLabel}
         </Text>
@@ -77,7 +76,10 @@ export default function CompactDropdown({
               overflow: 'hidden',
             }}>
             <BlurView intensity={40}>
-              <ScrollView showsVerticalScrollIndicator={false} bounces={false} className='bg-primary-100 dark:bg-primary-900'>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+                className="bg-primary-100 dark:bg-primary-900">
                 {items.map((item) => {
                   const value = getValue(item);
                   const isSelected = selectedValue === value;
@@ -94,7 +96,7 @@ export default function CompactDropdown({
                           ? `${theme.primary[950]}99` // 👈 hex + alpha for selected tint
                           : 'transparent',
                       }}
-                      className="px-3 py-1.5 border-b-[0.8px] border-primary-200 dark:border-primary-800">
+                      className="border-b-[0.8px] border-primary-200 px-3 py-1.5 dark:border-primary-800">
                       <Text
                         style={{
                           fontFamily: isSelected ? 'SpaceGrotesk-Medium' : 'SpaceGrotesk-Light',
@@ -104,7 +106,6 @@ export default function CompactDropdown({
                         }}>
                         {getLabel(item)}
                       </Text>
-
                     </Pressable>
                   );
                 })}

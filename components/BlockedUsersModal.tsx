@@ -1,5 +1,5 @@
 import { UserRound } from 'lucide-react-native';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Text, View, TouchableOpacity, Image } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
@@ -9,12 +9,12 @@ import { useBlock } from '~/store/blockStore';
 import { haptics } from '~/utils/haptics';
 import { getPublicUrl } from '~/utils/storageUrl';
 
-interface BlockedUsersModal {
+interface BlockedUsersModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModal) {
+export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModalProps) {
   const { blockedIds, blockedUsers, getBlockedUsers, unblock } = useBlock();
   const { user } = useAuth();
   const theme = useTheme();
@@ -63,7 +63,7 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-6">
+      <View className="flex-1 items-center justify-center bg-black/60 px-6 dark:bg-black/70">
         <TouchableOpacity activeOpacity={1} onPress={onClose} className="absolute inset-0" />
         <View className="max-h-[70%] w-full rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
           {/* Header */}

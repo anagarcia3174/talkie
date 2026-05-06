@@ -151,7 +151,7 @@ export type CreateCommentInput = Omit<
 >;
 
 export interface CommentWithUser extends Comment {
-  is_liked: boolean,
+  is_liked: boolean;
   owner: {
     id: string;
     display_name: string;
@@ -184,8 +184,8 @@ export interface Review {
 }
 
 export interface ReviewWithUser extends Review {
-  is_liked: boolean,
-    owner: {
+  is_liked: boolean;
+  owner: {
     id: string;
     display_name: string;
     avatar_url: string | null;
@@ -310,11 +310,7 @@ export interface CreateBugReportInput {
   steps_to_reproduce?: string;
 }
 
-export type FeedbackCategory =
-  | 'general'
-  | 'feature_request'
-  | 'bug'
-  | 'other';
+export type FeedbackCategory = 'general' | 'feature_request' | 'bug' | 'other';
 
 export interface CreateFeedbackInput {
   message: string;

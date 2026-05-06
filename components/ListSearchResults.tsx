@@ -1,11 +1,15 @@
-
 import { SearchPublicListResult } from '~/types/supabaseTypes';
 import { ActivityIndicator, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { Heart, UserRound } from 'lucide-react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
 import { useTheme } from '~/hooks/useTheme';
-import { DEFAULT_LIST_FILTERS, ListFilters, ListSortType, SortOrder } from '~/types/sortFilterTypes';
+import {
+  DEFAULT_LIST_FILTERS,
+  ListFilters,
+  ListSortType,
+  SortOrder,
+} from '~/types/sortFilterTypes';
 
 interface ListSearachResultsProps {
   results: SearchPublicListResult[];
@@ -53,7 +57,7 @@ export default function ListSearchResults({
     }
   });
 
-    if (loading) {
+  if (loading) {
     return (
       <View className="mb-20 flex-1 justify-center px-4">
         <ActivityIndicator size="large" color={theme.primary[700]} />

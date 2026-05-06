@@ -20,10 +20,7 @@ export function Auth() {
       });
 
       if (credential.identityToken) {
-        const {
-          error: signInError,
-          data: { user },
-        } = await supabase.auth.signInWithIdToken({
+        const { error: signInError } = await supabase.auth.signInWithIdToken({
           provider: 'apple',
           token: credential.identityToken,
         });
@@ -38,7 +35,7 @@ export function Auth() {
       } else {
         throw new Error('No identity token received');
       }
-    } catch (e: any) {
+    } catch {
       setError(
         'An error ocurred while signing you in. Try again or contact support if the problem persists.'
       );

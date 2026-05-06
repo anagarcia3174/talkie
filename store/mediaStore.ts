@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Media, MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import { getMediaDetails, getTrendingMovies, getTrendingShows } from '~/services/mediaService';
 
-type StoreResult<T = void> = { success: true } | { success: false; error: string };
+type StoreResult = { success: true } | { success: false; error: string };
 
 interface MediaCommentsState {
   details: TVDetails | MovieDetails | null;
@@ -16,11 +16,8 @@ interface MediaState {
   trendingMovies: Media[];
   trendingShows: Media[];
   mediaDetails: Record<number, MediaCommentsState>;
-  fetchHomeData: () => Promise<StoreResult<void>>;
-  fetchMediaDetails: (
-    media_id: number,
-    force?: boolean
-  ) => Promise<StoreResult<void>>;
+  fetchHomeData: () => Promise<StoreResult>;
+  fetchMediaDetails: (media_id: number, force?: boolean) => Promise<StoreResult>;
 }
 
 export const useMedia = create<MediaState>((set, get) => ({
@@ -75,8 +72,7 @@ export const useMedia = create<MediaState>((set, get) => ({
       },
     }));
 
-
-     const result = await getMediaDetails(media_id);
+    const result = await getMediaDetails(media_id);
 
     if (!result.success) {
       set((state) => ({

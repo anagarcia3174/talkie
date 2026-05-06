@@ -24,10 +24,7 @@ export async function getReviewsForMedia(mediaId: number): Promise<DataResult<Re
 }
 
 export async function postReview(
-  review: Omit<
-    Review,
-    'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'
-  >
+  review: Omit<Review, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler'>
 ): Promise<DataResult<ReviewWithUser>> {
   try {
     const { data, error } = await supabase

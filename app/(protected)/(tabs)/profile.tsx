@@ -49,7 +49,7 @@ export default function Profile() {
   const handleSignOut = async () => {
     try {
       await signOut();
-    } catch (error) {
+    } catch {
       haptics.error();
       Toast.show({
         type: 'error',
@@ -82,7 +82,7 @@ export default function Profile() {
 
     try {
       await signOut();
-    } catch (error) {
+    } catch {
       haptics.error();
 
       Toast.show({
@@ -233,7 +233,7 @@ export default function Profile() {
               position: 'top',
               visibilityTime: 3000,
             });
-          } catch (e: any) {
+          } catch {
             Toast.hide();
             haptics.error();
             Toast.show({
@@ -261,7 +261,7 @@ export default function Profile() {
           setSignOutModal(false);
           handleSignOut();
         }}
-        variant='danger'
+        variant="danger"
       />
       <DeleteAccountModal
         visible={deleteAccountModal}

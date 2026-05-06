@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Platform, View } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
 import { useReviews } from '~/store/reviewStore';
@@ -7,7 +7,6 @@ import ReviewItem from './ReviewItem';
 import Toast from 'react-native-toast-message';
 import ErrorScreen from './ErrorScreen';
 import ReviewForm from './ReviewForm';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { haptics } from '~/utils/haptics';
 
@@ -30,7 +29,7 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
   const { user } = useAuth();
   const theme = useTheme();
   const mediaReviews = fetchedReviews[mediaId];
-  const reviews = mediaReviews?.reviews ?? [];
+  const reviews = useMemo(() => mediaReviews?.reviews ?? [], [mediaReviews?.reviews]);
   const isLoading = mediaReviews?.isLoading ?? false;
   const error = mediaReviews?.error ?? null;
   const insets = useSafeAreaInsets();
@@ -50,6 +49,7 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
     if (!mediaReviews || (!mediaReviews.hasFetched && !mediaReviews.isLoading)) {
       fetchReviewsForMedia(mediaId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mediaId]);
 
   const handleSubmitReview = async (rating: number, content: string) => {
@@ -115,7 +115,8 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
       ) : error ? (
         <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
-        <View  className={`mx-4 flex-1 overflow-hidden ${sortedReviews.length > 0 ? 'rounded-t-2xl bg-primary-100 dark:bg-primary-900' : ''}`}>
+        <View
+          className={`mx-4 flex-1 overflow-hidden ${sortedReviews.length > 0 ? 'rounded-t-2xl bg-primary-100 dark:bg-primary-900' : ''}`}>
           <FlatList
             style={{ flex: 1 }}
             data={sortedReviews}

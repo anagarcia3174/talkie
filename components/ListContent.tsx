@@ -10,7 +10,7 @@ import {
   UserRound,
 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { act, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import SortByModal from '~/components/SortByModal';
 import { ListItemWithMedia, List, Status, ListWithMeta } from '~/types/supabaseTypes';
@@ -131,8 +131,6 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
       setLoadingAction(null);
     }
   };
-
-  const DotSeparator = () => <Text className="mx-1 text-primary-400 dark:text-primary-600">•</Text>;
 
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950" edges={['top']}>

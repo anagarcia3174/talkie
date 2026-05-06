@@ -9,7 +9,7 @@ import {
 } from '~/services/reviewService';
 import { reportReview } from '~/services/reportService';
 
-type StoreResult<T = void> = { success: true } | { success: false; error: string };
+type StoreResult = { success: true } | { success: false; error: string };
 
 interface MediaReviewsState {
   reviews: ReviewWithUser[];
@@ -21,25 +21,21 @@ interface MediaReviewsState {
 interface ReviewsState {
   fetchedReviews: Record<number, MediaReviewsState>;
 
-  fetchReviewsForMedia: (mediaId: number, force?: boolean) => Promise<StoreResult<void>>;
+  fetchReviewsForMedia: (mediaId: number, force?: boolean) => Promise<StoreResult>;
   submitReview: (
     review: Omit<
       Review,
       'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'
     >
-  ) => Promise<StoreResult<void>>;
-  removeReview: (reviewId: number, mediaId: number) => Promise<StoreResult<void>>;
-  toggleLikeReview: (reviewId: number, mediaId: number) => Promise<StoreResult<void>>;
+  ) => Promise<StoreResult>;
+  removeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
+  toggleLikeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
   updateReview: (params: {
     reviewId: number;
     mediaId: number;
     updates: Partial<Pick<Review, 'rating' | 'content'>>;
-  }) => Promise<StoreResult<void>>;
-  reportReview: (
-    reviewId: number,
-    reason: ReportReason,
-    details?: string
-  ) => Promise<StoreResult<void>>;
+  }) => Promise<StoreResult>;
+  reportReview: (reviewId: number, reason: ReportReason, details?: string) => Promise<StoreResult>;
 }
 
 export const useReviews = create<ReviewsState>((set, get) => ({

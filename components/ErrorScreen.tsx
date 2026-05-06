@@ -9,10 +9,10 @@ interface ErrorScreenProps {
   fullScreen?: boolean;
 }
 
-export default function ErrorScreen({ 
+export default function ErrorScreen({
   title = 'Whoops!',
   message = 'An unexpected error occurred. Please try again.',
-  fullScreen = true 
+  fullScreen = true,
 }: ErrorScreenProps) {
   const theme = useTheme();
 
@@ -20,29 +20,26 @@ export default function ErrorScreen({
     <View className="flex-1 items-center justify-center px-6">
       {/* Error Icon */}
       <View className="mb-6 items-center">
-        <View className="rounded-full bg-red-100 dark:bg-red-900/20 p-4 mb-4">
+        <View className="mb-4 rounded-full bg-red-100 p-4 dark:bg-red-900/20">
           <AlertTriangle size={48} color={theme.isDark ? '#fca5a5' : '#dc2626'} />
         </View>
       </View>
 
       {/* Error Text */}
-      <View className="items-center mb-8">
-        <Text className="font-SpaceGrotesk-Bold text-2xl text-primary-900 dark:text-primary-100 text-center mb-3">
+      <View className="mb-8 items-center">
+        <Text className="mb-3 text-center font-SpaceGrotesk-Bold text-2xl text-primary-900 dark:text-primary-100">
           {title}
         </Text>
-        <Text className="font-SpaceGrotesk-Regular text-lg text-primary-700 dark:text-primary-300 text-center leading-6">
+        <Text className="text-center font-SpaceGrotesk-Regular text-lg leading-6 text-primary-700 dark:text-primary-300">
           {message}
         </Text>
       </View>
-
     </View>
   );
 
   if (fullScreen) {
     return (
-      <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
-        {content}
-      </SafeAreaView>
+      <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">{content}</SafeAreaView>
     );
   }
 

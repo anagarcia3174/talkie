@@ -2,7 +2,6 @@ import { supabase } from '~/utils/supabase';
 import type { ReportReason, VoidResult } from '~/types/supabaseTypes';
 import { successVoid, errorVoid } from '~/types/supabaseTypes';
 
-
 export async function reportComment(
   commentId: number,
   reason: ReportReason,

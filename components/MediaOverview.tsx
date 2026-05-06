@@ -12,7 +12,6 @@ export default function MediaOverview({ synopsis }: MediaOverviewProps) {
 
   return (
     <View className="mb-2 w-full">
-      
       <Pressable
         onPress={() => {
           Keyboard.dismiss();

@@ -1,11 +1,4 @@
-import {
-  View,
-  TouchableOpacity,
-  ImageBackground,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus } from 'lucide-react-native';
@@ -35,10 +28,6 @@ export default function MediaScreen() {
   const [selectedSegment, setSelectedSegment] = useState(0);
   const [listModalVisible, setListModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const backdrop = media.backdrop_path
-    ? `https://image.tmdb.org/t/p/w780${media.backdrop_path}`
-    : null;
-  const poster = media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null;
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addItemToList } = useLists();
 
@@ -85,7 +74,7 @@ export default function MediaScreen() {
     <View className="flex-1 bg-primary-50 dark:bg-primary-950">
       <SafeAreaView className="flex-1" edges={['top']}>
         {/* Header Buttons */}
-        <View className="flex-row justify-between px-4 mb-2">
+        <View className="mb-2 flex-row justify-between px-4">
           <TouchableOpacity
             className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
             onPress={() => router.back()}>

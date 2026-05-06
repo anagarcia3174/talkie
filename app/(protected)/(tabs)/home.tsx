@@ -39,7 +39,7 @@ export default function Home() {
             text1: result.error || 'Failed to load home data',
           });
         }
-      } catch (err) {
+      } catch {
         setError('Unexpected error occurred');
         Toast.show({
           type: 'error',
@@ -89,7 +89,7 @@ export default function Home() {
           autoHide: true,
         });
       }
-    } catch (error) {
+    } catch {
       haptics.error();
       Toast.show({
         type: 'error',

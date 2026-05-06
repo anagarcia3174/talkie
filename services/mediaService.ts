@@ -2,7 +2,7 @@ import { supabase } from '~/utils/supabase';
 import type { Media, DataResult, MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import { errorData, successData } from '~/types/supabaseTypes';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 
 export async function getMediaById(id: number, mediaType: string): Promise<DataResult<Media>> {
   try {

@@ -116,7 +116,6 @@ export async function softDeleteAccount(): Promise<VoidResult> {
   }
 }
 
-
 export async function restoreUser(): Promise<VoidResult> {
   try {
     const { error } = await supabase.rpc('restore_user');

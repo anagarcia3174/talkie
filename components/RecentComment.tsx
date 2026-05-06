@@ -58,8 +58,7 @@ export default function RecentComment({ comment }: RecentCommentProps) {
 
   return (
     <TouchableOpacity
-    activeOpacity={0.7}
-
+      activeOpacity={0.7}
       onPress={() => {
         router.push({
           pathname: '/media/[id]',
@@ -90,7 +89,7 @@ export default function RecentComment({ comment }: RecentCommentProps) {
         )}
 
         {/* Content */}
-        <View className="flex-1 px-3 justify-center gap-y-0.5">
+        <View className="flex-1 justify-center gap-y-0.5 px-3">
           <Text className="font-SpaceGrotesk-Bold text-sm text-primary-50" numberOfLines={1}>
             {media.title}
           </Text>

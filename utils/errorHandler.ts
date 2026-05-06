@@ -28,7 +28,7 @@ const CHECK_CONSTRAINT_MESSAGES: Record<string, string> = {
   profiles_bio_check: 'Bio cannot exceed 300 characters.',
   reviews_content_check: 'Review cannot exceed 1000 characters.',
   reviews_rating_check: 'Rating must be between 0 and 10.',
-  user_media_status_check: 'Invalid library status.'
+  user_media_status_check: 'Invalid library status.',
 };
 
 const ACTION_FALLBACK_MESSAGES: Record<string, string> = {

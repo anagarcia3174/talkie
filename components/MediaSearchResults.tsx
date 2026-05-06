@@ -214,7 +214,11 @@ export default function MediaSearchResults({
                   </View>
                   <View className="h-3 w-px bg-primary-600" />
                   <View className="flex-1 flex-row items-center justify-center gap-x-1">
-                    <Star size={10} color={theme.isDark ? 'gold' : 'goldenrod'} fill={theme.isDark ? 'gold' : 'goldenrod'} />
+                    <Star
+                      size={10}
+                      color={theme.isDark ? 'gold' : 'goldenrod'}
+                      fill={theme.isDark ? 'gold' : 'goldenrod'}
+                    />
                     <Text className="font-SpaceGrotesk-Medium text-xs text-primary-950 dark:text-primary-50">
                       {item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}
                     </Text>

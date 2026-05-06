@@ -1,16 +1,9 @@
-import {
-  CreateFeedbackInput,
-  VoidResult,
-  errorVoid,
-  successVoid,
-} from '~/types/supabaseTypes';
+import { CreateFeedbackInput, VoidResult, errorVoid, successVoid } from '~/types/supabaseTypes';
 import { supabase } from '~/utils/supabase';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 
-export async function createFeedback(
-  input: CreateFeedbackInput
-): Promise<VoidResult> {
+export async function createFeedback(input: CreateFeedbackInput): Promise<VoidResult> {
   try {
     const appVersion = Constants.expoConfig?.version ?? null;
 
