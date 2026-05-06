@@ -1,4 +1,4 @@
-import { UserRound } from 'lucide-react-native';
+import { UserRound, X } from 'lucide-react-native';
 import { Modal, View, TouchableOpacity, Text, FlatList, Image } from 'react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
 import FollowButton from './FollowButton';
@@ -81,13 +81,22 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-6">
+      <View className="flex-1 justify-end bg-black/60 dark:bg-black/70">
         <TouchableOpacity activeOpacity={1} onPress={onClose} className="absolute inset-0" />
-        <View className="max-h-[70%] w-full rounded-3xl bg-primary-100 p-6 dark:bg-primary-900">
+        <View className="min-h-[30%] max-h-[70%] w-full rounded-t-3xl bg-primary-100 px-6 pb-6 pt-4 dark:bg-primary-900">
           {/* Header */}
-          <Text className="mb-5 font-SpaceGrotesk-Medium text-xl text-primary-900 dark:text-primary-100">
-            {checking === 'followers' ? 'Followers' : 'Following'}
-          </Text>
+          <View className="mb-5 flex-row items-center justify-between">
+            <Text className="font-SpaceGrotesk-Medium text-xl text-primary-900 dark:text-primary-100">
+              {checking === 'followers' ? 'Followers' : 'Following'}
+            </Text>
+
+            <TouchableOpacity
+              onPress={onClose}
+              activeOpacity={0.8}
+              className="items-center justify-center rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
+              <X size={20} color={theme.primary[950]} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
 
           {loading &&
             ((checking === 'followers' && followers.length === 0) ||
@@ -126,9 +135,8 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
             data={checking === 'followers' ? followers : following}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 10 }}
             renderItem={({ item }) => (
-              <View className="flex-row items-center justify-between border-b border-neutral-200 py-4 dark:border-neutral-800">
+              <View className="flex-row items-center justify-between p-3 mb-2 rounded-xl bg-primary-200 dark:bg-primary-800">
                 <TouchableOpacity
                   disabled={item.is_private || item.is_deleted}
                   className="flex-1 flex-row items-center"
@@ -159,6 +167,12 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
               </View>
             )}
           />
+          <View className="items-center">
+            <Text className="font-SpaceGrotesk-Regular text-sm text-primary-400 dark:text-primary-600">
+              {checking === 'followers' ? followers.length : following.length}{' '}
+              total
+            </Text>
+          </View>
         </View>
       </View>
     </Modal>
