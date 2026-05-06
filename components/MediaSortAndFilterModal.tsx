@@ -98,6 +98,7 @@ export default function MediaSortAndFilterModal({
       setRatingMinText(filters.ratingMin?.toString() ?? '');
       setRatingMaxText(filters.ratingMax?.toString() ?? '');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
   const orderDisabled = localSort === 'relevance';

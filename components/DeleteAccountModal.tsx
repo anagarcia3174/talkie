@@ -19,7 +19,7 @@ export default function DeleteAccountModal({ visible, onClose, email }: DeleteAc
     <Modal visible={visible} transparent animationType="fade" onRequestClose={() => onClose(false)}>
       <Pressable
         onPress={() => onClose(false)}
-        className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-6">
+        className="flex-1 items-center justify-center bg-black/60 px-6 dark:bg-black/70">
         <View className="w-full rounded-2xl bg-primary-100 p-5 dark:bg-primary-900">
           {/* Header */}
           <Text className="mb-1 font-SpaceGrotesk-Bold text-xl text-red-500">Delete Account</Text>

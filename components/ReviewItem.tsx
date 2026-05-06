@@ -44,7 +44,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [ deleteItemModalVisible, setDeleteItemModalVisible ] = useState(false);
+  const [deleteItemModalVisible, setDeleteItemModalVisible] = useState(false);
   const hasAvatar = uri && uri.length > 0;
   const theme = useTheme();
   const router = useRouter();
@@ -203,8 +203,8 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
                 }}
                 hitSlop={8}
                 style={{ marginTop: 'auto' }}>
-                <View className="items-center flex-row gap-x-1">
-                   {review.like_count > 0 && (
+                <View className="flex-row items-center gap-x-1">
+                  {review.like_count > 0 && (
                     <Text className="font-SpaceGrotesk-Light text-xs text-primary-500 dark:text-primary-400">
                       {review.like_count}
                     </Text>
@@ -215,7 +215,6 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
                     color={review.is_liked ? '#e11d48' : theme.primary[400]}
                     fill={review.is_liked ? '#e11d48' : 'transparent'}
                   />
-                 
                 </View>
               </Pressable>
             )}
@@ -257,20 +256,20 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
         onClose={() => setReportModalVisible(false)}
         onSubmit={handleReviewReport}
       />
-      <ConfirmModal 
-      title="Delete Review?"
-      message="Are you sure you want to delete this review? This action cannot be undone."
-      confirmLabel="Delete"
-      cancelLabel="Cancel"
-      visible={deleteItemModalVisible}
-      onCancel={() => {
-        setDeleteItemModalVisible(false);
-      }}
-      onConfirm={() => {
-        setDeleteItemModalVisible(false);
-        handleReviewDelete();
-      }}
-      variant="danger"
+      <ConfirmModal
+        title="Delete Review?"
+        message="Are you sure you want to delete this review? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        visible={deleteItemModalVisible}
+        onCancel={() => {
+          setDeleteItemModalVisible(false);
+        }}
+        onConfirm={() => {
+          setDeleteItemModalVisible(false);
+          handleReviewDelete();
+        }}
+        variant="danger"
       />
     </>
   );

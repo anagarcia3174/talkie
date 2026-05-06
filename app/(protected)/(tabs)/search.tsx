@@ -1,43 +1,29 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Text,
-  View,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import {
-  ArrowDownUp,
-  ImageOff,
-  Bookmark,
-  UserRound,
-  Search as SearchIcon,
-  Star,
-  Heart,
-} from 'lucide-react-native';
+import { Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { ArrowDownUp, Search as SearchIcon } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
 import { searchMedia } from '~/services/mediaService';
 import { Media, SearchPublicListResult } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useLists } from '~/store/listStore';
-import SearchSortModal from '~/components/SearchSortModal';
-import { getPublicUrl } from '~/utils/storageUrl';
 import { haptics } from '~/utils/haptics';
 import MediaSearchResults from '~/components/MediaSearchResults';
 import ListSearchResults from '~/components/ListSearchResults';
-import { DEFAULT_LIST_FILTERS, DEFAULT_MEDIA_FILTERS, ListFilters, ListSortType, MediaFilters, MediaSortType, SortOrder } from '~/types/sortFilterTypes';
+import {
+  DEFAULT_LIST_FILTERS,
+  DEFAULT_MEDIA_FILTERS,
+  ListFilters,
+  ListSortType,
+  MediaFilters,
+  MediaSortType,
+  SortOrder,
+} from '~/types/sortFilterTypes';
 import MediaSortAndFilterModal from '~/components/MediaSortAndFilterModal';
 import ListSortAndFilterModal from '~/components/ListSortAndFilterModal';
 
 const SEARCH_OPTIONS = ['Media', 'Lists'];
-const ROW_GAP = 16;
-
 
 export default function Search() {
   const [selected, setSelected] = useState(0);
@@ -51,7 +37,7 @@ export default function Search() {
   const router = useRouter();
   const [sortModalVisible, setSortModalVisible] = useState(false);
 
-const [mediaSort, setMediaSort] = useState<{
+  const [mediaSort, setMediaSort] = useState<{
     sort: MediaSortType;
     order: SortOrder;
   }>({
@@ -149,7 +135,6 @@ const [mediaSort, setMediaSort] = useState<{
     }
   };
 
-
   const handleListPress = (result: SearchPublicListResult) => {
     addListToState(result);
 
@@ -195,7 +180,7 @@ const [mediaSort, setMediaSort] = useState<{
           </TouchableOpacity>
         </View>
         <View className="h-px w-full bg-primary-200 dark:bg-primary-800" />
-        <View className="flex-row gap-0.5 pt-1 px-1.5 pb-1.5">
+        <View className="flex-row gap-0.5 px-1.5 pb-1.5 pt-1">
           <TouchableOpacity
             onPress={() => onSegmentChange(0)}
             className={`flex-1 items-center rounded-lg rounded-bl-xl ${selected === 0 ? 'bg-primary-300 dark:bg-primary-800' : ''} py-1.5`}>
@@ -239,7 +224,7 @@ const [mediaSort, setMediaSort] = useState<{
           onPressItem={handleListPress}
         />
       )}
-     <MediaSortAndFilterModal
+      <MediaSortAndFilterModal
         isVisible={sortModalVisible && selected === 0}
         onClose={() => setSortModalVisible(false)}
         sort={mediaSort.sort}

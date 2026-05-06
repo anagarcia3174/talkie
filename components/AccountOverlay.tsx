@@ -62,10 +62,10 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
         onPressIn={() => haptics.action()}
         onPress={option.onPress}
         className="flex-1 justify-between rounded-2xl bg-primary-200 p-4 dark:bg-primary-800">
-       <View className="mb-3 opacity-80">
+        <View className="mb-3 opacity-80">
           <Icon size={18} color={theme.primary[700]} />
         </View>
-        <Text className="text-sm leading-5 font-SpaceGrotesk-Medium text-primary-950 dark:text-primary-50">
+        <Text className="font-SpaceGrotesk-Medium text-sm leading-5 text-primary-950 dark:text-primary-50">
           {option.title}
         </Text>
       </TouchableOpacity>
@@ -84,7 +84,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
         <View className="opacity-80">
           <Icon size={18} color={theme.primary[700]} />
         </View>
-        <Text className="text-base leading-6 font-SpaceGrotesk-Medium text-primary-950 dark:text-primary-50">
+        <Text className="font-SpaceGrotesk-Medium text-base leading-6 text-primary-950 dark:text-primary-50">
           {option.title}
         </Text>
       </TouchableOpacity>
@@ -147,7 +147,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
                 <View className="rounded-xl border border-red-400 bg-red-500/20 p-2 dark:border-red-500 dark:bg-red-400/25">
                   <Trash2 size={16} color="#ef4444" />
                 </View>
-                <Text className="text-sm leading-5 font-SpaceGrotesk-SemiBold text-red-700 dark:text-red-400">
+                <Text className="font-SpaceGrotesk-SemiBold text-sm leading-5 text-red-700 dark:text-red-400">
                   {destructiveOption.title}
                 </Text>
               </TouchableOpacity>

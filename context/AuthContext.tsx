@@ -3,8 +3,6 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '~/utils/supabase';
 import { useProfile } from '~/store/profileStore';
 import { useLists } from '~/store/listStore';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import { Platform } from 'react-native';
 import { restoreUser } from '~/services/profileService';
 import { useFollow } from '~/store/followStore';
 import { useBlock } from '~/store/blockStore';
@@ -47,50 +45,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [accountDeleted, setAccountDeleted] = useState(false);
   const isInitializedRef = useRef(false);
 
-  const validateAppleCredential = useCallback(
-    async (currentUser: User | null): Promise<boolean> => {
-      // Only validate on iOS and if user exists
-      if (Platform.OS !== 'ios' || !currentUser) {
-        return true;
-      }
-
-      // Check if this is an Apple sign-in user
-      const isAppleUser =
-        currentUser.app_metadata?.provider === 'apple' ||
-        currentUser.identities?.some((id) => id.provider === 'apple');
-
-      if (!isAppleUser) {
-        return true;
-      }
-
-      try {
-        // Get the Apple user ID from the user's identities
-        const appleIdentity = currentUser.identities?.find((id) => id.provider === 'apple');
-        const appleUserId = appleIdentity?.id;
-
-        if (!appleUserId) {
-          console.warn('No Apple user ID found in user identities');
-          return false;
-        }
-
-        // Check the credential state
-        const credentialState = await AppleAuthentication.getCredentialStateAsync(appleUserId);
-
-        // If the credential is revoked or not found, the session is invalid
-        if (credentialState !== AppleAuthentication.AppleAuthenticationCredentialState.AUTHORIZED) {
-          return false;
-        }
-
-        return true;
-      } catch (error) {
-        console.error('Error validating Apple credential:', error);
-        // On error, assume invalid to be safe
-        return false;
-      }
-    },
-    []
-  );
-
   // Load user data function with proper error handling
   const loadUserData = useCallback(async (userId: string) => {
     const { getProfile, getStats } = useProfile.getState();
@@ -108,7 +62,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     // Only load additional data if active
-    await Promise.allSettled([getStats(userId), getLists(userId), hydrateFollowerIds(userId), hydrateFollowingIds(userId), hydrateBlockedIds(userId)]);
+    await Promise.allSettled([
+      getStats(userId),
+      getLists(userId),
+      hydrateFollowerIds(userId),
+      hydrateFollowingIds(userId),
+      hydrateBlockedIds(userId),
+    ]);
 
     return { accountDeleted: false };
   }, []);

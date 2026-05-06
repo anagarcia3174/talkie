@@ -64,7 +64,7 @@ export default function ReviewForm({
   const isDirty = rating !== initialRating || reviewText.trim() !== initialContent;
 
   return (
-    <View >
+    <View>
       {/* ⭐ Stars (top row) */}
       <View className="mb-4 flex-row justify-between">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (

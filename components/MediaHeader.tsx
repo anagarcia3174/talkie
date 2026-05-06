@@ -19,7 +19,7 @@ export default function MediaHeader({ media, onPosterPress }: MediaHeaderProps) 
   return (
     <View className="overflow-hidden rounded-t-2xl  bg-primary-100 dark:bg-primary-900">
       {/* Title + overview | poster */}
-      <View className="flex-row py-2 px-2">
+      <View className="flex-row px-2 py-2">
         {poster ? (
           <TouchableOpacity
             activeOpacity={0.9}
@@ -51,8 +51,6 @@ export default function MediaHeader({ media, onPosterPress }: MediaHeaderProps) 
             <MediaOverview synopsis={media.synopsis || 'No overview available.'} />
           </View>
         </View>
-
-        
       </View>
 
       {/* Divider */}
@@ -71,7 +69,11 @@ export default function MediaHeader({ media, onPosterPress }: MediaHeaderProps) 
 
         <View className="flex-1 items-center p-3">
           <View className="flex-row items-center gap-x-1 py-0.5">
-            <Star size={13} color={theme.isDark ? 'gold' : 'goldenrod'} fill={theme.isDark ? 'gold' : 'goldenrod'} />
+            <Star
+              size={13}
+              color={theme.isDark ? 'gold' : 'goldenrod'}
+              fill={theme.isDark ? 'gold' : 'goldenrod'}
+            />
             <Text className="font-SpaceGrotesk-Bold text-lg text-primary-900 dark:text-primary-100">
               {rating ?? '—'}
             </Text>
@@ -89,7 +91,6 @@ export default function MediaHeader({ media, onPosterPress }: MediaHeaderProps) 
         </View>
       </View>
       <View className="mx-2 border-t border-primary-200 dark:border-primary-800" />
-
     </View>
   );
 }

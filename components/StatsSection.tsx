@@ -1,11 +1,13 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Film, Users, MessageSquareText, Library, Star, Monitor } from 'lucide-react-native';
+import { Users, MessageSquareText, Library, Star, Monitor } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { ProfileStats } from '~/types/supabaseTypes';
 
 interface StatsSectionProps {
   stats: ProfileStats;
-  onTilePress?: (type: 'watched' | 'lists' | 'reviews' | 'comments' | 'followers' | 'following') => void;
+  onTilePress?: (
+    type: 'watched' | 'lists' | 'reviews' | 'comments' | 'followers' | 'following'
+  ) => void;
 }
 
 export default function StatsSection({ stats, onTilePress }: StatsSectionProps) {
@@ -13,16 +15,58 @@ export default function StatsSection({ stats, onTilePress }: StatsSectionProps) 
 
   const rows = [
     [
-      { key: 'watched' as const, label: 'Watched', value: stats.totalLogged, Icon: Monitor, color: theme.isDark ? '#4ade80' : '#16a34a', flex: 3 },
-      { key: 'lists' as const, label: 'Lists', value: stats.lists, Icon: Library, color: theme.isDark ? '#818cf8' : '#4f46e5', flex: 2 },
+      {
+        key: 'watched' as const,
+        label: 'Watched',
+        value: stats.totalLogged,
+        Icon: Monitor,
+        color: theme.isDark ? '#4ade80' : '#16a34a',
+        flex: 3,
+      },
+      {
+        key: 'lists' as const,
+        label: 'Lists',
+        value: stats.lists,
+        Icon: Library,
+        color: theme.isDark ? '#818cf8' : '#4f46e5',
+        flex: 2,
+      },
     ],
     [
-      { key: 'reviews' as const, label: 'Reviews', value: 0, Icon: Star, color: theme.isDark ? '#f87171' : '#dc2626', flex: 2 },
-      { key: 'comments' as const, label: 'Comments', value: stats.comments, Icon: MessageSquareText, color: theme.isDark ? '#f59e0b' : '#d97706', flex: 3 },
+      {
+        key: 'reviews' as const,
+        label: 'Reviews',
+        value: 0,
+        Icon: Star,
+        color: theme.isDark ? '#f87171' : '#dc2626',
+        flex: 2,
+      },
+      {
+        key: 'comments' as const,
+        label: 'Comments',
+        value: stats.comments,
+        Icon: MessageSquareText,
+        color: theme.isDark ? '#f59e0b' : '#d97706',
+        flex: 3,
+      },
     ],
     [
-      { key: 'followers' as const, label: 'Followers', value: stats.followers, Icon: Users, color: theme.primary[500], flex: 1 },
-      { key: 'following' as const, label: 'Following', value: stats.following, Icon: Users, color: theme.primary[500], flex: 1 },
+      {
+        key: 'followers' as const,
+        label: 'Followers',
+        value: stats.followers,
+        Icon: Users,
+        color: theme.primary[500],
+        flex: 1,
+      },
+      {
+        key: 'following' as const,
+        label: 'Following',
+        value: stats.following,
+        Icon: Users,
+        color: theme.primary[500],
+        flex: 1,
+      },
     ],
   ];
 
@@ -38,13 +82,13 @@ export default function StatsSection({ stats, onTilePress }: StatsSectionProps) 
               <TouchableOpacity
                 key={key}
                 onPress={() => onTilePress?.(key)}
-                className="rounded-xl bg-primary-200 px-4 py-3 dark:bg-primary-900 gap-y-1"
-                style={{ flex}}>
+                className="gap-y-1 rounded-xl bg-primary-200 px-4 py-3 dark:bg-primary-900"
+                style={{ flex }}>
                 <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
                   {value}
                 </Text>
                 <View className="flex-row items-center gap-1.5">
-                  <Icon size={15} color={color} strokeWidth={2}/>
+                  <Icon size={15} color={color} strokeWidth={2} />
                   <Text className="font-SpaceGrotesk-Regular text-sm text-primary-600 dark:text-primary-400">
                     {label}
                   </Text>

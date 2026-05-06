@@ -93,7 +93,7 @@ export default function CommentForm({
       <View className="flex-1 flex-row items-center gap-2 rounded-full border border-primary-200 bg-primary-100 px-3 py-2 dark:border-primary-800 dark:bg-primary-900">
         {/* Timestamp badge */}
         <View
-          className={`rounded-full px-2 py-0.5 ${disabled ? 'border-primary-400 dark:border-primary-600' : ' dark:bg-primary-800 bg-primary-200'}`}>
+          className={`rounded-full px-2 py-0.5 ${disabled ? 'border-primary-400 dark:border-primary-600' : ' bg-primary-200 dark:bg-primary-800'}`}>
           <Text
             className={`font-SpaceGrotesk-Bold text-[11px] ${disabled ? 'text-primary-400 dark:text-primary-600' : 'text-primary-950 dark:text-primary-50'}`}>
             {formatTime(timestamp)}
@@ -104,7 +104,7 @@ export default function CommentForm({
           placeholder={disabledReason ?? 'Add a comment...'}
           value={commentText}
           onChangeText={setCommentText}
-          className="flex-1 font-SpaceGrotesk-Regular text-md text-primary-950 dark:text-primary-50"
+          className="text-md flex-1 font-SpaceGrotesk-Regular text-primary-950 dark:text-primary-50"
           cursorColor={theme.primary[700]}
           selectionColor={theme.primary[700]}
           placeholderTextColor={theme.primary[500]}

@@ -83,7 +83,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View className="flex-1 justify-end bg-black/60 dark:bg-black/70">
         <TouchableOpacity activeOpacity={1} onPress={onClose} className="absolute inset-0" />
-        <View className="min-h-[30%] max-h-[70%] w-full rounded-t-3xl bg-primary-100 px-6 pb-6 pt-4 dark:bg-primary-900">
+        <View className="max-h-[70%] min-h-[30%] w-full rounded-t-3xl bg-primary-100 px-6 pb-6 pt-4 dark:bg-primary-900">
           {/* Header */}
           <View className="mb-5 flex-row items-center justify-between">
             <Text className="font-SpaceGrotesk-Medium text-xl text-primary-900 dark:text-primary-100">
@@ -112,7 +112,11 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
                 <TouchableOpacity
                   onPress={() => {
                     if (!user) return;
-                    checking === 'followers' ? getFollowers(user.id) : getFollowing(user.id);
+                    if (checking === 'followers') {
+                      getFollowers(user.id);
+                    } else {
+                      getFollowing(user.id);
+                    }
                   }}>
                   <Text className="text-primary-600">Retry</Text>
                 </TouchableOpacity>
@@ -127,7 +131,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
 
           {!loading && !error && checking === 'following' && following.length === 0 && (
             <Text className="text-base text-neutral-500 dark:text-neutral-400">
-              You're not following anyone yet.
+              You&apos;re not following anyone yet.
             </Text>
           )}
 
@@ -136,7 +140,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
-              <View className="flex-row items-center justify-between p-3 mb-2 rounded-xl bg-primary-200 dark:bg-primary-800">
+              <View className="mb-2 flex-row items-center justify-between rounded-xl bg-primary-200 p-3 dark:bg-primary-800">
                 <TouchableOpacity
                   disabled={item.is_private || item.is_deleted}
                   className="flex-1 flex-row items-center"
@@ -169,8 +173,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
           />
           <View className="items-center">
             <Text className="font-SpaceGrotesk-Regular text-sm text-primary-400 dark:text-primary-600">
-              {checking === 'followers' ? followers.length : following.length}{' '}
-              total
+              {checking === 'followers' ? followers.length : following.length} total
             </Text>
           </View>
         </View>

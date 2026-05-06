@@ -39,7 +39,7 @@ export default function ConfirmModal({
       <Pressable
         className="flex-1 items-center justify-center bg-black/60 px-6 dark:bg-black/70"
         onPress={onCancel}>
-        <Pressable className="w-full max-w-sm overflow-hidden rounded-3xl bg-primary-100 dark:bg-primary-900 gap-y-2">
+        <Pressable className="w-full max-w-sm gap-y-2 overflow-hidden rounded-3xl bg-primary-100 dark:bg-primary-900">
           <View className="px-5 pb-4 pt-5">
             <Text className="mb-1 font-SpaceGrotesk-Bold text-2xl leading-7 text-primary-950 dark:text-primary-50">
               {title}

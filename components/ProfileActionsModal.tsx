@@ -15,8 +15,6 @@ import { Profile } from '~/types/supabaseTypes';
 import { Camera } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import Toast from 'react-native-toast-message';
-import { toastConfig } from './ToastConfig';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SaveFormat, ImageManipulator } from 'expo-image-manipulator';
 import { haptics } from '~/utils/haptics';
 
@@ -47,8 +45,6 @@ export default function ProfileActionsModal({
   const [userBio, setUserBio] = useState(bio ?? '');
   const [userIsPrivate, setUserIsPrivate] = useState(isPrivate);
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
-
   useEffect(() => {
     if (visible) {
       setImageUri(avatar ?? null);
@@ -101,7 +97,7 @@ export default function ProfileActionsModal({
         mimeType: 'image/jpeg',
       });
       setImageUri(result.uri);
-    } catch (error) {
+    } catch {
       Toast.show({
         type: 'error',
         text1: 'There was an error proccessing your image.',
@@ -159,7 +155,12 @@ export default function ProfileActionsModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent>
       {/* Overlay */}
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 bg-black/60 dark:bg-black/70" />
@@ -176,10 +177,12 @@ export default function ProfileActionsModal({
           </Text>
 
           {/* Avatar */}
-          <Pressable className="mb-4 self-center" onPress={() => {
-            haptics.action();
-            pickImage();
-          }}>
+          <Pressable
+            className="mb-4 self-center"
+            onPress={() => {
+              haptics.action();
+              pickImage();
+            }}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} className="h-20 w-20 rounded-full" />
             ) : (

@@ -133,9 +133,7 @@ export async function getFollowing(currentUserId: string): Promise<DataResult<Pr
   }
 }
 
-export async function getFollowingIds(
-  currentUserId: string
-): Promise<DataResult<string[]>> {
+export async function getFollowingIds(currentUserId: string): Promise<DataResult<string[]>> {
   try {
     const { data, error } = await supabase
       .from('follows')
@@ -162,9 +160,7 @@ export async function getFollowingIds(
   }
 }
 
-export async function getFollowerIds(
-  currentUserId: string
-): Promise<DataResult<string[]>> {
+export async function getFollowerIds(currentUserId: string): Promise<DataResult<string[]>> {
   try {
     const { data, error } = await supabase
       .from('follows')

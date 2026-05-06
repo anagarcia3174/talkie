@@ -6,9 +6,8 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '~/context/AuthContext';
 import LoadingScreen from '~/components/LoadingScreen';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 import { toastConfig } from '~/components/ToastConfig';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 SplashScreen.preventAutoHideAsync();

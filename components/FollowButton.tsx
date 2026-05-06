@@ -22,8 +22,6 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
 
   const { user } = useAuth();
 
-  if (!user) return null;
-
   const isFollowing = followingIds.has(targetUserId);
   const followsYou = followerIds.has(targetUserId);
   const isFriend = isFollowing && followsYou;
@@ -96,6 +94,8 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
       ...variants[state],
     };
   }, [isSmall, state, theme.primary]);
+
+  if (!user) return null;
 
   const handlePress = async () => {
     if (loading) return;

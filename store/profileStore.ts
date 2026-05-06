@@ -75,25 +75,6 @@ export const useProfile = create<ProfileState>((set, get) => ({
       return { success: true };
     }
 
-     set((state) => ({
-    otherProfiles: {
-      ...state.otherProfiles,
-      [userId]: {
-        profile: cached?.profile ?? null,
-        stats: cached?.stats ?? null,
-        lists: cached?.lists ?? [],
-        loading: true,
-        error: null,
-      },
-    },
-  }));
-    const [profileResult, statsResult, listsResult] = await Promise.all([
-      getProfileById(userId),
-      getProfileStats(userId),
-      getPublicListsByUserId(userId),
-    ]);
-
-    if (!profileResult.success) {
     set((state) => ({
       otherProfiles: {
         ...state.otherProfiles,
@@ -101,44 +82,57 @@ export const useProfile = create<ProfileState>((set, get) => ({
           profile: cached?.profile ?? null,
           stats: cached?.stats ?? null,
           lists: cached?.lists ?? [],
-          loading: false,
-          error: profileResult.error,
+          loading: true,
+          error: null,
         },
       },
     }));
-    return { success: false, error: profileResult.error };
-  }
+    const [profileResult, statsResult, listsResult] = await Promise.all([
+      getProfileById(userId),
+      getProfileStats(userId),
+      getPublicListsByUserId(userId),
+    ]);
 
-   const profile = profileResult.data;
+    if (!profileResult.success) {
+      set((state) => ({
+        otherProfiles: {
+          ...state.otherProfiles,
+          [userId]: {
+            profile: cached?.profile ?? null,
+            stats: cached?.stats ?? null,
+            lists: cached?.lists ?? [],
+            loading: false,
+            error: profileResult.error,
+          },
+        },
+      }));
+      return { success: false, error: profileResult.error };
+    }
 
-  const stats = statsResult.success
-    ? statsResult.data
-    : cached?.stats ?? null;
+    const profile = profileResult.data;
 
-  const lists = listsResult.success
-    ? (listsResult.data ?? [])
-    : cached?.lists ?? [];
+    const stats = statsResult.success ? statsResult.data : (cached?.stats ?? null);
 
+    const lists = listsResult.success ? (listsResult.data ?? []) : (cached?.lists ?? []);
 
     set((state) => ({
-    otherProfiles: {
-      ...state.otherProfiles,
-      [userId]: {
-        profile,
-        stats,
-        lists,
-        loading: false,
-        error:
-          !statsResult.success
+      otherProfiles: {
+        ...state.otherProfiles,
+        [userId]: {
+          profile,
+          stats,
+          lists,
+          loading: false,
+          error: !statsResult.success
             ? statsResult.error
             : !listsResult.success
-            ? listsResult.error
-            : null,
+              ? listsResult.error
+              : null,
+        },
       },
-    },
-  }));
+    }));
 
-  return { success: true };
+    return { success: true };
   },
   // Fetch current user's profile
   getProfile: async (userId) => {
@@ -207,7 +201,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
         set({ profile: addCacheBuster(get().profile!) });
       }
       return { success: true };
-    } catch (err: any) {
+    } catch {
       return { success: false, error: 'There was an error uploading your profile picture.' };
     }
   },

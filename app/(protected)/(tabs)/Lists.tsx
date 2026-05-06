@@ -55,13 +55,15 @@ export default function Lists() {
 
   useEffect(() => {
     hydrateDefaultLists();
-  }, []);
+  }, [hydrateDefaultLists]);
 
   const library = defaultListIds.library != null ? listsById[defaultListIds.library] : null;
   const favorites = defaultListIds.favorites != null ? listsById[defaultListIds.favorites] : null;
 
-  const libraryItems =
-    defaultListIds.library != null ? (listItems[defaultListIds.library] ?? []) : [];
+  const libraryItems = useMemo(
+    () => (defaultListIds.library != null ? (listItems[defaultListIds.library] ?? []) : []),
+    [defaultListIds.library, listItems]
+  );
 
   const statusCounts = useMemo(
     () =>
@@ -254,7 +256,7 @@ export default function Lists() {
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => router.push(`/list/${favorites.id}`)}
-            className="rounded-xl bg-primary-100 px-4 py-4 dark:bg-primary-900 min-h-16">
+            className="min-h-16 rounded-xl bg-primary-100 px-4 py-4 dark:bg-primary-900">
             <View className="flex-row items-center justify-between">
               <Text
                 numberOfLines={1}

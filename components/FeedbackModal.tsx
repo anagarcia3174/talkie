@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  Text,
+  View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
-import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { haptics } from '~/utils/haptics';
 import { CreateFeedbackInput } from '~/types/supabaseTypes';
 
-type FeedbackCategory =
-  | 'general'
-  | 'feature_request'
-  | 'bug'
-  | 'other';
+type FeedbackCategory = 'general' | 'feature_request' | 'bug' | 'other';
 
 interface FeedbackModalProps {
   visible: boolean;
@@ -25,11 +28,7 @@ const categories: { label: string; value: FeedbackCategory }[] = [
   { label: 'Other', value: 'other' },
 ];
 
-export default function FeedbackModal({
-  visible,
-  onClose,
-  onSubmit,
-}: FeedbackModalProps) {
+export default function FeedbackModal({ visible, onClose, onSubmit }: FeedbackModalProps) {
   const theme = useTheme();
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState<FeedbackCategory>('general');
@@ -57,10 +56,9 @@ export default function FeedbackModal({
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1">
-        
         {/* Overlay */}
         <Pressable
-          className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-4"
+          className="flex-1 items-center justify-center bg-black/60 px-4 dark:bg-black/70"
           onPress={() => {
             if (keyboardOpen) {
               Keyboard.dismiss();
@@ -69,14 +67,12 @@ export default function FeedbackModal({
               reset();
             }
           }}>
-          
           {/* Card */}
           <Pressable
             onPress={() => {
               if (keyboardOpen) Keyboard.dismiss();
             }}
             className="w-full max-w-sm rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
-            
             {/* Header */}
             <Text className="mb-4 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
               Send feedback
@@ -99,9 +95,9 @@ export default function FeedbackModal({
                         haptics.action();
                         setCategory(item.value);
                       }}
-                      className={`rounded-full px-3 py-1.5 border ${
+                      className={`rounded-full border px-3 py-1.5 ${
                         isSelected
-                          ? 'bg-primary-900 border-primary-900 dark:bg-primary-50 dark:border-primary-50'
+                          ? 'border-primary-900 bg-primary-900 dark:border-primary-50 dark:bg-primary-50'
                           : 'border-primary-300 dark:border-primary-700'
                       }`}>
                       <Text
@@ -149,9 +145,7 @@ export default function FeedbackModal({
                   reset();
                 }}
                 className="rounded-xl px-4 py-2">
-                <Text className="text-primary-700 dark:text-primary-300">
-                  Cancel
-                </Text>
+                <Text className="text-primary-700 dark:text-primary-300">Cancel</Text>
               </Pressable>
 
               <Pressable

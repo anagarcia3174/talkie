@@ -1,13 +1,5 @@
-import {
-  View,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  Modal,
-} from 'react-native';
-import { X, Plus, Library, List, Star, Check, ScrollText } from 'lucide-react-native';
+import { View, Pressable, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { X, Plus, Library, Star, Check, ScrollText } from 'lucide-react-native';
 import { useLists } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
@@ -65,12 +57,10 @@ export default function ListSelectionModal({
                   list && (
                     <TouchableOpacity
                       key={list.id}
-                      onPress={() =>
-                      {
+                      onPress={() => {
                         haptics.action();
-                        setSelectedList(selectedList === list.id ? undefined : list.id)
-                      }
-                      }
+                        setSelectedList(selectedList === list.id ? undefined : list.id);
+                      }}
                       className={`flex-row items-center gap-4 rounded-xl p-4 ${
                         selectedList === list.id
                           ? 'bg-primary-800 dark:bg-primary-100'

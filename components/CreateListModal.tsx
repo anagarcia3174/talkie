@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
 import { List } from '~/types/supabaseTypes';
-import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { haptics } from '~/utils/haptics';
 import { Globe, Lock } from 'lucide-react-native';
 

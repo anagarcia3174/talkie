@@ -8,9 +8,15 @@ import {
   getRecentCommentsFeed,
 } from '~/services/commentService';
 import { reportComment } from '~/services/reportService';
-import { CommentWithUser, Comment, CreateCommentInput, ReportReason, CommentWithUserAndMedia } from '~/types/supabaseTypes';
+import {
+  CommentWithUser,
+  Comment,
+  CreateCommentInput,
+  ReportReason,
+  CommentWithUserAndMedia,
+} from '~/types/supabaseTypes';
 
-type StoreResult<T = void> = { success: true } | { success: false; error: string };
+type StoreResult = { success: true } | { success: false; error: string };
 
 type ContextKey = {
   mediaId: number;
@@ -25,7 +31,7 @@ interface MediaCommentsState {
   error: string | null;
 }
 
-interface RecentCommentsFeedState { 
+interface RecentCommentsFeedState {
   recentComments: CommentWithUserAndMedia[];
   isLoading: boolean;
   hasFetched: boolean;
@@ -40,21 +46,21 @@ interface CommentState {
     seasonNumber?: number;
     episodeNumber?: number;
     force?: boolean;
-  }) => Promise<StoreResult<void>>;
-  getRecentCommentsFeed: () => Promise<StoreResult<void>>;
-  postComment: (comment: CreateCommentInput) => Promise<StoreResult<void>>;
-  deleteComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult<void>>;
-  toggleLikeComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult<void>>;
+  }) => Promise<StoreResult>;
+  getRecentCommentsFeed: () => Promise<StoreResult>;
+  postComment: (comment: CreateCommentInput) => Promise<StoreResult>;
+  deleteComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult>;
+  toggleLikeComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult>;
   updateComment: (params: {
     commentId: number;
     contextKey: ContextKey;
     updates: Partial<Pick<Comment, 'timestamp_seconds' | 'content'>>;
-  }) => Promise<StoreResult<void>>;
+  }) => Promise<StoreResult>;
   reportComment: (
     commentId: number,
     reportReason: ReportReason,
     details?: string
-  ) => Promise<StoreResult<void>>;
+  ) => Promise<StoreResult>;
 }
 
 export const useComments = create<CommentState>((set, get) => ({

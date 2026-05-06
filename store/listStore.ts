@@ -4,7 +4,6 @@ import {
   ListItemWithMedia,
   Status,
   SearchPublicListResult,
-  StoreList,
   ListWithMeta,
 } from '~/types/supabaseTypes';
 import { create } from 'zustand';
@@ -128,7 +127,7 @@ export const useLists = create<ListState>((set, get) => ({
       });
 
       return { success: true };
-    } catch (err: any) {
+    } catch {
       return { success: false, error: 'An unexpected error ocurred while retrieving your lists.' };
     }
   },

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import {  Home, Library, Search, User } from 'lucide-react-native';
+import { Home, Library, Search, User } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 
 export default function Layout() {
@@ -8,21 +8,21 @@ export default function Layout() {
   return (
     <Tabs
       screenOptions={{
-    headerShown: false,
-    tabBarShowLabel: true,
-    tabBarActiveTintColor: theme.primary[900],
-    tabBarInactiveTintColor: theme.primaryOpacity[700],
-    tabBarStyle: {
-      backgroundColor: theme.primary[50],
-      position: 'absolute',
-      borderTopWidth: 0,
-      elevation: 0,
-      height: 70,
-    },
-    tabBarIconStyle: {
-      marginTop: 2,
-    }
-  }}>
+        headerShown: false,
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: theme.primary[900],
+        tabBarInactiveTintColor: theme.primaryOpacity[700],
+        tabBarStyle: {
+          backgroundColor: theme.primary[50],
+          position: 'absolute',
+          borderTopWidth: 0,
+          elevation: 0,
+          height: 70,
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
+        },
+      }}>
       <Tabs.Screen
         name="Home"
         options={{

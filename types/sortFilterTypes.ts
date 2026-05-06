@@ -1,5 +1,3 @@
-
-
 export type MediaSortType = 'relevance' | 'title' | 'rating' | 'release_date';
 
 export type ListSortType = 'relevance' | 'name' | 'likes';

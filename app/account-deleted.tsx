@@ -36,7 +36,7 @@ export default function AccountDeletedScreen() {
         text2: 'Your account is now active again.',
       });
       setTimeout(() => router.replace('/'), 500);
-    } catch (err) {
+    } catch {
       Toast.show({
         type: 'error',
         text1: 'Restore Failed',

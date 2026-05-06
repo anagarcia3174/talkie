@@ -1,9 +1,8 @@
-import { create } from "zustand";
-
+import { create } from 'zustand';
 
 interface UIState {
-    overviewExpanded: boolean;
-    setOverviewExpanded: (val: boolean) => void;
+  overviewExpanded: boolean;
+  setOverviewExpanded: (val: boolean) => void;
 }
 
 export const useUI = create<UIState>((set) => ({

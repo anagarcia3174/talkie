@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
 import { List } from '~/types/supabaseTypes';
-import { Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { haptics } from '~/utils/haptics';
 
 interface ListInfoModalProps {
@@ -44,9 +52,7 @@ export default function ListInfoModal({
   const hasChanges = nameChanged || descChanged || isPrivateChanged;
 
   const isValid =
-    listName.trim().length > 0 &&
-    listName.length <= 50 &&
-    listDescription.length <= 500;
+    listName.trim().length > 0 && listName.length <= 50 && listDescription.length <= 500;
 
   const canSubmit = hasChanges && isValid;
 
@@ -56,7 +62,7 @@ export default function ListInfoModal({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1">
         <Pressable
-          className="flex-1 items-center justify-center bg-black/60 dark:bg-black/70 px-4"
+          className="flex-1 items-center justify-center bg-black/60 px-4 dark:bg-black/70"
           onPress={() => {
             if (keyboardOpen) {
               Keyboard.dismiss();
@@ -126,8 +132,8 @@ export default function ListInfoModal({
               </Text>
 
               <View className="flex-row gap-2">
-                {([true, false] ).map((option) => {
-                  const selected = listIsPrivate === option 
+                {[true, false].map((option) => {
+                  const selected = listIsPrivate === option;
 
                   return (
                     <Pressable

@@ -18,7 +18,6 @@ import {
   Heart,
   LayoutGrid,
   List,
-  Star,
   ThumbsUp,
 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
@@ -103,6 +102,7 @@ export default function ListSortAndFilterModal({
       setItemsMinText(filters.itemsMin?.toString() ?? '');
       setItemsMaxText(filters.itemsMax?.toString() ?? '');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
 
   const orderDisabled = localSort === 'relevance';
