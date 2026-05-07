@@ -71,7 +71,9 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
 
             {/* Name */}
             <View className="mb-5">
-              <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">NAME</Text>
+              <Text className="mb-1 font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
+                NAME
+              </Text>
               <TextInput
                 autoFocus
                 className="rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950  dark:bg-primary-800 dark:text-primary-50 "
@@ -88,11 +90,11 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
 
             {/* Description */}
             <View className="mb-5">
-              <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">
+              <Text className="mb-1 font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
                 DESCRIPTION (optional)
               </Text>
               <TextInput
-                className="min-h-[90px] rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950  dark:bg-primary-800 dark:text-primary-50"
+                className="min-h-[60px] rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950  dark:bg-primary-800 dark:text-primary-50"
                 value={listDescription}
                 onChangeText={setListDescription}
                 cursorColor={theme.primary[700]}
@@ -110,49 +112,49 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
             </View>
 
             <View className="mb-6">
-              <Text className="mb-2 text-sm text-primary-700 dark:text-primary-300">
+              <Text className="mb-2 font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
                 VISIBILITY
               </Text>
               <View className="flex-row gap-x-2">
                 <TouchableOpacity
                   onPress={() => setIsPrivate(false)}
-                  className={`flex-1 flex-row items-center gap-x-2 rounded-xl border px-3 py-2.5 ${
+                  className={`flex-1 flex-row items-center justify-between rounded-xl px-3 py-2.5 ${
                     !isPrivate
-                      ? 'border-primary-800 bg-primary-200 dark:border-primary-100 dark:bg-primary-800'
-                      : 'border-transparent bg-primary-200 dark:bg-primary-800'
+                      ? 'bg-primary-900 dark:bg-primary-100'
+                      : 'bg-primary-200 dark:bg-primary-800'
                   }`}>
-                  <Globe size={15} color={!isPrivate ? theme.primary[900] : theme.primary[500]} />
-                  <Text
-                    className={`font-SpaceGrotesk-Medium text-sm ${
-                      !isPrivate
-                        ? 'text-primary-900 dark:text-primary-100'
-                        : 'text-primary-500 dark:text-primary-500'
-                    }`}>
-                    Public
-                  </Text>
+                  <View className="flex-row items-center gap-x-1">
+                    <Globe size={15} color={!isPrivate ? theme.primary[100] : theme.primary[500]} />
+                    <Text
+                      className={`font-SpaceGrotesk-Medium text-sm ${
+                        !isPrivate ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'
+                      }`}>
+                      Public
+                    </Text>
+                  </View>
                   {!isPrivate && (
-                    <View className="h-1.5 w-1.5 rounded-full bg-primary-800 dark:bg-primary-100" />
+                    <View className="m-1 h-1.5 w-1.5 rounded-full bg-primary-100 p-1 dark:bg-primary-900" />
                   )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => setIsPrivate(true)}
-                  className={`flex-1 flex-row items-center gap-x-2 rounded-xl border px-3 py-2.5 ${
+                  className={`flex-1 flex-row items-center justify-between rounded-xl px-3 py-2.5 ${
                     isPrivate
-                      ? 'border-primary-800 bg-primary-200 dark:border-primary-100 dark:bg-primary-800'
-                      : 'border-transparent bg-primary-200 dark:bg-primary-800'
+                      ? 'bg-primary-900 dark:bg-primary-100'
+                      : 'bg-primary-200 dark:bg-primary-800'
                   }`}>
-                  <Lock size={15} color={isPrivate ? theme.primary[900] : theme.primary[500]} />
-                  <Text
-                    className={`font-SpaceGrotesk-Medium text-sm ${
-                      isPrivate
-                        ? 'text-primary-900 dark:text-primary-100'
-                        : 'text-primary-500 dark:text-primary-500'
-                    }`}>
-                    Private
-                  </Text>
+                  <View className="flex-row items-center gap-x-1">
+                    <Lock size={15} color={isPrivate ? theme.primary[100] : theme.primary[500]} />
+                    <Text
+                      className={`font-SpaceGrotesk-Medium text-sm ${
+                        isPrivate ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'
+                      }`}>
+                      Private
+                    </Text>
+                  </View>
                   {isPrivate && (
-                    <View className="h-1.5 w-1.5 rounded-full bg-primary-800 dark:bg-primary-100" />
+                    <View className="h-1.5 w-1.5 rounded-full bg-primary-100 dark:bg-primary-900" />
                   )}
                 </TouchableOpacity>
               </View>

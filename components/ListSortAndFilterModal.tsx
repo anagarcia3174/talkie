@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   Text,
   TextInput,
   TouchableOpacity,
@@ -147,7 +148,9 @@ export default function ListSortAndFilterModal({
       <KeyboardAvoidingView
         style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View className="gap-y-2 rounded-t-2xl bg-primary-100 px-4 pb-8 pt-2 dark:bg-primary-900">
+        <Pressable
+          onPress={() => (keyboardVisible ? Keyboard.dismiss() : null)}
+          className="gap-y-2 rounded-t-2xl bg-primary-100 px-4 pb-8 pt-2 dark:bg-primary-900">
           <View className="flex-row items-center justify-between">
             <Text className="font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
               Sort & Filter
@@ -396,7 +399,7 @@ export default function ListSortAndFilterModal({
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Pressable>
       </KeyboardAvoidingView>
     </Modal>
   );

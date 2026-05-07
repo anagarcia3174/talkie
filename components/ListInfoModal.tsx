@@ -1,3 +1,4 @@
+import { Globe, Lock, X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   Modal,
@@ -58,161 +59,189 @@ export default function ListInfoModal({
 
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => (keyboardOpen ? Keyboard.dismiss() : onClose())}
+        className="absolute inset-0 bg-black/60 dark:bg-black/70"
+      />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1">
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <Pressable
-          className="flex-1 items-center justify-center bg-black/60 px-4 dark:bg-black/70"
           onPress={() => {
             if (keyboardOpen) {
               Keyboard.dismiss();
-            } else {
-              onClose();
             }
-          }}>
-          {/* Card */}
-          <Pressable
-            onPress={() => {
-              if (keyboardOpen) {
-                Keyboard.dismiss();
-              }
-            }}
-            className="w-full max-w-sm rounded-3xl bg-primary-100 p-6 shadow-2xl dark:bg-primary-900">
-            {/* Header */}
-            <Text className="mb-4 font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+          }}
+          className="gap-y-2 rounded-t-2xl bg-primary-100 px-4 pb-8 pt-4 dark:bg-primary-900">
+          {/* Header */}
+
+          <View className="flex-row items-center justify-between">
+            <Text className="font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
               Edit List
             </Text>
-
-            {/* Name */}
-            <View className="mb-4">
-              <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">Name</Text>
-              <TextInput
-                editable={!list.is_default}
-                className={`rounded-xl border px-4 py-3 font-SpaceGrotesk-Regular ${
-                  list.is_default
-                    ? 'border-primary-300 bg-primary-200 text-primary-500 dark:border-primary-700 dark:bg-primary-800 dark:text-primary-400'
-                    : 'border-primary-300 bg-primary-100 text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50'
-                }`}
-                value={listName}
-                onChangeText={setListName}
-                cursorColor={theme.primary[700]}
-                selectionColor={theme.primary[700]}
-                placeholder="e.g. Weekend movies"
-                placeholderTextColor={theme.primary[500]}
-                maxLength={50}
-              />
-              <Text className="mt-1 text-right text-xs text-primary-500">{listName.length}/50</Text>
-            </View>
-
-            {/* Description */}
-            <View className="mb-6">
-              <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">
-                Description (optional)
-              </Text>
-              <TextInput
-                className="min-h-[90px] rounded-xl border border-primary-300 bg-primary-100 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-50 focus:dark:border-primary-50"
-                value={listDescription}
-                onChangeText={setListDescription}
-                cursorColor={theme.primary[700]}
-                selectionColor={theme.primary[700]}
-                placeholder="What’s this list for?"
-                placeholderTextColor={theme.primary[500]}
-                multiline
-                maxLength={500}
-                submitBehavior="newline"
-              />
-              <Text className="mt-1 text-right text-xs text-primary-500">
-                {listDescription.length}/500
-              </Text>
-            </View>
-
-            <View className="mb-6">
-              <Text className="mb-2 text-sm text-primary-700 dark:text-primary-300">
-                Visibility
-              </Text>
-
-              <View className="flex-row gap-2">
-                {[true, false].map((option) => {
-                  const selected = listIsPrivate === option;
-
-                  return (
-                    <Pressable
-                      key={option ? 'private' : 'public'}
-                      onPress={() => setListIsPrivate(option)}
-                      className={`flex-1 rounded-xl border px-3 py-2 ${
-                        selected
-                          ? 'border-primary-900 bg-primary-900 dark:border-primary-50 dark:bg-primary-50'
-                          : 'border-primary-300 bg-primary-50 dark:border-primary-700 dark:bg-primary-900'
-                      }`}>
-                      <Text
-                        className={`text-center capitalize ${
-                          selected
-                            ? 'font-SpaceGrotesk-SemiBold text-primary-50 dark:text-primary-900'
-                            : 'text-primary-700 dark:text-primary-300'
-                        }`}>
-                        {option ? 'private' : 'public'}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Actions */}
-            <View className="flex-row justify-end gap-3">
-              <Pressable onPress={onClose} className="rounded-xl px-4 py-2">
-                <Text className="text-primary-700 dark:text-primary-300">Cancel</Text>
-              </Pressable>
-
-              <Pressable
-                disabled={!canSubmit}
-                onPress={() => {
-                  const updates: Partial<List> = {};
-
-                  if (nameChanged) updates.name = listName.trim();
-                  if (descChanged) updates.description = listDescription.trim();
-                  if (isPrivateChanged) updates.is_private = listIsPrivate;
-
-                  haptics.action();
-                  onConfirm(updates);
-                }}
-                className={`rounded-xl px-5 py-2 ${
-                  canSubmit
-                    ? 'bg-primary-900 dark:bg-primary-50'
-                    : 'bg-primary-300 dark:bg-primary-700'
-                }`}>
-                <Text
-                  className={`font-SpaceGrotesk-SemiBold ${
-                    canSubmit
-                      ? 'text-primary-50 dark:text-primary-900'
-                      : 'text-primary-600 dark:text-primary-400'
-                  }`}>
-                  Confirm
-                </Text>
-              </Pressable>
-            </View>
-
-            <View className="my-8 h-px bg-primary-200 dark:bg-primary-700" />
-
-            {/* Delete */}
             <TouchableOpacity
-              disabled={list.is_default}
-              activeOpacity={0.5}
+              onPress={onClose}
+              className="rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
+              <X size={20} color={theme.primary[950]} strokeWidth={2} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Name */}
+          <View className="mb-4">
+            <Text className="mb-1 font-SpaceGrotesk-Medium text-sm uppercase text-primary-700 dark:text-primary-300">
+              Name
+            </Text>
+            <TextInput
+              editable={!list.is_default}
+              className={`rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 dark:bg-primary-800 dark:text-primary-50 ${
+                list.is_default ? 'opacity-50' : ''
+              }`}
+              value={listName}
+              onChangeText={setListName}
+              cursorColor={theme.primary[700]}
+              selectionColor={theme.primary[700]}
+              placeholder="e.g. Weekend movies"
+              placeholderTextColor={theme.primary[500]}
+              maxLength={50}
+            />
+            {!list.is_default && (
+              <Text className="mt-1 text-right text-xs text-primary-500">{listName.length}/50</Text>
+            )}
+          </View>
+
+          {/* Description */}
+          <View className="mb-4">
+            <Text className="mb-1 font-SpaceGrotesk-Medium text-sm uppercase text-primary-700 dark:text-primary-300">
+              DESCRIPTION (optional)
+            </Text>
+            <TextInput
+              className="min-h-[60px] rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 dark:bg-primary-800 dark:text-primary-50"
+              value={listDescription}
+              onChangeText={setListDescription}
+              cursorColor={theme.primary[700]}
+              selectionColor={theme.primary[700]}
+              placeholder="What’s this list for?"
+              placeholderTextColor={theme.primary[500]}
+              multiline
+              maxLength={500}
+              submitBehavior="newline"
+              numberOfLines={3}
+            />
+            <Text className="mt-1 text-right text-xs text-primary-500">
+              {listDescription.length}/500
+            </Text>
+          </View>
+
+          <View className="mb-4">
+            <Text className="mb-1 font-SpaceGrotesk-Medium text-sm uppercase text-primary-700 dark:text-primary-300">
+              Visibility
+            </Text>
+
+            <View className="flex-row gap-x-2">
+              <TouchableOpacity
+                onPress={() => setListIsPrivate(false)}
+                className={`flex-1 flex-row items-center justify-between rounded-xl px-3 py-3 ${
+                  listIsPrivate
+                    ? 'bg-primary-200 dark:bg-primary-800'
+                    : ' bg-primary-900 dark:bg-primary-100'
+                }`}>
+                <View className="flex-row items-center gap-x-1">
+                  <Globe
+                    size={15}
+                    color={listIsPrivate ? theme.primary[500] : theme.primary[100]}
+                  />
+                  <Text
+                    className={`font-SpaceGrotesk-Medium text-sm ${
+                      listIsPrivate ? 'text-primary-500' : 'text-primary-100 dark:text-primary-900'
+                    }`}>
+                    Public
+                  </Text>
+                </View>
+                {!listIsPrivate && (
+                  <View className="m-1 h-1.5 w-1.5 rounded-full bg-primary-100 p-1 dark:bg-primary-900" />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setListIsPrivate(true)}
+                className={`flex-1 flex-row items-center justify-between rounded-xl px-3 py-3 ${
+                  listIsPrivate
+                    ? 'bg-primary-900 dark:bg-primary-100'
+                    : 'bg-primary-200 dark:bg-primary-800'
+                }`}>
+                <View className="flex-row items-center gap-x-1">
+                  <Lock size={15} color={listIsPrivate ? theme.primary[100] : theme.primary[500]} />
+                  <Text
+                    className={`font-SpaceGrotesk-Medium text-sm ${
+                      listIsPrivate ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'
+                    }`}>
+                    Private
+                  </Text>
+                </View>
+                {listIsPrivate && (
+                  <View className="m-1 h-1.5 w-1.5 rounded-full bg-primary-100 p-1 dark:bg-primary-900" />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Actions */}
+          <View className="flex-row items-center gap-x-2 pt-2">
+            <Pressable
+              onPress={onClose}
+              className="flex-1 items-center rounded-xl border border-primary-300 py-2.5 dark:border-primary-700">
+              <Text className="text-primary-700 dark:text-primary-300">Cancel</Text>
+            </Pressable>
+
+            <Pressable
+              disabled={!canSubmit}
               onPress={() => {
-                haptics.warning();
-                onDelete();
+                const updates: Partial<List> = {};
+
+                if (nameChanged) updates.name = listName.trim();
+                if (descChanged) updates.description = listDescription.trim();
+                if (isPrivateChanged) updates.is_private = listIsPrivate;
+
+                haptics.action();
+                onConfirm(updates);
               }}
-              className={`rounded-xl px-4 py-3 ${
-                list.is_default ? 'bg-primary-200  dark:bg-primary-800' : 'bg-red-500'
+              className={`flex-[2] items-center rounded-xl px-5 py-2 py-2.5 ${
+                canSubmit
+                  ? 'bg-primary-900 dark:bg-primary-50'
+                  : 'bg-primary-200 dark:bg-primary-600'
               }`}>
               <Text
-                className={`text-center font-SpaceGrotesk-SemiBold ${
-                  list.is_default ? 'text-primary-500 dark:text-primary-400' : 'text-primary-100'
+                className={`font-SpaceGrotesk-SemiBold ${
+                  canSubmit
+                    ? 'text-primary-50 dark:text-primary-900'
+                    : 'text-primary-400 dark:text-primary-300'
                 }`}>
-                {list.is_default ? 'Cannot delete default list' : 'Delete List'}
+                Confirm
               </Text>
-            </TouchableOpacity>
-          </Pressable>
+            </Pressable>
+          </View>
+
+          {!list.is_default && (
+            <>
+              <View className="my-6 h-px bg-primary-200 dark:bg-primary-700" />
+
+              {/* Delete */}
+              <TouchableOpacity
+                disabled={list.is_default}
+                activeOpacity={0.5}
+                onPress={() => {
+                  haptics.warning();
+                  onDelete();
+                }}
+                className={`rounded-xl px-4 py-3 border border-red-400 bg-red-500/20 dark:border-red-500 dark:bg-red-400/25`}>
+                <Text
+                  className={`text-center font-SpaceGrotesk-SemiBold text-red-500 dark:text-red-500`}>
+                  Delete List
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </Pressable>
       </KeyboardAvoidingView>
     </Modal>
