@@ -1,15 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import {
   AlignJustify,
   ArrowDown,
@@ -22,6 +12,7 @@ import {
   Tv,
 } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
+import BottomSheet from './BottomSheet';
 import { haptics } from '~/utils/haptics';
 import {
   DEFAULT_MEDIA_FILTERS,
@@ -69,17 +60,7 @@ export default function MediaSortAndFilterModal({
   onApply,
 }: MediaSortAndFilterModalProps) {
   const theme = useTheme();
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [selected, setSelected] = useState(0);
-
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
   const [localSort, setLocalSort] = useState<MediaSortType>(sort);
   const [localOrder, setLocalOrder] = useState<SortOrder>(order);
   const [localFilters, setLocalFilters] = useState<MediaFilters>(filters);
@@ -137,24 +118,13 @@ export default function MediaSortAndFilterModal({
   };
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => (keyboardVisible ? Keyboard.dismiss() : onClose())}
-        className="absolute inset-0 bg-black/60 dark:bg-black/70"
-      />
-      <KeyboardAvoidingView
-        style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Pressable
-          onPress={() => (keyboardVisible ? Keyboard.dismiss() : null)}
-          className="gap-y-2 rounded-t-2xl bg-primary-100 px-4 pb-8 pt-2 dark:bg-primary-900">
+    <BottomSheet isVisible={isVisible} onClose={onClose}>
           {/* Sort By */}
           <View className="flex-row items-center justify-between">
-            <Text className="font-SpaceGrotesk-Bold text-2xl text-primary-950 dark:text-primary-50">
+            <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
               Sort & Filter
             </Text>
-            <TouchableOpacity onPress={handleReset} className="px-2 py-2.5">
+            <TouchableOpacity onPress={handleReset} className="p-2">
               <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
                 Reset
               </Text>
@@ -406,8 +376,6 @@ export default function MediaSortAndFilterModal({
               </Text>
             </TouchableOpacity>
           </View>
-        </Pressable>
-      </KeyboardAvoidingView>
-    </Modal>
+    </BottomSheet>
   );
 }

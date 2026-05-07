@@ -1,6 +1,7 @@
 import { UserRound, X } from 'lucide-react-native';
-import { Modal, View, TouchableOpacity, Text, FlatList, Image } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
+import BottomSheet from './BottomSheet';
 import FollowButton from './FollowButton';
 import { useTheme } from '~/hooks/useTheme';
 import { useFollow } from '~/store/followStore';
@@ -80,20 +81,15 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
   ]);
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1 justify-end bg-black/60 dark:bg-black/70">
-        <TouchableOpacity activeOpacity={1} onPress={onClose} className="absolute inset-0" />
-        <View className="max-h-[70%] min-h-[30%] w-full rounded-t-3xl bg-primary-100 px-6 pb-6 pt-4 dark:bg-primary-900">
+    <BottomSheet isVisible={visible} onClose={onClose}>
           {/* Header */}
-          <View className="mb-5 flex-row items-center justify-between">
-            <Text className="font-SpaceGrotesk-Medium text-xl text-primary-900 dark:text-primary-100">
+          <View className="flex-row items-center justify-between">
+            <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
               {checking === 'followers' ? 'Followers' : 'Following'}
             </Text>
-
             <TouchableOpacity
               onPress={onClose}
-              activeOpacity={0.8}
-              className="items-center justify-center rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
+              className="rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
               <X size={20} color={theme.primary[950]} strokeWidth={2} />
             </TouchableOpacity>
           </View>
@@ -135,6 +131,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
             </Text>
           )}
 
+          <View className="max-h-[55vh]">
           <FlatList
             data={checking === 'followers' ? followers : following}
             keyExtractor={(item) => item.id}
@@ -171,13 +168,12 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
               </View>
             )}
           />
+          </View>
           <View className="items-center">
             <Text className="font-SpaceGrotesk-Regular text-sm text-primary-400 dark:text-primary-600">
               {checking === 'followers' ? followers.length : following.length} total
             </Text>
           </View>
-        </View>
-      </View>
-    </Modal>
+    </BottomSheet>
   );
 }
