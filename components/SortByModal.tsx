@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { SortOrder, SortType } from './ListContent';
 import { haptics } from '~/utils/haptics';
+import BottomSheet from './BottomSheet';
+import { useTheme } from '~/hooks/useTheme';
+import { ArrowDown, ArrowUp, Calendar, CaseUpper, Clock, X } from 'lucide-react-native';
 
 interface SortByModalPropsModal {
   isVisible: boolean;
@@ -9,7 +12,14 @@ interface SortByModalPropsModal {
   onSelect: (option: SortType, order: SortOrder) => void;
 }
 
+const SORT_ICONS = {
+  alpha: CaseUpper,
+  release: Calendar,
+  added: Clock,
+} as const;
+
 export default function SortByModal({ isVisible, onClose, onSelect }: SortByModalPropsModal) {
+  const theme = useTheme();
   const SORT_OPTIONS: { label: string; value: SortType }[] = [
     { label: 'Alphabetical', value: 'alpha' },
     { label: 'Release Date', value: 'release' },
@@ -20,6 +30,12 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
     { label: 'Descending', value: 'desc' },
   ];
 
+  const ORDER_HINTS: Record<SortType, { ascending: string; descending: string }> = {
+    alpha: { ascending: 'A → Z', descending: 'Z → A' },
+    release: { ascending: 'Oldest → Newest', descending: 'Newest → Oldest' },
+    added: { ascending: 'Oldest → Newest', descending: 'Newest → Oldest' },
+  };
+
   const [selectedSort, setSelectedSort] = useState<SortType>('added');
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>('asc');
 
@@ -29,24 +45,26 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
   }
 
   return (
-    <Modal visible={isVisible} transparent animationType="fade" onRequestClose={onClose}>
-      {/* Background Overlay */}
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={onClose}
-        className="flex-1 bg-black/60 dark:bg-black/70"
-      />
+    <BottomSheet isVisible={isVisible} onClose={onClose}>
+      <View className="flex-row items-center justify-between">
+        <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+          Sort List Items
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          className="rounded-lg bg-primary-200 p-1  dark:bg-primary-800">
+          <X size={20} color={theme.primary[950]} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-      {/* Bottom Sheet */}
-      <View className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-primary-100 p-6 pb-8 shadow-2xl dark:bg-primary-900">
-        <Text className="mb-4 font-SpaceGrotesk-Bold text-xl text-primary-900 dark:text-primary-100">
+      <View>
+        <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
           Sort By
         </Text>
-
-        {/* Sort Options */}
-        <View className="mb-6">
+        <View className="flex-row gap-x-2">
           {SORT_OPTIONS.map((opt) => {
             const active = selectedSort === opt.value;
+            const SortIcon = SORT_ICONS[opt.value];
             return (
               <TouchableOpacity
                 key={opt.value}
@@ -54,33 +72,31 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
                   haptics.action();
                   setSelectedSort(opt.value);
                 }}
-                className={`mb-3 flex-row items-center justify-between rounded-lg px-3 py-3 ${
-                  active ? 'bg-primary-300 dark:bg-primary-800' : 'bg-transparent'
-                }`}>
+                className={`flex-1 gap-y-3 rounded-xl p-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
+                <SortIcon size={18} color={active ? theme.primary[100] : theme.primary[500]} />
                 <Text
-                  className={`text-lg  ${
-                    active
-                      ? 'font-SpaceGrotesk-Medium text-primary-950 dark:text-primary-50'
-                      : 'font-SpaceGrotesk-Light text-primary-900 dark:text-primary-200'
-                  }`}>
+                  className={`font-SpaceGrotesk-Medium text-sm ${active ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'}`}>
                   {opt.label}
                 </Text>
-                {active && (
-                  <View className="h-3 w-3 rounded-full bg-primary-950 dark:bg-primary-50" />
-                )}
               </TouchableOpacity>
             );
           })}
         </View>
-
-        <Text className="mb-4 font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+      </View>
+      <View>
+        {/* Sort Options */}
+        <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
           Sort Order
         </Text>
 
         {/* Order Options */}
-        <View className="mb-6">
+        <View className="flex-row gap-x-2">
           {ORDER_OPTIONS.map((opt) => {
             const active = selectedOrder === opt.value;
+            const OrderIcon = opt.value === 'asc' ? ArrowUp : ArrowDown;
+            const hint =
+              ORDER_HINTS[selectedSort][opt.value === 'asc' ? 'ascending' : 'descending'];
+
             return (
               <TouchableOpacity
                 key={opt.value}
@@ -88,45 +104,40 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
                   haptics.action();
                   setSelectedOrder(opt.value);
                 }}
-                className={`mb-3 flex-row items-center justify-between rounded-lg px-3 py-3 ${
-                  active ? 'bg-primary-300 dark:bg-primary-800' : 'bg-transparent'
-                }`}>
-                <Text
-                  className={`text-lg ${
-                    active
-                      ? 'font-SpaceGrotesk-Medium text-primary-950 dark:text-primary-50'
-                      : 'font-SpaceGrotesk-Light text-primary-900 dark:text-primary-200'
-                  }`}>
-                  {opt.label}
-                </Text>
-                {active && (
-                  <View className="h-3 w-3 rounded-full bg-primary-950 dark:bg-primary-50" />
+                className={`flex-1 gap-y-1 rounded-xl px-4 py-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
+                <View className="flex-row items-center gap-x-2">
+                  <OrderIcon size={16} color={active ? theme.primary[100] : theme.primary[500]} />
+                  <Text
+                    className={`font-SpaceGrotesk-Medium text-sm ${active ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'}`}>
+                    {opt.value === 'asc' ? 'Ascending' : 'Descending'}
+                  </Text>
+                </View>
+                {hint !== '—' && (
+                  <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">{hint}</Text>
                 )}
               </TouchableOpacity>
             );
           })}
         </View>
-
-        {/* Action Buttons */}
-        <View className="flex-row justify-end gap-3">
-          <TouchableOpacity onPress={onClose} className="rounded-lg px-4 py-2">
-            <Text className="font-SpaceGrotesk-Light text-lg text-primary-700 dark:text-primary-300">
-              Cancel
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              haptics.success();
-              apply();
-            }}
-            className="rounded-lg bg-primary-900 px-4 py-2 dark:bg-primary-200">
-            <Text className="font-SpaceGrotesk-Medium text-lg text-primary-50 dark:text-primary-950">
-              Apply
-            </Text>
-          </TouchableOpacity>
-        </View>
       </View>
-    </Modal>
+
+      {/* Action Buttons */}
+      <View className="flex-row items-center gap-x-2 pt-2">
+        <TouchableOpacity
+          onPress={onClose}
+          className="flex-1 items-center rounded-xl border border-primary-300 py-2.5 dark:border-primary-700">
+          <Text className="font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
+            Cancel
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={apply}
+          className="flex-[2] items-center rounded-xl bg-primary-900 py-3 dark:bg-primary-100">
+          <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-50 dark:text-primary-950">
+            Apply
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </BottomSheet>
   );
 }
