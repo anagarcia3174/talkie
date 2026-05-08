@@ -40,7 +40,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
 
   const supportOptions = [
     { id: 'feedback', title: 'Feedback', icon: MessageSquare, onPress: () => onSubmit('feedback') },
-    { id: 'bug_report', title: 'Report Bug', icon: Bug, onPress: () => onSubmit('bug_report') },
+    { id: 'bug_report', title: 'Report A Bug', icon: Bug, onPress: () => onSubmit('bug_report') },
     { id: 'contact_us', title: 'Contact Us', icon: Mail, onPress: () => onSubmit('contact_us') },
   ];
 
