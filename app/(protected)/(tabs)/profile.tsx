@@ -265,11 +265,12 @@ export default function Profile() {
       />
       <DeleteAccountModal
         visible={deleteAccountModal}
-        onClose={(shouldDeleteAccount) => {
+        onClose={() => {
           setDeleteAccountModal(false);
-          if (shouldDeleteAccount) {
-            handleDeleteAccount();
-          }
+        }}
+        onConfirm={() => {
+          setDeleteAccountModal(false);
+          handleDeleteAccount();
         }}
         email={user?.email || profile.display_name}
       />
