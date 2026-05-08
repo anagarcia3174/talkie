@@ -4,6 +4,7 @@ import { CommentWithUser, ReviewWithUser } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { haptics } from '~/utils/haptics';
+import BottomSheet from './BottomSheet';
 
 type ItemWithUser =
   | { type: 'review'; data: ReviewWithUser }
@@ -36,98 +37,90 @@ export default function ItemOptions({
   const content = item.data.content;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      {/* Backdrop */}
-      <Pressable className="flex-1 bg-black/60 dark:bg-black/70" onPress={onClose} />
+    <BottomSheet isVisible={visible} onClose={onClose}>
+      <View className="flex-row items-center justify-between">
+        <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+          Options
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          className="rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
+          <X size={20} color={theme.primary[950]} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-      {/* Bottom Sheet */}
-      <View className="absolute bottom-0 w-full rounded-t-2xl bg-primary-100 pb-10 dark:bg-primary-900">
-        <View className="flex-row items-center justify-between border-b border-primary-200 px-6 py-4 dark:border-primary-800">
-          <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
-            Options
+      <View className="flex-row items-center gap-3 rounded-2xl bg-primary-200 px-4 py-3 dark:bg-primary-800">
+        <View className="h-8 w-8 items-center justify-center rounded-full bg-primary-800 dark:bg-primary-100">
+          <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-50 dark:text-primary-950">
+            {owner.display_name?.charAt(0).toUpperCase()}
           </Text>
-          <TouchableOpacity
-            onPress={onClose}
-            className="rounded-full p-2 active:bg-primary-100 dark:active:bg-primary-800">
-            <X size={20} color={theme.primary[950]} />
-          </TouchableOpacity>
         </View>
-
-        <View className="mx-4 my-4 flex-row items-center gap-3 rounded-2xl bg-primary-200 px-4 py-3 dark:bg-primary-800">
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-primary-800 dark:bg-primary-100">
-            <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-50 dark:text-primary-950">
-              {owner.display_name?.charAt(0).toUpperCase()}
+        <View className="flex-1">
+          <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-950 dark:text-primary-50">
+            {owner.display_name}
+          </Text>
+          {content ? (
+            <Text
+              numberOfLines={1}
+              className="font-SpaceGrotesk-Regular text-xs text-primary-500 dark:text-primary-400">
+              {content}
             </Text>
-          </View>
-          <View className="flex-1">
-            <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-950 dark:text-primary-50">
-              {owner.display_name}
-            </Text>
-            {content ? (
-              <Text
-                numberOfLines={1}
-                className="font-SpaceGrotesk-Regular text-xs text-primary-500 dark:text-primary-400">
-                {content}
-              </Text>
-            ) : null}
-          </View>
-        </View>
-
-        {/* Actions — no separation, full-bleed rows */}
-        {/* Actions — spaced rows, no divider */}
-        <View className="gap-1 px-2">
-          {isOwner ? (
-            <>
-              {onEdit && (
-                <TouchableOpacity
-                  onPress={onEdit}
-                  className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-primary-200 dark:active:bg-primary-800">
-                  <Pencil size={22} color={theme.primary[500]} />
-                  <Text className="font-SpaceGrotesk-Medium text-base text-primary-950 dark:text-primary-50">
-                    Edit {item.type === 'review' ? 'Review' : 'Comment'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                onPress={() => {
-                  haptics.warning();
-                  onDelete();
-                }}
-                className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-red-500/10">
-                <Trash2 size={22} color="#ef4444" />
-                <Text className="font-SpaceGrotesk-Medium text-base text-red-500">
-                  Delete {item.type === 'review' ? 'Review' : 'Comment'}
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity
-                onPress={() => {
-                  onClose();
-                  router.push({ pathname: '/profile/[id]', params: { id: userId } });
-                }}
-                className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-primary-200 dark:active:bg-primary-800">
-                <UserCircle size={22} color={theme.primary[500]} />
-                <Text className="font-SpaceGrotesk-Medium text-base text-primary-950 dark:text-primary-50">
-                  View Profile
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  haptics.warning();
-                  onReport();
-                }}
-                className="flex-row items-center gap-4 rounded-xl px-4 py-4 active:bg-red-500/10">
-                <Flag size={22} color="#ef4444" />
-                <Text className="font-SpaceGrotesk-Medium text-base text-red-500">
-                  Report {item.type === 'review' ? 'Review' : 'Comment'}
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
+          ) : null}
         </View>
       </View>
-    </Modal>
+
+      <View className="flex-row gap-x-2">
+        {isOwner ? (
+          <>
+            {onEdit && (
+              <TouchableOpacity
+                onPress={onEdit}
+                className="flex-1 gap-y-3 rounded-xl bg-primary-200 p-4 dark:bg-primary-800">
+                <Pencil size={18} color={theme.primary[500]} />
+                <Text className="font-SpaceGrotesk-Medium text-sm text-primary-950 dark:text-primary-50">
+                  Edit {item.type === 'review' ? 'Review' : 'Comment'}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={() => {
+                haptics.warning();
+                onDelete();
+              }}
+              className="flex-1 gap-y-3 rounded-xl bg-red-500/50 p-4 dark:bg-red-950">
+              <Trash2 size={18} color={theme.isDark ? '#ff6467' : '#c10007'} />
+              <Text className="font-SpaceGrotesk-Medium text-sm text-red-700 dark:text-red-400">
+                Delete {item.type === 'review' ? 'Review' : 'Comment'}
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              onPress={() => {
+                onClose();
+                router.push({ pathname: '/profile/[id]', params: { id: userId } });
+              }}
+              className="flex-1 gap-y-3 rounded-xl bg-primary-200 p-4 dark:bg-primary-800">
+              <UserCircle size={18} color={theme.primary[500]} />
+              <Text className="font-SpaceGrotesk-Medium text-sm text-primary-950 dark:text-primary-50">
+                View Profile
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                haptics.warning();
+                onReport();
+              }}
+              className="flex-1 gap-y-3 rounded-xl bg-red-500/50 p-4 dark:bg-red-950">
+              <Flag size={18} color={theme.isDark ? '#ff6467' : '#c10007'} />
+              <Text className="font-SpaceGrotesk-Medium text-sm text-red-700 dark:text-red-400">
+                Report {item.type === 'review' ? 'Review' : 'Comment'}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </BottomSheet>
   );
 }
