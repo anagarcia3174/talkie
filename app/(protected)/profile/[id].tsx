@@ -1,13 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import LoadingScreen from '~/components/LoadingScreen';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import ProfileSection from '~/components/ProfileSection';
 import ErrorScreen from '~/components/ErrorScreen';
 import StatsSection from '~/components/StatsSection';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { Bookmark, ChevronLeft, X } from 'lucide-react-native';
+import { Bookmark, ChevronLeft, Heart, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useLists } from '~/store/listStore';
 import FollowButton from '~/components/FollowButton';
@@ -16,13 +16,14 @@ import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { useProfile } from '~/store/profileStore';
 import { haptics } from '~/utils/haptics';
+import ConfirmModal from '~/components/ConfirmModal';
 
 export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
   const { otherProfiles, getOthersProfile } = useProfile();
-
+  const insets = useSafeAreaInsets();
   const profileState = otherProfiles[id];
   const profile = profileState?.profile ?? null;
   const profileStats = profileState?.stats ?? null;
@@ -32,6 +33,7 @@ export default function ProfileScreen() {
   const error = profileState?.error ?? null;
 
   const [blocking, setBlocking] = useState(false);
+  const [confirmBlockVisible, setConfirmBlockVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addListToState } = useLists();
   const { block, blockedIds } = useBlock();
@@ -87,17 +89,18 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-primary-50 dark:bg-primary-950">
-      <View className="relative flex-row items-center justify-between px-4 py-3">
-        <TouchableOpacity className="p-2" onPress={() => router.back()}>
-          <ChevronLeft color={theme.primary[950]} size={24} />
+      <View className="mb-2 flex-row items-center justify-between px-4">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
+          <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
         </TouchableOpacity>
-        <Text
-          pointerEvents="none"
-          className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+        <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
           Profile
         </Text>
-        <FollowButton targetUserId={profile.id} />
+        <View className="w-7"></View>
       </View>
+
       <ScrollView className="px-4" showsVerticalScrollIndicator={false}>
         <ProfileSection
           avatar={profile.avatar_url}
@@ -107,9 +110,10 @@ export default function ProfileScreen() {
           onAvatarPress={() => {
             setPreviewImage(profile.avatar_url);
           }}
+          followButton={<FollowButton targetUserId={profile.id} />}
         />
         {profileStats && <StatsSection stats={profileStats} />}
-        <Text className="mb-2 font-SpaceGrotesk-Regular text-lg text-primary-950 dark:text-primary-50">
+        <Text className="mb-2 font-SpaceGrotesk-Medium text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
           Lists
         </Text>
         <FlatList
@@ -137,58 +141,73 @@ export default function ProfileScreen() {
                 });
               }}
               activeOpacity={0.85}
-              className="rounded-xl bg-primary-100 p-4 dark:bg-primary-900">
-              {/* Top: title + likes */}
-              <View className="flex-row items-start justify-between">
-                <View className="mr-3 flex-1">
-                  <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
-                    {item.name}
-                  </Text>
-
-                  <Text
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                    className="mt-1 font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400">
-                    {item.description || 'No description'}
-                  </Text>
-                </View>
-
-                {/* Likes on top right */}
-                <View className="flex-row items-center justify-start gap-x-1">
-                  <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
-                    {item.like_count}
-                  </Text>
-                  <Bookmark
-                    size={12}
-                    color={theme.primary[700]}
-                    fill={item.is_liked ? theme.primary[700] : theme.primary[100]}
-                  />
+              className="overflow-hidden rounded-xl bg-primary-100 dark:bg-primary-900">
+              <View className="px-4 pb-3 pt-4">
+                <View className="flex-row items-start gap-3">
+                  <View className="min-w-0 flex-1">
+                    <Text className="font-SpaceGrotesk-SemiBold text-xl leading-6 text-primary-950 dark:text-primary-50">
+                      {item.name}
+                    </Text>
+                    {!!item.description && (
+                      <Text
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                        className="mt-2 font-SpaceGrotesk-Light text-base leading-5 text-primary-600 dark:text-primary-400">
+                        {item.description}
+                      </Text>
+                    )}
+                  </View>
+                  <View className="shrink-0 flex-row items-center gap-x-1 pt-0.5">
+                    <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
+                      {item.like_count}
+                    </Text>
+                    <Heart
+                      size={14}
+                      color={theme.primary[700]}
+                      fill={item.is_liked ? theme.primary[700] : theme.primary[100]}
+                    />
+                  </View>
                 </View>
               </View>
 
-              {/* Bottom row: user left, item count right */}
-              <View className="mt-1 flex-row items-center justify-end">
-                <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-300">
-                  {item.item_count} {item.item_count === 1 ? 'Item' : 'Items'}
-                </Text>
+              {/* Footer: item count badge */}
+              <View className="flex-row items-center justify-end px-4 pb-4 pt-3">
+                <View className="shrink-0 rounded-lg bg-primary-200 px-2 py-1 dark:bg-primary-800">
+                  <Text className="font-SpaceGrotesk-Light text-sm text-primary-700 dark:text-primary-400">
+                    {item.item_count} {item.item_count === 1 ? 'Item' : 'Items'}
+                  </Text>
+                </View>
               </View>
             </TouchableOpacity>
           )}
         />
+        <View className="items-center pt-6">
+          <TouchableOpacity
+            disabled={blocking}
+            onPress={() => {
+              haptics.warning();
+              setConfirmBlockVisible(true);
+            }}
+            className="rounded-lg border border-red-400 bg-red-500/20 dark:bg-red-400/25 px-6 py-2 dark:border-red-500">
+            <Text className="font-SpaceGrotesk-Medium text-sm text-red-400 dark:text-red-500">
+              {blocking ? 'Blocking...' : 'Block User'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-      <View className="items-center px-4 pb-4">
-        <TouchableOpacity
-          className="p-2"
-          disabled={blocking}
-          onPress={() => {
-            haptics.warning();
-            handleBlock();
-          }}>
-          <Text className="text-center font-SpaceGrotesk-Regular text-sm text-red-500 underline dark:text-red-400">
-            {blocking ? 'Blocking...' : 'Block User'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ConfirmModal 
+      visible={confirmBlockVisible}
+      onCancel={() => setConfirmBlockVisible(false)}
+      onConfirm={() => {
+        setConfirmBlockVisible(false);
+        handleBlock();
+      }}
+      variant='danger'
+      title="Block User"
+      message='Are you sure you want to block this user?'
+      cancelLabel='Cancel'
+      confirmLabel='Block'
+      />
       <Modal visible={!!previewImage} transparent animationType="fade">
         <View className="flex-1 items-center justify-center bg-primary-100 px-4 dark:bg-primary-950">
           <TouchableOpacity

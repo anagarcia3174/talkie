@@ -80,9 +80,10 @@ export default function StatsSection({ stats, onTilePress }: StatsSectionProps) 
           <View key={rowIdx} className="flex-row gap-2">
             {row.map(({ key, label, value, Icon, color, flex }) => (
               <TouchableOpacity
+              disabled={!onTilePress}
                 key={key}
                 onPress={() => onTilePress?.(key)}
-                className="gap-y-1 rounded-xl bg-primary-200 px-4 py-3 dark:bg-primary-900"
+                className="gap-y-1 rounded-xl bg-primary-100 px-4 py-3 dark:bg-primary-900"
                 style={{ flex }}>
                 <Text className="font-SpaceGrotesk-Bold text-3xl text-primary-950 dark:text-primary-50">
                   {value}
