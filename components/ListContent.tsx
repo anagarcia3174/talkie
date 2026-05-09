@@ -408,6 +408,13 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
         <StatusPickerModal
           visible={statusPickerModalVisible}
           currentStatus={activeItem.status ?? 'pending'}
+          posterPath={activeItem.media?.poster_path ?? ''}
+          title={activeItem.media?.title ?? ''}
+          year={
+            activeItem.media?.release_date
+              ? new Date(activeItem.media.release_date).getFullYear()
+              : ''
+          }
           onClose={() => setStatusPickerModalVisible(false)}
           onConfirm={async (newStatus) => {
             if (!activeItem || loadingAction === `update-status-${activeItem.id}`) return;
