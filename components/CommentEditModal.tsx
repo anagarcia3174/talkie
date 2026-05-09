@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Modal, Pressable, View, Text } from 'react-native';
+import { Modal, Pressable, View, Text, TouchableOpacity } from 'react-native';
 import CommentForm, { CommentFormProps } from './CommentForm';
 import TimestampPicker from './TimestampPicker';
 import { useMedia } from '~/store/mediaStore';
+import BottomSheet from './BottomSheet';
+import { X } from 'lucide-react-native';
+import { useTheme } from '~/hooks/useTheme';
 
 interface CommentEditModalProps {
   visible: boolean;
@@ -28,7 +31,7 @@ export default function CommentEditModal({
   onSubmit,
 }: CommentEditModalProps) {
   const { mediaDetails } = useMedia();
-
+  const theme = useTheme();
   const mediaState = mediaDetails[mediaId];
   const details = mediaState?.details ?? null;
   const isLoading = mediaState?.isLoading ?? false;
@@ -40,62 +43,57 @@ export default function CommentEditModal({
     setTimestamp(newTimestamp);
   };
   const TimestampSkeleton = () => (
-    <View className="px-4 py-2">
-      <View className="mb-2 h-9 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
-      <View className="h-6 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
-    </View>
+    <>
+      <View className="h-9 animate-pulse rounded-lg bg-primary-200 dark:bg-primary-700" />
+    </>
   );
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      {/* Backdrop */}
-      <Pressable
-        className="flex-1 items-center justify-center bg-black/60 px-6 dark:bg-black/70"
-        onPress={onClose}>
-        {/* Card — stop propagation so tapping inside doesn't close the modal */}
-        <Pressable className="w-full" onPress={(e) => e.stopPropagation()}>
-          <View className="w-full rounded-2xl bg-primary-100 p-4 shadow-2xl dark:bg-primary-900">
-            <Text className="mb-4 font-SpaceGrotesk-SemiBold text-lg text-primary-950 dark:text-primary-50">
-              Edit Comment
-            </Text>
+    <BottomSheet isVisible={visible} onClose={onClose}>
+      <View className="flex-row items-center justify-between">
+        <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+          Edit Comment
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          className="rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
+          <X size={20} color={theme.primary[950]} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-            {/* Timestamp picker — season/episode are fixed (no-ops) since those aren't editable */}
-            {isLoading ? (
-              <TimestampSkeleton />
-            ) : error ? (
-              <View className="mb-4">
-                <Text className="text-sm text-red-500">Failed to load media details.</Text>
-              </View>
-            ) : details ? (
-              <View className="mb-4">
-                <TimestampPicker
-                  mediaType={mediaType}
-                  details={details}
-                  selectedTimestamp={timestamp}
-                  selectedSeason={season}
-                  selectedEpisode={episode}
-                  onTimestampChange={handleTimestampChange}
-                  onSeasonChange={() => {}}
-                  onEpisodeChange={() => {}}
-                  pickersDisabled
-                />
-              </View>
-            ) : null}
+      {/* Timestamp picker — season/episode are fixed (no-ops) since those aren't editable */}
+      {isLoading ? (
+        <TimestampSkeleton />
+      ) : error ? (
+        <View>
+          <Text className="text-sm text-red-500">Failed to load media details.</Text>
+        </View>
+      ) : details ? (
+        <View className='mb-4'>
 
-            {/* Comment text editor */}
-            <View className="rounded-xl border border-primary-300 bg-primary-200 dark:border-primary-900 dark:bg-primary-800">
-              <CommentForm
-                {...commentFormProps}
-                timestamp={timestamp}
-                onSubmit={async (content: string) => {
-                  if (!canEdit) return;
-                  await onSubmit(content, timestamp);
-                }}
-              />
-            </View>
-          </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+          <View className='-mx-4'>
+            <TimestampPicker
+              mediaType={mediaType}
+              details={details}
+              selectedTimestamp={timestamp}
+              selectedSeason={season}
+              selectedEpisode={episode}
+              onTimestampChange={handleTimestampChange}
+              onSeasonChange={() => {}}
+              onEpisodeChange={() => {}}
+              pickersDisabled
+            />
+        </View>
+            <CommentForm
+              {...commentFormProps}
+              timestamp={timestamp}
+              onSubmit={async (content: string) => {
+                if (!canEdit) return;
+                await onSubmit(content, timestamp);
+              }}
+            />
+        </View>
+      ) : null}
+    </BottomSheet>
   );
 }
