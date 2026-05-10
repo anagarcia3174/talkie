@@ -9,6 +9,7 @@ interface ProfileSectionProps {
   bio: string | null;
   subtitle?: string;
   onAvatarPress?: () => void;
+  followButton?: React.ReactNode;
 }
 
 export default function ProfileSection({
@@ -17,6 +18,7 @@ export default function ProfileSection({
   bio,
   subtitle,
   onAvatarPress,
+  followButton,
 }: ProfileSectionProps) {
   const theme = useTheme();
 
@@ -59,6 +61,7 @@ export default function ProfileSection({
           {bio || 'No bio yet'}
         </Text>
       </View>
+      {followButton && <View className="mt-3">{followButton}</View>}
     </View>
   );
 }

@@ -1,22 +1,13 @@
 import { useState, useEffect } from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  Pressable,
-  TouchableWithoutFeedback,
-  Image,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, Text, Pressable, Image, TextInput, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Profile } from '~/types/supabaseTypes';
-import { Camera } from 'lucide-react-native';
+import { Globe, Pencil, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import Toast from 'react-native-toast-message';
 import { SaveFormat, ImageManipulator } from 'expo-image-manipulator';
 import { haptics } from '~/utils/haptics';
+import BottomSheet from './BottomSheet';
 
 interface ProfileActionsModalProps {
   visible: boolean;
@@ -155,117 +146,129 @@ export default function ProfileActionsModal({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-      statusBarTranslucent>
-      {/* Overlay */}
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View className="flex-1 bg-black/60 dark:bg-black/70" />
-      </TouchableWithoutFeedback>
+    <BottomSheet isVisible={visible} onClose={onClose}>
+      <View className="flex-row items-center justify-between">
+        <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+          Edit Profile
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          className="rounded-lg bg-primary-200 p-1  dark:bg-primary-800">
+          <X size={20} color={theme.primary[950]} strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
 
-      {/* Floating Card */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        pointerEvents="box-none"
-        className="absolute inset-0 items-center justify-center p-6">
-        <View className="w-full max-w-md rounded-2xl bg-primary-100 p-6 dark:bg-primary-900">
-          <Text className="mb-4 font-SpaceGrotesk-Medium text-lg text-primary-950 dark:text-primary-50">
-            Edit Profile
-          </Text>
-
-          {/* Avatar */}
-          <Pressable
-            className="mb-4 self-center"
-            onPress={() => {
-              haptics.action();
-              pickImage();
-            }}>
-            {imageUri ? (
-              <Image source={{ uri: imageUri }} className="h-20 w-20 rounded-full" />
-            ) : (
-              <View className="h-20 w-20 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
-                <Camera size={28} color="#6b7280" />
-              </View>
-            )}
-          </Pressable>
-          <View className="mb-2">
-            <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">
-              Display Name
-            </Text>
-            <TextInput
-              className="text-md rounded-xl border border-primary-300 bg-primary-100 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-400 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
-              value={name}
-              onChangeText={setName}
-              cursorColor={theme.primary[700]}
-              selectionColor={theme.primary[700]}
-              placeholder="Display Name"
-              placeholderTextColor={theme.primary[500]}
-              maxLength={50}
+      <Pressable
+        className="mb-4 self-center"
+        onPress={() => {
+          haptics.action();
+          pickImage();
+        }}>
+        <View className="relative">
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri }}
+              className={`h-20 w-20 rounded-full ${imageUri !== (avatar ?? null) ? 'border-2 border-primary-700' : ''}`}
             />
-            <Text className="mt-1 text-right text-xs text-primary-500">{name.length}/50</Text>
-          </View>
-          <View className="mb-2">
-            <Text className="mb-1 text-sm text-primary-700 dark:text-primary-300">Bio</Text>
-            <TextInput
-              className="text-md rounded-xl border border-primary-300 bg-primary-100 px-4 py-2 font-SpaceGrotesk-Regular text-primary-950 focus:border-2 focus:border-primary-950 dark:border-primary-700 dark:bg-primary-900 dark:text-primary-200 focus:dark:border-primary-50"
-              value={userBio}
-              onChangeText={setUserBio}
-              cursorColor={theme.primary[700]}
-              selectionColor={theme.primary[700]}
-              placeholder="Bio"
-              placeholderTextColor={theme.primary[500]}
-              multiline
-              maxLength={300}
-            />
-            <Text className="mt-1 text-right text-xs text-primary-500">{userBio.length}/300</Text>
-          </View>
-          <View className="mb-6">
-            <Text className="mb-2 text-sm text-primary-700 dark:text-primary-300">Visibility</Text>
-
-            <View className="flex-row gap-2">
-              {[true, false].map((option) => {
-                const selected = userIsPrivate === option;
-
-                return (
-                  <Pressable
-                    key={option ? 'private' : 'public'}
-                    onPress={() => setUserIsPrivate(option)}
-                    className={`flex-1 rounded-xl border px-3 py-2 ${
-                      selected
-                        ? 'border-primary-900 bg-primary-900 dark:border-primary-50 dark:bg-primary-50'
-                        : 'border-primary-300 bg-primary-100 dark:border-primary-700 dark:bg-primary-900'
-                    }`}>
-                    <Text
-                      className={`text-center capitalize ${
-                        selected
-                          ? 'font-SpaceGrotesk-SemiBold text-primary-50 dark:text-primary-900'
-                          : 'text-primary-700 dark:text-primary-300'
-                      }`}>
-                      {option ? 'private' : 'public'}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+          ) : (
+            <View className="h-20 w-20 items-center justify-center rounded-full bg-primary-200 dark:bg-primary-800">
+              <Pencil size={28} color={theme.primary[500]} />
             </View>
-          </View>
-
-          {/* Button */}
-          <Pressable
-            disabled={!hasChanges}
-            className={`rounded-xl px-4 py-3 ${
-              hasChanges ? 'bg-green-700 dark:bg-green-800' : 'bg-gray-300 dark:bg-primary-800'
-            }`}
-            onPress={() => {
-              haptics.action();
-              handleSubmit();
-            }}>
-            <Text className="text-center font-SpaceGrotesk-Medium text-white">Save Changes</Text>
-          </Pressable>
+          )}
+          {imageUri && (
+            <View className="absolute bottom-0 right-0 h-6 w-6 items-center justify-center rounded-full bg-primary-900 dark:bg-primary-100">
+              <Pencil size={11} color={theme.primary[100]} />
+            </View>
+          )}
         </View>
-      </KeyboardAvoidingView>
-    </Modal>
+      </Pressable>
+      <View>
+        <Text className="mb-1 font-SpaceGrotesk-Medium text-sm uppercase text-primary-700 dark:text-primary-300">
+          Display Name
+        </Text>
+        <TextInput
+          className="rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 dark:bg-primary-800 dark:text-primary-50"
+          value={name}
+          onChangeText={setName}
+          cursorColor={theme.primary[700]}
+          selectionColor={theme.primary[700]}
+          placeholder="Display Name"
+          placeholderTextColor={theme.primary[500]}
+          maxLength={50}
+        />
+        <Text className="mt-1 text-right text-xs text-primary-500">{name.length}/50</Text>
+      </View>
+      <View>
+        <Text className="mb-1 font-SpaceGrotesk-Medium text-sm uppercase text-primary-700 dark:text-primary-300">
+          Bio
+        </Text>
+        <TextInput
+          className="min-h-[60px] rounded-xl bg-primary-200 px-4 py-3 font-SpaceGrotesk-Regular text-primary-950 dark:bg-primary-800 dark:text-primary-50"
+          value={userBio}
+          onChangeText={setUserBio}
+          cursorColor={theme.primary[700]}
+          selectionColor={theme.primary[700]}
+          placeholder="Bio"
+          placeholderTextColor={theme.primary[500]}
+          multiline
+          numberOfLines={3}
+          maxLength={300}
+        />
+        <Text className="mt-1 text-right text-xs text-primary-500">{userBio.length}/300</Text>
+      </View>
+      <View className="mb-6">
+        <Text className="mb-1 font-SpaceGrotesk-Medium text-sm uppercase text-primary-700 dark:text-primary-300">
+          Visibility
+        </Text>
+
+        <View className="flex-row gap-2">
+          {[true, false].map((option) => {
+            return (
+              <TouchableOpacity
+                key={option ? 'private' : 'public'}
+                onPress={() => setUserIsPrivate(option)}
+                className={`flex-1 flex-row items-center justify-between rounded-xl px-3 py-3 ${
+                  userIsPrivate === option
+                    ? 'bg-primary-900 dark:bg-primary-100 '
+                    : 'bg-primary-200 dark:bg-primary-800'
+                }`}>
+                <View className="flex-row items-center gap-x-1">
+                  <Globe
+                    size={15}
+                    color={userIsPrivate === option ? theme.primary[100] : theme.primary[500]}
+                  />
+                  <Text
+                    className={`font-SpaceGrotesk-Medium text-sm ${
+                      userIsPrivate === option
+                        ? 'text-primary-100 dark:text-primary-900'
+                        : 'text-primary-500'
+                    }`}>
+                    {option ? 'Private' : 'Public'}
+                  </Text>
+                </View>
+                {userIsPrivate === option && (
+                  <View className="m-1 h-1.5 w-1.5 rounded-full bg-primary-100 p-1 dark:bg-primary-900" />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Button */}
+      <Pressable
+        disabled={!hasChanges}
+        className={`rounded-xl px-4 py-3 ${
+          hasChanges ? 'bg-primary-950 dark:bg-primary-50' : 'bg-gray-300 dark:bg-primary-800'
+        }`}
+        onPress={() => {
+          haptics.action();
+          handleSubmit();
+        }}>
+        <Text className="text-center font-SpaceGrotesk-Medium text-primary-50 dark:text-primary-900">
+          Save Changes
+        </Text>
+      </Pressable>
+    </BottomSheet>
   );
 }

@@ -52,8 +52,7 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
       follow: {
         label: 'Follow',
         Icon: UserPlus,
-        buttonClassName:
-          'bg-primary-900 border border-primary-900 dark:bg-primary-100 dark:border-primary-100',
+        buttonClassName: 'bg-primary-900 dark:bg-primary-100',
         textClassName: 'text-primary-50 dark:text-primary-950',
         iconColor: theme.primary[50],
       },
@@ -61,31 +60,25 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
       followBack: {
         label: 'Follow Back',
         Icon: UserRoundCheck,
-        buttonClassName: isSmall
-          ? 'bg-primary-100 border border-primary-300 dark:bg-primary-900 dark:border-primary-700'
-          : 'bg-primary-100 border border-primary-200 dark:bg-primary-900 dark:border-primary-800',
-        textClassName: 'text-primary-800 dark:text-primary-200',
-        iconColor: theme.primary[800],
+        buttonClassName: 'bg-primary-900 dark:bg-primary-100',
+        textClassName: 'text-primary-50 dark:text-primary-950',
+        iconColor: theme.primary[50],
       },
 
       following: {
         label: 'Following',
         Icon: UserCheck,
-        buttonClassName: isSmall
-          ? 'bg-primary-300 border border-primary-400 dark:bg-primary-700 dark:border-primary-600'
-          : 'bg-primary-100 border border-primary-200 dark:bg-primary-900 dark:border-primary-800',
-        textClassName: 'text-primary-700 dark:text-primary-300',
-        iconColor: theme.primary[700],
+        buttonClassName: 'bg-primary-200 dark:bg-primary-800',
+        textClassName: 'text-primary-800 dark:text-primary-200',
+        iconColor: theme.primary[800],
       },
 
       friends: {
         label: 'Friends',
         Icon: Users,
-        buttonClassName: isSmall
-          ? 'bg-transparent border border-primary-400 dark:border-primary-600'
-          : 'bg-transparent border border-primary-200 dark:border-primary-800',
-        textClassName: 'text-primary-600 dark:text-primary-400',
-        iconColor: theme.primary[600],
+        buttonClassName: 'bg-primary-200 dark:bg-primary-800',
+        textClassName: 'text-primary-800 dark:text-primary-200',
+        iconColor: theme.primary[800],
       },
     };
 

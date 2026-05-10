@@ -31,8 +31,8 @@ export default function MediaScreen() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addItemToList } = useLists();
 
-  const handleAddToList = async (listId: number) => {
-    if (!listId || !user?.id) return;
+  const handleAddToList = async (listIds: number[]) => {
+    if (!listIds.length || !user?.id) return;
     setListModalVisible(false);
     setLoading(true);
     Toast.show({
@@ -44,13 +44,14 @@ export default function MediaScreen() {
       onPress: () => Toast.hide(),
     });
 
-    const result = await addItemToList(listId, media.id, user.id);
+    const results = await Promise.all(listIds.map((id) => addItemToList(id, media.id, user.id)));
+    const firstError = results.find((r) => !r.success);
 
-    if (!result.success) {
+    if (firstError) {
       haptics.error();
       Toast.show({
         type: 'error',
-        text1: result.error || 'Failed to add item to your list',
+        text1: firstError.error || 'Failed to add item to your list',
         position: 'top',
         visibilityTime: 4000,
         autoHide: true,
@@ -60,7 +61,7 @@ export default function MediaScreen() {
       haptics.success();
       Toast.show({
         type: 'success',
-        text1: 'Item was added to your list!',
+        text1: listIds.length > 1 ? `Added to ${listIds.length} lists!` : 'Added to list!',
         position: 'top',
         visibilityTime: 3000,
         autoHide: true,

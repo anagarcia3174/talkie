@@ -71,6 +71,7 @@ export const useBlock = create<BlockState>((set, get) => ({
         blockedIds: updated,
       };
     });
+    await useProfile.getState().getStats(currentUserId);
 
     await useLists.getState().getLists(currentUserId);
 

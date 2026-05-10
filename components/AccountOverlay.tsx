@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, Modal, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '~/hooks/useTheme';
 import {
   X,
@@ -10,8 +10,8 @@ import {
   Mail,
   Trash2,
 } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { haptics } from '~/utils/haptics';
+import BottomSheet from './BottomSheet';
 
 interface MenuOverlayProps {
   visible: boolean;
@@ -40,7 +40,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
 
   const supportOptions = [
     { id: 'feedback', title: 'Feedback', icon: MessageSquare, onPress: () => onSubmit('feedback') },
-    { id: 'bug_report', title: 'Report Bug', icon: Bug, onPress: () => onSubmit('bug_report') },
+    { id: 'bug_report', title: 'Report A Bug', icon: Bug, onPress: () => onSubmit('bug_report') },
     { id: 'contact_us', title: 'Contact Us', icon: Mail, onPress: () => onSubmit('contact_us') },
   ];
 
@@ -92,69 +92,58 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1 justify-end bg-black/60 dark:bg-black/70">
-        <TouchableOpacity activeOpacity={1} onPress={onClose} className="flex-1" />
-
-        <SafeAreaView
-          edges={['bottom']}
-          className="rounded-t-2xl bg-primary-100 px-4 pb-6 pt-3  dark:bg-primary-900">
-          <View className="mb-6 flex-row items-center justify-between">
-            <View className="flex-1 pr-4">
-              <Text className="font-SpaceGrotesk-Bold text-2xl leading-7 text-primary-950 dark:text-primary-50">
-                Settings
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={onClose}
-              className="rounded-xl bg-primary-200 p-2 dark:bg-primary-800">
-              <X size={22} color={theme.primary[800]} />
-            </TouchableOpacity>
-          </View>
-
-          <View>
-            <Text className="mb-4 px-1 text-xs uppercase tracking-widest tracking-widest text-primary-400 dark:text-primary-400">
-              Account
-            </Text>
-            <View className="mb-4 flex-row gap-3">
-              {renderSquareTile(accountOptions[0])}
-              {renderSquareTile(accountOptions[1])}
-            </View>
-            {renderBarTile(accountOptions[2])}
-          </View>
-
-          <View className="mt-8">
-            <Text className="mb-4 px-1 text-xs uppercase tracking-widest tracking-widest text-primary-400 dark:text-primary-400">
-              Help & Feedback
-            </Text>
-            <View className="mb-4 flex-row gap-3">
-              {renderSquareTile(supportOptions[0])}
-              {renderSquareTile(supportOptions[1])}
-            </View>
-            {renderBarTile(supportOptions[2])}
-          </View>
-
-          <View className="mt-8">
-            <Text className="mb-4 px-1 text-xs uppercase tracking-widest tracking-widest text-red-600">
-              Danger
-            </Text>
-            <View className="rounded-2xl border border-red-500/25 bg-primary-200 p-4 dark:bg-primary-800">
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={destructiveOption.onPress}
-                className="flex-row items-center gap-3">
-                <View className="rounded-xl border border-red-400 bg-red-500/20 p-2 dark:border-red-500 dark:bg-red-400/25">
-                  <Trash2 size={16} color="#ef4444" />
-                </View>
-                <Text className="font-SpaceGrotesk-SemiBold text-sm leading-5 text-red-700 dark:text-red-400">
-                  {destructiveOption.title}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </SafeAreaView>
+    <BottomSheet isVisible={visible} onClose={onClose}>
+      <View className="flex-row items-center justify-between">
+        <Text className="font-SpaceGrotesk-SemiBold text-xl text-primary-950 dark:text-primary-50">
+          Settings
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          className="rounded-lg bg-primary-200 p-1  dark:bg-primary-800">
+          <X size={20} color={theme.primary[950]} strokeWidth={2} />
+        </TouchableOpacity>
       </View>
-    </Modal>
+
+      <View className="mb-1">
+        <Text className="mb-2 px-1 text-xs uppercase tracking-widest tracking-widest text-primary-400 dark:text-primary-400">
+          Account
+        </Text>
+        <View className="mb-2 flex-row gap-3">
+          {renderSquareTile(accountOptions[0])}
+          {renderSquareTile(accountOptions[1])}
+        </View>
+        {renderBarTile(accountOptions[2])}
+      </View>
+
+      <View className="mb-1">
+        <Text className="mb-2 px-1 text-xs uppercase tracking-widest tracking-widest text-primary-400 dark:text-primary-400">
+          Help & Feedback
+        </Text>
+        <View className="mb-2 flex-row gap-3">
+          {renderSquareTile(supportOptions[0])}
+          {renderSquareTile(supportOptions[1])}
+        </View>
+        {renderBarTile(supportOptions[2])}
+      </View>
+
+      <View>
+        <Text className="mb-2 px-1 text-xs uppercase tracking-widest tracking-widest text-red-600">
+          Danger
+        </Text>
+        <View className="rounded-2xl border border-red-500/25 bg-primary-200 p-4 dark:bg-primary-800">
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={destructiveOption.onPress}
+            className="flex-row items-center gap-3">
+            <View className="rounded-xl border border-red-400 bg-red-500/20 p-2 dark:border-red-500 dark:bg-red-400/25">
+              <Trash2 size={16} color="#ef4444" />
+            </View>
+            <Text className="font-SpaceGrotesk-SemiBold text-sm leading-5 text-red-700 dark:text-red-400">
+              {destructiveOption.title}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </BottomSheet>
   );
 }
