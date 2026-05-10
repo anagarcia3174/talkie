@@ -1,13 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import LoadingScreen from '~/components/LoadingScreen';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import ProfileSection from '~/components/ProfileSection';
 import ErrorScreen from '~/components/ErrorScreen';
 import StatsSection from '~/components/StatsSection';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
-import { Bookmark, ChevronLeft, Heart, X } from 'lucide-react-native';
+import { ChevronLeft, Heart, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useLists } from '~/store/listStore';
 import FollowButton from '~/components/FollowButton';
@@ -23,7 +23,6 @@ export default function ProfileScreen() {
     id: string;
   }>();
   const { otherProfiles, getOthersProfile } = useProfile();
-  const insets = useSafeAreaInsets();
   const profileState = otherProfiles[id];
   const profile = profileState?.profile ?? null;
   const profileStats = profileState?.stats ?? null;
@@ -188,25 +187,25 @@ export default function ProfileScreen() {
               haptics.warning();
               setConfirmBlockVisible(true);
             }}
-            className="rounded-lg border border-red-400 bg-red-500/20 dark:bg-red-400/25 px-6 py-2 dark:border-red-500">
+            className="rounded-lg border border-red-400 bg-red-500/20 px-6 py-2 dark:border-red-500 dark:bg-red-400/25">
             <Text className="font-SpaceGrotesk-Medium text-sm text-red-400 dark:text-red-500">
               {blocking ? 'Blocking...' : 'Block User'}
             </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <ConfirmModal 
-      visible={confirmBlockVisible}
-      onCancel={() => setConfirmBlockVisible(false)}
-      onConfirm={() => {
-        setConfirmBlockVisible(false);
-        handleBlock();
-      }}
-      variant='danger'
-      title="Block User"
-      message='Are you sure you want to block this user?'
-      cancelLabel='Cancel'
-      confirmLabel='Block'
+      <ConfirmModal
+        visible={confirmBlockVisible}
+        onCancel={() => setConfirmBlockVisible(false)}
+        onConfirm={() => {
+          setConfirmBlockVisible(false);
+          handleBlock();
+        }}
+        variant="danger"
+        title="Block User"
+        message="Are you sure you want to block this user?"
+        cancelLabel="Cancel"
+        confirmLabel="Block"
       />
       <Modal visible={!!previewImage} transparent animationType="fade">
         <View className="flex-1 items-center justify-center bg-primary-100 px-4 dark:bg-primary-950">

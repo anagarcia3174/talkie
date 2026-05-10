@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Text, TouchableOpacity, View, TextInput, Pressable } from 'react-native';
+import { Text, TouchableOpacity, View, TextInput } from 'react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { haptics } from '~/utils/haptics';
 import BottomSheet from './BottomSheet';
@@ -82,7 +82,7 @@ export default function DeleteAccountModal({
             haptics.warning();
             onConfirm();
           }}
-          className={`flex-[1] items-center rounded-xl py-3 bg-red-600 ${isMatch ? '' : 'opacity-40'}`}>
+          className={`flex-[1] items-center rounded-xl bg-red-600 py-3 ${isMatch ? '' : 'opacity-40'}`}>
           <Text className="font-SpaceGrotesk-Bold text-white">Delete Account</Text>
         </TouchableOpacity>
       </View>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Pressable, View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import CommentForm, { CommentFormProps } from './CommentForm';
 import TimestampPicker from './TimestampPicker';
 import { useMedia } from '~/store/mediaStore';
@@ -69,9 +69,8 @@ export default function CommentEditModal({
           <Text className="text-sm text-red-500">Failed to load media details.</Text>
         </View>
       ) : details ? (
-        <View className='mb-4'>
-
-          <View className='-mx-4'>
+        <View className="mb-4">
+          <View className="-mx-4">
             <TimestampPicker
               mediaType={mediaType}
               details={details}
@@ -83,15 +82,15 @@ export default function CommentEditModal({
               onEpisodeChange={() => {}}
               pickersDisabled
             />
-        </View>
-            <CommentForm
-              {...commentFormProps}
-              timestamp={timestamp}
-              onSubmit={async (content: string) => {
-                if (!canEdit) return;
-                await onSubmit(content, timestamp);
-              }}
-            />
+          </View>
+          <CommentForm
+            {...commentFormProps}
+            timestamp={timestamp}
+            onSubmit={async (content: string) => {
+              if (!canEdit) return;
+              await onSubmit(content, timestamp);
+            }}
+          />
         </View>
       ) : null}
     </BottomSheet>

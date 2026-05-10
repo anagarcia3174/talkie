@@ -1,14 +1,5 @@
-import { useState, useEffect } from 'react';
-import {
-  Modal,
-  Pressable,
-  Text,
-  View,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-} from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
 import { haptics } from '~/utils/haptics';
@@ -26,17 +17,6 @@ export default function BugReportModal({ visible, onClose, onSubmit }: BugReport
   const theme = useTheme();
   const [description, setDescription] = useState('');
   const [steps, setSteps] = useState('');
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
-
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardOpen(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardOpen(false));
-
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
 
   const reset = () => {
     setDescription('');

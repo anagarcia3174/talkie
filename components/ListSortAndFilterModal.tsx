@@ -121,254 +121,251 @@ export default function ListSortAndFilterModal({
 
   return (
     <BottomSheet isVisible={isVisible} onClose={onClose}>
-          <View className="flex-row items-center justify-between">
-            <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
-              Sort & Filter
+      <View className="flex-row items-center justify-between">
+        <Text className="font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+          Sort & Filter
+        </Text>
+        <TouchableOpacity onPress={handleReset} className="p-2">
+          <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
+            Reset
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row gap-0.5 rounded-xl bg-primary-200 p-1.5 dark:bg-primary-950">
+        <TouchableOpacity
+          onPress={() => setSelected(0)}
+          className={`flex-1 items-center rounded-lg ${selected === 0 ? 'bg-primary-100 dark:bg-primary-900' : ''} py-2`}>
+          <Text
+            className={`text-md ${selected === 0 ? 'font-SpaceGrotesk-SemiBold text-primary-950 dark:text-primary-50' : 'font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400'}`}>
+            Sort
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setSelected(1)}
+          className={`flex-1 items-center rounded-lg ${selected === 1 ? 'bg-primary-100 dark:bg-primary-900' : ''} py-2`}>
+          <Text
+            className={`text-md ${selected === 1 ? 'font-SpaceGrotesk-SemiBold text-primary-950 dark:text-primary-50' : 'font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400'}`}>
+            Filter
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {selected === 0 && (
+        <View className="gap-y-5">
+          <View className="gap-y-2">
+            <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
+              Sort By
             </Text>
-            <TouchableOpacity onPress={handleReset} className="p-2">
-              <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
-                Reset
-              </Text>
-            </TouchableOpacity>
+            <View className="flex-row gap-x-2">
+              {SORT_OPTIONS.map((opt) => {
+                const active = localSort === opt.value;
+                const SortIcon = SORT_ICONS[opt.value];
+                return (
+                  <TouchableOpacity
+                    key={opt.value}
+                    onPress={() => {
+                      haptics.action();
+                      setLocalSort(opt.value);
+                      if (opt.value === 'relevance') setLocalOrder('descending');
+                    }}
+                    className={`flex-1 gap-y-3 rounded-xl p-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
+                    <SortIcon size={18} color={active ? theme.primary[100] : theme.primary[500]} />
+                    <Text
+                      className={`font-SpaceGrotesk-Medium text-sm ${active ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'}`}>
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
 
-          <View className="flex-row gap-0.5 rounded-xl bg-primary-200 p-1.5 dark:bg-primary-950">
-            <TouchableOpacity
-              onPress={() => setSelected(0)}
-              className={`flex-1 items-center rounded-lg ${selected === 0 ? 'bg-primary-100 dark:bg-primary-900' : ''} py-2`}>
-              <Text
-                className={`text-md ${selected === 0 ? 'font-SpaceGrotesk-SemiBold text-primary-950 dark:text-primary-50' : 'font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400'}`}>
-                Sort
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setSelected(1)}
-              className={`flex-1 items-center rounded-lg ${selected === 1 ? 'bg-primary-100 dark:bg-primary-900' : ''} py-2`}>
-              <Text
-                className={`text-md ${selected === 1 ? 'font-SpaceGrotesk-SemiBold text-primary-950 dark:text-primary-50' : 'font-SpaceGrotesk-Light text-primary-600 dark:text-primary-400'}`}>
-                Filter
-              </Text>
-            </TouchableOpacity>
+          <View
+            className={`gap-y-2 ${orderDisabled ? 'opacity-40' : ''}`}
+            pointerEvents={orderDisabled ? 'none' : 'auto'}>
+            <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
+              Order
+            </Text>
+            <View className="flex-row gap-x-2">
+              {(['ascending', 'descending'] as SortOrder[]).map((o) => {
+                const active = localOrder === o;
+                const OrderIcon = o === 'ascending' ? ArrowUp : ArrowDown;
+                const hint = ORDER_HINTS[localSort][o];
+                return (
+                  <TouchableOpacity
+                    key={o}
+                    onPress={() => {
+                      haptics.action();
+                      setLocalOrder(o);
+                    }}
+                    className={`flex-1 gap-y-1 rounded-xl px-4 py-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
+                    <View className="flex-row items-center gap-x-2">
+                      <OrderIcon
+                        size={16}
+                        color={active ? theme.primary[100] : theme.primary[500]}
+                      />
+                      <Text
+                        className={`font-SpaceGrotesk-Medium text-sm ${active ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'}`}>
+                        {o === 'ascending' ? 'Ascending' : 'Descending'}
+                      </Text>
+                    </View>
+                    {hint !== '—' && (
+                      <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">
+                        {hint}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
+        </View>
+      )}
 
-          {selected === 0 && (
-            <View className="gap-y-5">
-              <View className="gap-y-2">
-                <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
-                  Sort By
-                </Text>
-                <View className="flex-row gap-x-2">
-                  {SORT_OPTIONS.map((opt) => {
-                    const active = localSort === opt.value;
-                    const SortIcon = SORT_ICONS[opt.value];
-                    return (
-                      <TouchableOpacity
-                        key={opt.value}
-                        onPress={() => {
-                          haptics.action();
-                          setLocalSort(opt.value);
-                          if (opt.value === 'relevance') setLocalOrder('descending');
-                        }}
-                        className={`flex-1 gap-y-3 rounded-xl p-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
-                        <SortIcon
-                          size={18}
-                          color={active ? theme.primary[100] : theme.primary[500]}
-                        />
-                        <Text
-                          className={`font-SpaceGrotesk-Medium text-sm ${active ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'}`}>
-                          {opt.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
-              <View
-                className={`gap-y-2 ${orderDisabled ? 'opacity-40' : ''}`}
-                pointerEvents={orderDisabled ? 'none' : 'auto'}>
-                <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
-                  Order
-                </Text>
-                <View className="flex-row gap-x-2">
-                  {(['ascending', 'descending'] as SortOrder[]).map((o) => {
-                    const active = localOrder === o;
-                    const OrderIcon = o === 'ascending' ? ArrowUp : ArrowDown;
-                    const hint = ORDER_HINTS[localSort][o];
-                    return (
-                      <TouchableOpacity
-                        key={o}
-                        onPress={() => {
-                          haptics.action();
-                          setLocalOrder(o);
-                        }}
-                        className={`flex-1 gap-y-1 rounded-xl px-4 py-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
-                        <View className="flex-row items-center gap-x-2">
-                          <OrderIcon
-                            size={16}
+      {selected === 1 && (
+        <View className="gap-y-5">
+          <View className="gap-y-2">
+            <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
+              List Type
+            </Text>
+            <View className="gap-y-2">
+              {[LIST_TYPE_OPTIONS.slice(0, 2), LIST_TYPE_OPTIONS.slice(2, 4)].map(
+                (row, rowIndex) => (
+                  <View key={rowIndex} className="flex-row gap-x-2">
+                    {row.map((opt) => {
+                      const active = localFilters.listType === opt.value;
+                      const TypeIcon =
+                        opt.value === null
+                          ? LayoutGrid
+                          : opt.value === 'library'
+                            ? BookOpen
+                            : opt.value === 'favorites'
+                              ? Heart
+                              : List;
+                      return (
+                        <TouchableOpacity
+                          key={String(opt.value)}
+                          onPress={() => {
+                            haptics.action();
+                            setLocalFilters((f) => ({ ...f, listType: opt.value }));
+                          }}
+                          className={`flex-1 gap-y-3 rounded-xl p-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
+                          <TypeIcon
+                            size={18}
                             color={active ? theme.primary[100] : theme.primary[500]}
                           />
                           <Text
                             className={`font-SpaceGrotesk-Medium text-sm ${active ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'}`}>
-                            {o === 'ascending' ? 'Ascending' : 'Descending'}
+                            {opt.label}
                           </Text>
-                        </View>
-                        {hint !== '—' && (
-                          <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">
-                            {hint}
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )
+              )}
             </View>
-          )}
-
-          {selected === 1 && (
-            <View className="gap-y-5">
-              <View className="gap-y-2">
-                <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
-                  List Type
-                </Text>
-                <View className="gap-y-2">
-                  {[LIST_TYPE_OPTIONS.slice(0, 2), LIST_TYPE_OPTIONS.slice(2, 4)].map(
-                    (row, rowIndex) => (
-                      <View key={rowIndex} className="flex-row gap-x-2">
-                        {row.map((opt) => {
-                          const active = localFilters.listType === opt.value;
-                          const TypeIcon =
-                            opt.value === null
-                              ? LayoutGrid
-                              : opt.value === 'library'
-                                ? BookOpen
-                                : opt.value === 'favorites'
-                                  ? Heart
-                                  : List;
-                          return (
-                            <TouchableOpacity
-                              key={String(opt.value)}
-                              onPress={() => {
-                                haptics.action();
-                                setLocalFilters((f) => ({ ...f, listType: opt.value }));
-                              }}
-                              className={`flex-1 gap-y-3 rounded-xl p-4 ${active ? 'bg-primary-900 dark:bg-primary-100' : 'bg-primary-200 dark:bg-primary-800'}`}>
-                              <TypeIcon
-                                size={18}
-                                color={active ? theme.primary[100] : theme.primary[500]}
-                              />
-                              <Text
-                                className={`font-SpaceGrotesk-Medium text-sm ${active ? 'text-primary-100 dark:text-primary-900' : 'text-primary-500'}`}>
-                                {opt.label}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-                    )
-                  )}
-                </View>
-              </View>
-
-              <View className="gap-y-2">
-                <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
-                  Likes
-                </Text>
-                <View className="flex-row gap-x-2">
-                  <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
-                    <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Min</Text>
-                    <TextInput
-                      value={likesMinText}
-                      onChangeText={(text) => {
-                        const cleaned = text.replace(/[^0-9]/g, '');
-                        setLikesMinText(cleaned);
-                      }}
-                      placeholder="e.g. 10"
-                      placeholderTextColor={theme.primary[500]}
-                      keyboardType="number-pad"
-                      maxLength={6}
-                      className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
-                      cursorColor={theme.primary[700]}
-                      selectionColor={theme.primary[700]}
-                    />
-                  </View>
-                  <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
-                    <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Max</Text>
-                    <TextInput
-                      value={likesMaxText}
-                      onChangeText={(text) => {
-                        const cleaned = text.replace(/[^0-9]/g, '');
-                        setLikesMaxText(cleaned);
-                      }}
-                      placeholder="e.g. 500"
-                      placeholderTextColor={theme.primary[500]}
-                      keyboardType="number-pad"
-                      maxLength={6}
-                      className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
-                      cursorColor={theme.primary[700]}
-                      selectionColor={theme.primary[700]}
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <View className="gap-y-2">
-                <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
-                  Items
-                </Text>
-                <View className="flex-row gap-x-2">
-                  <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
-                    <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Min</Text>
-                    <TextInput
-                      value={itemsMinText}
-                      onChangeText={(text) => {
-                        const cleaned = text.replace(/[^0-9]/g, '');
-                        setItemsMinText(cleaned);
-                      }}
-                      placeholder="e.g. 5"
-                      placeholderTextColor={theme.primary[500]}
-                      keyboardType="number-pad"
-                      maxLength={5}
-                      className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
-                    />
-                  </View>
-                  <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
-                    <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Max</Text>
-                    <TextInput
-                      value={itemsMaxText}
-                      onChangeText={(text) => {
-                        const cleaned = text.replace(/[^0-9]/g, '');
-                        setItemsMaxText(cleaned);
-                      }}
-                      placeholder="e.g. 100"
-                      placeholderTextColor={theme.primary[500]}
-                      keyboardType="number-pad"
-                      maxLength={5}
-                      className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
-                    />
-                  </View>
-                </View>
-              </View>
-            </View>
-          )}
-
-          <View className="flex-row items-center gap-x-2 pt-2">
-            <TouchableOpacity
-              onPress={onClose}
-              className="flex-1 items-center rounded-xl border border-primary-300 py-2.5 dark:border-primary-700">
-              <Text className="font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleApply}
-              className="flex-[2] items-center rounded-xl bg-primary-900 py-3 dark:bg-primary-100">
-              <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-50 dark:text-primary-950">
-                Apply
-              </Text>
-            </TouchableOpacity>
           </View>
+
+          <View className="gap-y-2">
+            <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
+              Likes
+            </Text>
+            <View className="flex-row gap-x-2">
+              <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
+                <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Min</Text>
+                <TextInput
+                  value={likesMinText}
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, '');
+                    setLikesMinText(cleaned);
+                  }}
+                  placeholder="e.g. 10"
+                  placeholderTextColor={theme.primary[500]}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
+                  cursorColor={theme.primary[700]}
+                  selectionColor={theme.primary[700]}
+                />
+              </View>
+              <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
+                <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Max</Text>
+                <TextInput
+                  value={likesMaxText}
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, '');
+                    setLikesMaxText(cleaned);
+                  }}
+                  placeholder="e.g. 500"
+                  placeholderTextColor={theme.primary[500]}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
+                  cursorColor={theme.primary[700]}
+                  selectionColor={theme.primary[700]}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View className="gap-y-2">
+            <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
+              Items
+            </Text>
+            <View className="flex-row gap-x-2">
+              <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
+                <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Min</Text>
+                <TextInput
+                  value={itemsMinText}
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, '');
+                    setItemsMinText(cleaned);
+                  }}
+                  placeholder="e.g. 5"
+                  placeholderTextColor={theme.primary[500]}
+                  keyboardType="number-pad"
+                  maxLength={5}
+                  className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
+                />
+              </View>
+              <View className="flex-1 gap-y-1 rounded-xl bg-primary-200 px-3 py-3 dark:bg-primary-800">
+                <Text className="font-SpaceGrotesk-Light text-xs text-primary-500">Max</Text>
+                <TextInput
+                  value={itemsMaxText}
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, '');
+                    setItemsMaxText(cleaned);
+                  }}
+                  placeholder="e.g. 100"
+                  placeholderTextColor={theme.primary[500]}
+                  keyboardType="number-pad"
+                  maxLength={5}
+                  className="font-SpaceGrotesk-Regular text-sm text-primary-950 dark:text-primary-50"
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
+      <View className="flex-row items-center gap-x-2 pt-2">
+        <TouchableOpacity
+          onPress={onClose}
+          className="flex-1 items-center rounded-xl border border-primary-300 py-2.5 dark:border-primary-700">
+          <Text className="font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
+            Cancel
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleApply}
+          className="flex-[2] items-center rounded-xl bg-primary-900 py-3 dark:bg-primary-100">
+          <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-50 dark:text-primary-950">
+            Apply
+          </Text>
+        </TouchableOpacity>
+      </View>
     </BottomSheet>
   );
 }

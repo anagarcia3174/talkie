@@ -1,4 +1,4 @@
-import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { X, Pencil, Trash2, UserCircle, Flag } from 'lucide-react-native';
 import { CommentWithUser, ReviewWithUser } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';

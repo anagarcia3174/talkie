@@ -1,4 +1,4 @@
-import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import ReviewForm, { ReviewFormProps } from './ReviewForm';
 import BottomSheet from './BottomSheet';
 import { X } from 'lucide-react-native';

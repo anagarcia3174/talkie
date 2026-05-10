@@ -1,14 +1,5 @@
-import { useState, useEffect } from 'react';
-import {
-  Modal,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { useTheme } from '~/hooks/useTheme';
 import { List } from '~/types/supabaseTypes';
@@ -27,17 +18,6 @@ export default function CreateListModal({ visible, onClose, onSubmit }: CreateLi
   const [listName, setListName] = useState('');
   const [listDescription, setListDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
-
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardOpen(true));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardOpen(false));
-
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
 
   const canSubmit =
     listName.trim().length > 0 && listName.length <= 50 && listDescription.length <= 500;

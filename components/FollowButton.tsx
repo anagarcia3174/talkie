@@ -52,8 +52,7 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
       follow: {
         label: 'Follow',
         Icon: UserPlus,
-        buttonClassName:
-          'bg-primary-900 dark:bg-primary-100',
+        buttonClassName: 'bg-primary-900 dark:bg-primary-100',
         textClassName: 'text-primary-50 dark:text-primary-950',
         iconColor: theme.primary[50],
       },

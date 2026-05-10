@@ -104,7 +104,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
         </TouchableOpacity>
       </View>
 
-      <View className='mb-1'>
+      <View className="mb-1">
         <Text className="mb-2 px-1 text-xs uppercase tracking-widest tracking-widest text-primary-400 dark:text-primary-400">
           Account
         </Text>
@@ -115,7 +115,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
         {renderBarTile(accountOptions[2])}
       </View>
 
-      <View className='mb-1'>
+      <View className="mb-1">
         <Text className="mb-2 px-1 text-xs uppercase tracking-widest tracking-widest text-primary-400 dark:text-primary-400">
           Help & Feedback
         </Text>

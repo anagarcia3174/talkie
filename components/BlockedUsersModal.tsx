@@ -1,6 +1,6 @@
 import { UserRound, X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Modal, Text, View, TouchableOpacity, Image } from 'react-native';
+import { Text, View, TouchableOpacity, Image } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '~/context/AuthContext';
@@ -123,7 +123,7 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
                   haptics.action();
                   handleUnblock(item.id);
                 }}
-                className="rounded-lg px-4 py-2 bg-primary-300 dark:bg-primary-700">
+                className="rounded-lg bg-primary-300 px-4 py-2 dark:bg-primary-700">
                 <Text className="font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
                   Unblock
                 </Text>

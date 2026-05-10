@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  Image,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, Pressable, Image, TextInput, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Profile } from '~/types/supabaseTypes';
-import { Camera, Globe, Pencil, X } from 'lucide-react-native';
+import { Globe, Pencil, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import Toast from 'react-native-toast-message';
 import { SaveFormat, ImageManipulator } from 'expo-image-manipulator';
@@ -230,8 +223,6 @@ export default function ProfileActionsModal({
 
         <View className="flex-row gap-2">
           {[true, false].map((option) => {
-            const selected = userIsPrivate === option;
-
             return (
               <TouchableOpacity
                 key={option ? 'private' : 'public'}

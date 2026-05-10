@@ -1,6 +1,6 @@
 import { ChevronRight, Trash2, UserRound, X } from 'lucide-react-native';
 import { useState } from 'react';
-import { Image, Modal, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useTheme } from '~/hooks/useTheme';
 import { ListWithMeta } from '~/types/supabaseTypes';
@@ -121,8 +121,11 @@ export default function ListRow({ list, onPress, deletable = false, onDelete }: 
         </View>
         <View>
           <Text className="mb-2 font-SpaceGrotesk-Regular text-sm text-primary-600 dark:text-primary-400">
-            Type <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">{list.name}</Text> to
-            confirm. This action cannot be undone.
+            Type{' '}
+            <Text className="font-SpaceGrotesk-Bold text-primary-950 dark:text-primary-50">
+              {list.name}
+            </Text>{' '}
+            to confirm. This action cannot be undone.
           </Text>
           <TextInput
             value={input}
@@ -135,21 +138,21 @@ export default function ListRow({ list, onPress, deletable = false, onDelete }: 
           />
         </View>
         <View className="flex-row items-center gap-x-2 pt-2">
-        <TouchableOpacity
-          onPress={() => {
+          <TouchableOpacity
+            onPress={() => {
               setConfirmVisible(false);
               setInput('');
             }}
-          className="flex-[1] items-center rounded-xl border border-primary-300 py-2.5 dark:border-primary-700">
-          <Text className="text-primary-700 dark:text-primary-300">Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          disabled={!isMatch}
-          onPress={handleConfirmDelete}
-          className={`flex-[2] items-center rounded-xl py-3 bg-red-600 ${isMatch ? '' : 'opacity-40'}`}>
-          <Text className="font-SpaceGrotesk-Bold text-white">Delete List</Text>
-        </TouchableOpacity>
-      </View>
+            className="flex-[1] items-center rounded-xl border border-primary-300 py-2.5 dark:border-primary-700">
+            <Text className="text-primary-700 dark:text-primary-300">Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={!isMatch}
+            onPress={handleConfirmDelete}
+            className={`flex-[2] items-center rounded-xl bg-red-600 py-3 ${isMatch ? '' : 'opacity-40'}`}>
+            <Text className="font-SpaceGrotesk-Bold text-white">Delete List</Text>
+          </TouchableOpacity>
+        </View>
       </BottomSheet>
     </>
   );

@@ -1,15 +1,5 @@
 import { useState } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import type { ReportReason } from '~/types/supabaseTypes';
 import { haptics } from '~/utils/haptics';
 import BottomSheet from './BottomSheet';

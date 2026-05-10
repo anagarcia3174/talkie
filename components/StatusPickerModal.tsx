@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import { Check, Eye, Clock, Trash2, X, Play } from 'lucide-react-native';
+import { Check, Clock, Trash2, X, Play } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { Status } from '~/types/supabaseTypes';
 import { useEffect, useState } from 'react';

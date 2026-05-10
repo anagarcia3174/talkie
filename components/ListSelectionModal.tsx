@@ -171,7 +171,7 @@ export default function ListSelectionModal({
       {/* Footer */}
       <View className="pt-2">
         <TouchableOpacity
-          disabled={selectedLists.length == 0}
+          disabled={selectedLists.length === 0}
           onPress={() => {
             haptics.action();
             onConfirm(selectedLists);
