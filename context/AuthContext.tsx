@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { getProfile, getStats } = useProfile.getState();
     const { getLists } = useLists.getState();
     const { hydrateFollowerIds, hydrateFollowingIds } = useFollow.getState();
-    const { hydrateBlockedIds } = useBlock.getState();
+    const { fetchBlockedIds } = useBlock.getState();
 
     const profileResult = await getProfile(userId);
 
@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       getLists(userId),
       hydrateFollowerIds(userId),
       hydrateFollowingIds(userId),
-      hydrateBlockedIds(userId),
+      fetchBlockedIds(userId),
     ]);
 
     return { accountDeleted: false };

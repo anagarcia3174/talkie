@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { blockUser, getBlockedIds, getBlockedUsers, unBlockUser } from '~/services/blockService';
+import { blockUser, getBlockedIds, getBlockedUsers, unblockUser } from '~/services/blockService';
 import { Profile, StoreResult } from '~/types/supabaseTypes';
 
 
 interface BlockState {
   // relationship cache
   blockedIds: Set<string>;
-  hydrateBlockedIds: (userId: string) => Promise<StoreResult<void>>;
+  fetchBlockedIds: (userId: string) => Promise<StoreResult<void>>;
 
   // users I blocked
   blockedUsers: Profile[];
@@ -15,7 +15,7 @@ interface BlockState {
   block: (currentUserId: string, targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
   unblock: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
 
-  getBlockedUsers: () => Promise<StoreResult<void>>;
+  fetchBlockedUsers: () => Promise<StoreResult<void>>;
 
   clearBlockData: () => void;
 }
@@ -23,7 +23,7 @@ interface BlockState {
 export const useBlock = create<BlockState>((set, get) => ({
   blockedIds: new Set<string>(),
   blockedUsers: [],
-  hydrateBlockedIds: async (userId) => {
+  fetchBlockedIds: async (userId) => {
     const result = await getBlockedIds(userId);
 
     if (!result.success) {
@@ -55,7 +55,7 @@ export const useBlock = create<BlockState>((set, get) => ({
   },
 
   unblock: async (currentUserId, targetUserId) => {
-    const result = await unBlockUser(currentUserId, targetUserId);
+    const result = await unblockUser(currentUserId, targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -74,7 +74,7 @@ export const useBlock = create<BlockState>((set, get) => ({
     return { success: true };
   },
 
-  getBlockedUsers: async () => {
+  fetchBlockedUsers: async () => {
     const result = await getBlockedUsers();
 
     if (!result.success) {

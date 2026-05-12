@@ -16,7 +16,7 @@ interface BlockedUsersModalProps {
 }
 
 export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModalProps) {
-  const { blockedIds, blockedUsers, getBlockedUsers, unblock } = useBlock();
+  const { blockedIds, blockedUsers, fetchBlockedUsers, unblock } = useBlock();
   const { user } = useAuth();
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
@@ -31,13 +31,13 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
       setLoading(true);
       setError(null);
 
-      await getBlockedUsers();
+      await fetchBlockedUsers();
 
       setLoading(false);
     };
 
     loadBlockedUsers();
-  }, [visible, user, blockedIds, blockedUsers.length, getBlockedUsers]);
+  }, [visible, user, blockedIds, blockedUsers.length, fetchBlockedUsers]);
 
   const handleUnblock = async (targetUserId: string) => {
     if (!user) return;

@@ -32,7 +32,7 @@ interface ProfileState {
   loading: boolean;
 
   otherProfiles: Record<string, OtherProfilesState>;
-  getOthersProfile: (userId: string) => Promise<StoreResult<void>>;
+  getOtherProfile: (userId: string) => Promise<StoreResult<void>>;
 
   getProfile: (userId: string) => Promise<StoreResult<void>>;
   getStats: (userId: string) => Promise<StoreResult<void>>;
@@ -69,7 +69,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
   loading: false,
 
   otherProfiles: {},
-  getOthersProfile: async (userId) => {
+  getOtherProfile: async (userId) => {
     const cached = get().otherProfiles[userId];
 
     if (cached?.hasFetched || cached?.loading) {

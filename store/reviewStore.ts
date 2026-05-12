@@ -23,7 +23,7 @@ interface ReviewsState {
   submitReview: (
     review: CreateReviewInput
   ) => Promise<StoreResult>;
-  removeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
+  deleteReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
   toggleLikeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
   updateReview: (params: {
     reviewId: number;
@@ -121,7 +121,7 @@ export const useReviews = create<ReviewsState>((set, get) => ({
     }
     return { success: true };
   },
-  removeReview: async (reviewId, mediaId) => {
+  deleteReview: async (reviewId, mediaId) => {
     const result = await deleteReview(reviewId);
 
     if (!result.success) {

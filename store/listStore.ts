@@ -56,7 +56,7 @@ interface ListState {
   // item actions
   getListItems: (listId: number) => Promise<StoreResult<void>>;
   addItemToList: (listId: number, mediaId: number, userId: string) => Promise<StoreResult<void>>;
-  removeItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
+  deleteItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
   updateItemStatus: (
     userId: string,
     item: ListItemWithMedia,
@@ -379,7 +379,7 @@ export const useLists = create<ListState>((set, get) => ({
     return { success: true };
   },
 
-  removeItemFromList: async (item) => {
+  deleteItemFromList: async (item) => {
     const result = await removeListItem(item.id);
     if (!result.success) {
       return {

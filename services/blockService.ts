@@ -33,7 +33,7 @@ export async function blockUser(currentUser: string, targetUserId: string): Prom
   }
 }
 
-export async function unBlockUser(currentUser: string, blockedUser: string): Promise<VoidResult> {
+export async function unblockUser(currentUser: string, blockedUser: string): Promise<VoidResult> {
   try {
     const { error } = await supabase
       .from('blocks')

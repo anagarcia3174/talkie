@@ -40,7 +40,7 @@ function formatRelativeTime(dateString: string): string {
 
 export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   const uri = getPublicUrl(review.owner.avatar_url);
-  const { toggleLikeReview, removeReview, updateReview, reportReview } = useReviews();
+  const { toggleLikeReview, deleteReview, updateReview, reportReview } = useReviews();
   const { adjustProfileStats} = useProfile();
   const [loading, setLoading] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
@@ -68,7 +68,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   };
 
   const handleReviewDelete = async () => {
-    const result = await removeReview(review.id, review.media_id);
+    const result = await deleteReview(review.id, review.media_id);
     if (!result.success) {
       haptics.error();
       Toast.show({

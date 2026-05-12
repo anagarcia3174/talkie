@@ -6,7 +6,7 @@ import { Status, List, ListItem, ListItemWithMedia } from '~/types/supabaseTypes
 import { haptics } from '~/utils/haptics';
 
 export default function useListScreenActions(listId: number) {
-  const { updateItemStatus, removeItemFromList, updateList, deleteList, likeList, unlikeList } =
+  const { updateItemStatus, deleteItemFromList, updateList, deleteList, likeList, unlikeList } =
     useLists();
   const { user } = useAuth();
   const userId = user?.id;
@@ -47,7 +47,7 @@ export default function useListScreenActions(listId: number) {
 
     deleteItem: (item: ListItem) =>
       withToast(
-        () => removeItemFromList(item),
+        () => deleteItemFromList(item),
         'The item was removed!',
         'Failed to remove the item.'
       ),

@@ -25,7 +25,7 @@ export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
-  const { otherProfiles, getOthersProfile } = useProfile();
+  const { otherProfiles, getOtherProfile } = useProfile();
   const profileState = otherProfiles[id];
   const profile = profileState?.profile ?? null;
   const profileStats = profileState?.stats ?? null;
@@ -46,8 +46,8 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!id) return;
 
-    getOthersProfile(id);
-  }, [id, getOthersProfile]);
+    getOtherProfile(id);
+  }, [id, getOtherProfile]);
 
   useEffect(() => {
     if (!profile) return;
