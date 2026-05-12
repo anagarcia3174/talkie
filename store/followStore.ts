@@ -27,6 +27,7 @@ interface FollowState {
   getFollowers: (userId: string) => Promise<StoreResult<void>>;
   getFollowing: (userId: string) => Promise<StoreResult<void>>;
 
+  purgeUserContent: (targetUserId: string) => { wasFollowing: boolean; wasFollower: boolean };
   clearFollowData: () => void;
 }
 
@@ -133,6 +134,27 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
+  purgeUserContent: (targetUserId) => {
+    const { followingIds, followerIds } = get();
+    const wasFollowing = followingIds.has(targetUserId);
+    const wasFollower = followerIds.has(targetUserId);
+
+    set((state) => {
+      const updatedFollowingIds = new Set(state.followingIds);
+      updatedFollowingIds.delete(targetUserId);
+      const updatedFollowerIds = new Set(state.followerIds);
+      updatedFollowerIds.delete(targetUserId);
+
+      return {
+        followingIds: updatedFollowingIds,
+        followerIds: updatedFollowerIds,
+        following: state.following.filter((p) => p.id !== targetUserId),
+        followers: state.followers.filter((p) => p.id !== targetUserId),
+      };
+    });
+
+    return { wasFollowing, wasFollower };
+  },
   clearFollowData: () => {
     set({
       followingIds: new Set(),

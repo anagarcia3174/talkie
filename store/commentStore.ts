@@ -61,6 +61,7 @@ interface CommentState {
     reportReason: ReportReason,
     details?: string
   ) => Promise<StoreResult>;
+  purgeUserContent: (targetUserId: string) => void;
 }
 
 export const useComments = create<CommentState>((set, get) => ({
@@ -521,6 +522,22 @@ export const useComments = create<CommentState>((set, get) => ({
     }
 
     return { success: true };
+  },
+  purgeUserContent: (targetUserId) => {
+    set((state) => ({
+      fetchedComments: Object.fromEntries(
+        Object.entries(state.fetchedComments).map(([key, val]) => [
+          key,
+          { ...val, comments: val.comments.filter((c) => c.owner.id !== targetUserId) },
+        ])
+      ) as typeof state.fetchedComments,
+      recentCommentsFeed: {
+        ...state.recentCommentsFeed,
+        recentComments: state.recentCommentsFeed.recentComments.filter(
+          (c) => c.owner.id !== targetUserId
+        ),
+      },
+    }));
   },
   reportComment: async (commentId, contextKey, reason, details) => {
     const result = await reportComment(commentId, reason, details);

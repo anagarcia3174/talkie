@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { blockUser, getBlockedIds, getBlockedUsers, unBlockUser } from '~/services/blockService';
 import { Profile, StoreResult } from '~/types/supabaseTypes';
-import { useLists } from './listStore';
-import { useProfile } from './profileStore';
+
 
 interface BlockState {
   // relationship cache
@@ -13,7 +12,7 @@ interface BlockState {
   blockedUsers: Profile[];
 
   // actions
-  block: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
+  block: (currentUserId: string, targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
   unblock: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
 
   getBlockedUsers: () => Promise<StoreResult<void>>;
@@ -35,7 +34,7 @@ export const useBlock = create<BlockState>((set, get) => ({
 
     return { success: true };
   },
-  block: async (currentUserId, targetUserId) => {
+  block: async (currentUserId, targetUserId, targetProfile) => {
     const result = await blockUser(currentUserId, targetUserId);
 
     if (!result.success) {
@@ -46,10 +45,11 @@ export const useBlock = create<BlockState>((set, get) => ({
       const updated = new Set(state.blockedIds);
       updated.add(targetUserId);
 
-      return { blockedIds: updated };
+      return { blockedIds: updated,
+        blockedUsers: [...state.blockedUsers, targetProfile]
+
+       };
     });
-    await useProfile.getState().getStats(currentUserId);
-    await useLists.getState().getLists(currentUserId);
 
     return { success: true };
   },
@@ -67,11 +67,9 @@ export const useBlock = create<BlockState>((set, get) => ({
 
       return {
         blockedIds: updated,
+        blockedUsers: state.blockedUsers.filter((b) => b.id !== targetUserId)
       };
     });
-    await useProfile.getState().getStats(currentUserId);
-
-    await useLists.getState().getLists(currentUserId);
 
     return { success: true };
   },

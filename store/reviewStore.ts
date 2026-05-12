@@ -39,6 +39,7 @@ interface ReviewsState {
     mediaId: number,
     details?: string
   ) => Promise<StoreResult>;
+  purgeUserContent: (targetUserId: string) => void;
 }
 
 export const useReviews = create<ReviewsState>((set, get) => ({
@@ -267,6 +268,16 @@ export const useReviews = create<ReviewsState>((set, get) => ({
     }
 
     return { success: true };
+  },
+  purgeUserContent: (targetUserId) => {
+    set((state) => ({
+      fetchedReviews: Object.fromEntries(
+        Object.entries(state.fetchedReviews).map(([key, val]) => [
+          key,
+          { ...val, reviews: val.reviews.filter((r) => r.owner.id !== targetUserId) },
+        ])
+      ) as typeof state.fetchedReviews,
+    }));
   },
   reportReview: async (reviewId, reason, mediaId, details) => {
     const result = await reportReview(reviewId, reason, details);

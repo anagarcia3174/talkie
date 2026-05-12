@@ -38,6 +38,7 @@ interface ProfileState {
   adjustProfileStats: (deltas: Partial<Record<keyof ProfileStats, number>>) => void;
   uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
   updateProfile: (userId: string, updates: Partial<Profile>) => Promise<StoreResult<void>>;
+  purgeUserContent: (targetUserId: string) => void;
   clearProfile: () => void;
   deleteAccount: () => Promise<StoreResult<void>>;
 }
@@ -236,6 +237,12 @@ export const useProfile = create<ProfileState>((set, get) => ({
     return { success: true };
   },
 
+  purgeUserContent: (targetUserId) => {
+    set((state) => {
+      const { [targetUserId]: _, ...remaining } = state.otherProfiles;
+      return { otherProfiles: remaining };
+    });
+  },
   clearProfile: () => set({ profile: null, stats: DEFAULT_PROFILE_STATS, otherProfiles: {} }),
   deleteAccount: async () => {
     set({ loading: true });

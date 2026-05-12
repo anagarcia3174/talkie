@@ -12,6 +12,9 @@ import { useTheme } from '~/hooks/useTheme';
 import { useLists } from '~/store/listStore';
 import FollowButton from '~/components/FollowButton';
 import { useBlock } from '~/store/blockStore';
+import { useFollow } from '~/store/followStore';
+import { useComments } from '~/store/commentStore';
+import { useReviews } from '~/store/reviewStore';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { useProfile } from '~/store/profileStore';
@@ -72,7 +75,7 @@ export default function ProfileScreen() {
   const handleBlock = async () => {
     if (!user) return;
     setBlocking(true);
-    const result = await block(user.id, profile.id);
+    const result = await block(user.id, profile.id, profile);
     if (!result.success) {
       Toast.show({
         type: 'error',
@@ -83,6 +86,15 @@ export default function ProfileScreen() {
       setBlocking(false);
       return;
     }
+
+    const { wasFollowing, wasFollower } = useFollow.getState().purgeUserContent(profile.id);
+    useComments.getState().purgeUserContent(profile.id);
+    useReviews.getState().purgeUserContent(profile.id);
+    useLists.getState().purgeUserContent(profile.id);
+    useProfile.getState().purgeUserContent(profile.id);
+    if (wasFollowing) useProfile.getState().adjustProfileStats({ following: -1 });
+    if (wasFollower) useProfile.getState().adjustProfileStats({ followers: -1 });
+
     setBlocking(false);
   };
 

@@ -62,6 +62,7 @@ interface ListState {
     item: ListItemWithMedia,
     status: Status
   ) => Promise<StoreResult<void>>;
+  purgeUserContent: (targetUserId: string) => void;
 }
 
 export const useLists = create<ListState>((set, get) => ({
@@ -410,6 +411,13 @@ export const useLists = create<ListState>((set, get) => ({
     });
 
     return { success: true };
+  },
+  purgeUserContent: (targetUserId) => {
+    set((state) => ({
+      listsById: Object.fromEntries(
+        Object.entries(state.listsById).filter(([, list]) => list.owner?.id !== targetUserId)
+      ) as typeof state.listsById,
+    }));
   },
   updateItemStatus: async (userId, item, status) => {
     const prevStatus = item.status;
