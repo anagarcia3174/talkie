@@ -35,7 +35,7 @@ export default function useListScreenActions(listId: number) {
   };
 
   return {
-    updateItemStatus: async (item: ListItemWithMedia | ListItem, status: Status) => {
+    updateItemStatus: async (item: ListItemWithMedia, status: Status) => {
       if (!userId) return;
 
       withToast(

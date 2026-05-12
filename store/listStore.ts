@@ -59,7 +59,7 @@ interface ListState {
   removeItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
   updateItemStatus: (
     userId: string,
-    item: ListItem | ListItemWithMedia,
+    item: ListItemWithMedia,
     status: Status
   ) => Promise<StoreResult<void>>;
 }
@@ -262,47 +262,68 @@ export const useLists = create<ListState>((set, get) => ({
   },
 
   likeList: async (listId, userId) => {
-    const result = await likeList(listId, userId);
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error,
-      };
-    }
+    const prevCount = get().listsById[listId]?.like_count ?? 0;
 
     set((state) => ({
-      ...state,
       listsById: {
         ...state.listsById,
         [listId]: {
           ...state.listsById[listId],
           is_liked: true,
-          like_count: (state.listsById[listId]?.like_count ?? 0) + 1,
+          like_count: prevCount + 1,
         },
       },
     }));
+
+    const result = await likeList(listId, userId);
+
+    if (!result.success) {
+      set((state) => ({
+        listsById: {
+          ...state.listsById,
+          [listId]: {
+            ...state.listsById[listId],
+            is_liked: false,
+            like_count: prevCount,
+          },
+        },
+      }));
+      return { success: false, error: result.error };
+    }
+
     return { success: true };
   },
 
   unlikeList: async (listId, userId) => {
-    const result = await unlikeList(listId, userId);
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error,
-      };
-    }
+    const prevCount = get().listsById[listId]?.like_count ?? 0;
+
     set((state) => ({
-      ...state,
       listsById: {
         ...state.listsById,
         [listId]: {
           ...state.listsById[listId],
           is_liked: false,
-          like_count: Math.max((state.listsById[listId]?.like_count ?? 1) - 1, 0),
+          like_count: Math.max(prevCount - 1, 0),
         },
       },
     }));
+
+    const result = await unlikeList(listId, userId);
+
+    if (!result.success) {
+      set((state) => ({
+        listsById: {
+          ...state.listsById,
+          [listId]: {
+            ...state.listsById[listId],
+            is_liked: true,
+            like_count: prevCount,
+          },
+        },
+      }));
+      return { success: false, error: result.error };
+    }
+
     return { success: true };
   },
 
@@ -338,26 +359,21 @@ export const useLists = create<ListState>((set, get) => ({
   addItemToList: async (listId, mediaId, userId) => {
     const result = await addListItem(listId, mediaId, userId);
     if (!result.success) {
-      return {
-        success: false,
-        error: result.error,
-      };
+      return { success: false, error: result.error };
     }
-    const { listItems } = get();
 
-    if (listItems[listId]) {
-      await get().getListItems(listId);
-    } else {
-      set((state) => ({
-        listsById: {
-          ...state.listsById,
-          [listId]: {
-            ...state.listsById[listId],
-            item_count: (state.listsById[listId]?.item_count ?? 0) + 1,
-          },
+    set((state) => ({
+      listsById: {
+        ...state.listsById,
+        [listId]: {
+          ...state.listsById[listId],
+          item_count: (state.listsById[listId]?.item_count ?? 0) + 1,
         },
-      }));
-    }
+      },
+      listItems: state.listItems[listId] !== undefined
+        ? { ...state.listItems, [listId]: undefined }
+        : state.listItems,
+    }));
 
     return { success: true };
   },
@@ -396,36 +412,26 @@ export const useLists = create<ListState>((set, get) => ({
     return { success: true };
   },
   updateItemStatus: async (userId, item, status) => {
+    const prevStatus = item.status;
+
+    const applyToAll = (s: Status) =>
+      set((state) => ({
+        listItems: Object.fromEntries(
+          Object.entries(state.listItems).map(([key, items]) => [
+            key,
+            items?.map((i) => (i.media_id === item.media_id ? { ...i, status: s } : i)),
+          ])
+        ) as typeof state.listItems,
+      }));
+
+    applyToAll(status);
+
     const result = await updateItemStatus(userId, item.media_id, status);
+
     if (!result.success) {
-      return {
-        success: false,
-        error: result.error,
-      };
+      applyToAll(prevStatus);
+      return { success: false, error: result.error };
     }
-    set((state) => {
-      const updatedListItems: typeof state.listItems = {};
-
-      for (const [listId, items] of Object.entries(state.listItems)) {
-        if (!items) continue;
-
-        updatedListItems[Number(listId)] = items.map((i) =>
-          i.media_id === item.media_id
-            ? {
-                ...i,
-                status,
-              }
-            : i
-        );
-      }
-
-      return {
-        listItems: {
-          ...state.listItems,
-          ...updatedListItems,
-        },
-      };
-    });
 
     return { success: true };
   },
