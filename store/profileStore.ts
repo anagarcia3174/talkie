@@ -7,7 +7,7 @@ import {
 } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import { ImagePickerAsset } from 'expo-image-picker';
-import { withPublicUrl } from '~/utils/storageUrl';
+import { getPublicUrl, withPublicUrl } from '~/utils/storageUrl';
 import {
   getProfileById,
   getProfileStats,
@@ -211,12 +211,10 @@ export const useProfile = create<ProfileState>((set, get) => ({
         return { success: false, error: result.error };
       }
 
-      // Refresh the profile after upload
-      const profileResult = await get().getProfile(userId);
-
-      if (profileResult.success && get().profile) {
-        // Add cache-busting timestamp to force image reload
-        set({ profile: addCacheBuster(get().profile!) });
+      const currentProfile = get().profile;
+      if (currentProfile) {
+        const avatarUrl = getPublicUrl(`/object/public/avatars/${filePath}`);
+        set({ profile: addCacheBuster({ ...currentProfile, avatar_url: avatarUrl }) });
       }
       return { success: true };
     } catch {
