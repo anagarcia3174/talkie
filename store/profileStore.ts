@@ -39,15 +39,19 @@ const MAX_MB = 6;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 
 const addCacheBuster = (profile: Profile): Profile => {
-  if (profile.avatar_url) {
-    const timestamp = Date.now();
-    const separator = profile.avatar_url.includes('?') ? '&' : '?';
-    return {
-      ...profile,
-      avatar_url: `${profile.avatar_url}${separator}t=${timestamp}`,
-    };
-  }
-  return profile;
+  if (!profile.avatar_url) return profile;
+
+  const timestamp = Date.now();
+
+  // Remove any existing `t` cache param first
+  const url = new URL(profile.avatar_url);
+
+  url.searchParams.set('t', timestamp.toString());
+
+  return {
+    ...profile,
+    avatar_url: url.toString(),
+  };
 };
 
 export const useProfile = create<ProfileState>((set, get) => ({
@@ -213,7 +217,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
     return { success: true };
   },
 
-  clearProfile: () => set({ profile: null }),
+  clearProfile: () => set({ profile: null, stats: DEFAULT_PROFILE_STATS, otherProfiles: {} }),
   deleteAccount: async () => {
     set({ loading: true });
 

@@ -11,19 +11,31 @@ interface MediaDetailsState {
 
 interface MediaState {
   loading: boolean;
+  hasFetchedHomeData: boolean;
   trendingMovies: Media[];
   trendingShows: Media[];
   mediaDetails: Record<number, MediaDetailsState>;
-  fetchHomeData: () => Promise<StoreResult>;
+  fetchHomeData: (force?: boolean) => Promise<StoreResult>;
   fetchMediaDetails: (mediaId: number, force?: boolean) => Promise<StoreResult>;
 }
 
 export const useMedia = create<MediaState>((set, get) => ({
   loading: false,
+  hasFetchedHomeData: false,
   trendingMovies: [],
   trendingShows: [],
   mediaDetails: {},
-  fetchHomeData: async () => {
+  fetchHomeData: async (force = false) => {
+    const { loading, hasFetchedHomeData } = get();
+
+    if (loading) {
+      return { success: true };
+    }
+
+    if (!force && hasFetchedHomeData) {
+      return { success: true };
+    }
+
     set({ loading: true });
 
     const [trendingMoviesResult, trendingShowsResult] = await Promise.all([
@@ -31,22 +43,23 @@ export const useMedia = create<MediaState>((set, get) => ({
       getTrendingShows(),
     ]);
 
-    // Check if any requests failed
     if (!trendingMoviesResult.success) {
       set({ loading: false });
       return { success: false, error: trendingMoviesResult.error };
     }
+
     if (!trendingShowsResult.success) {
       set({ loading: false });
       return { success: false, error: trendingShowsResult.error };
     }
 
-    // All requests succeeded
     set({
       trendingMovies: trendingMoviesResult.data,
       trendingShows: trendingShowsResult.data,
       loading: false,
+      hasFetchedHomeData: true,
     });
+
     return { success: true };
   },
   fetchMediaDetails: async (mediaId, force = false) => {

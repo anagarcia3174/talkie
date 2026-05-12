@@ -195,23 +195,7 @@ export const useReviews = create<ReviewsState>((set, get) => ({
 
       return result;
     }
-    set((state) => ({
-      fetchedReviews: {
-        ...state.fetchedReviews,
-        [mediaId]: {
-          ...state.fetchedReviews[mediaId],
-          reviews: state.fetchedReviews[mediaId].reviews.map((r) =>
-            r.id === reviewId
-              ? {
-                  ...r,
-                  is_liked: result.data,
-                }
-              : r
-          ),
-        },
-      },
-    }));
-
+  
     return { success: true };
   },
   updateReview: async ({ reviewId, mediaId, updates }) => {
