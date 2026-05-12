@@ -22,6 +22,7 @@ import {
 } from '~/types/sortFilterTypes';
 import MediaSortAndFilterModal from '~/components/MediaSortAndFilterModal';
 import ListSortAndFilterModal from '~/components/ListSortAndFilterModal';
+import { searchLists } from '~/services/listService';
 
 const SEARCH_OPTIONS = ['Media', 'Lists'];
 
@@ -32,7 +33,7 @@ export default function Search() {
   const [listResults, setListResults] = useState<SearchPublicListResult[]>([]);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [listLoading, setListLoading] = useState(false);
-  const { searchLists, addListToState } = useLists();
+  const { cacheList } = useLists();
   const theme = useTheme();
   const router = useRouter();
   const [sortModalVisible, setSortModalVisible] = useState(false);
@@ -136,7 +137,7 @@ export default function Search() {
   };
 
   const handleListPress = (result: SearchPublicListResult) => {
-    addListToState(result);
+    cacheList(result);
 
     router.push({
       pathname: '/list/[id]',

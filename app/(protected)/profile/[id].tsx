@@ -37,7 +37,7 @@ export default function ProfileScreen() {
   const [blocking, setBlocking] = useState(false);
   const [confirmBlockVisible, setConfirmBlockVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const { addListToState } = useLists();
+  const { cacheList } = useLists();
   const { block, blockedIds } = useBlock();
   const { user } = useAuth();
   const router = useRouter();
@@ -135,7 +135,7 @@ export default function ProfileScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
-                addListToState({
+                cacheList({
                   ...item,
                   owner: {
                     id: profile.id,

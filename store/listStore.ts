@@ -3,7 +3,6 @@ import {
   ListItem,
   ListItemWithMedia,
   Status,
-  SearchPublicListResult,
   ListWithMeta,
   StoreResult,
 } from '~/types/supabaseTypes';
@@ -19,7 +18,6 @@ import {
   likeList,
   unlikeList,
   updateItemStatus,
-  searchLists,
   getLikedLists,
 } from '~/services/listService';
 import { useProfile } from './profileStore';
@@ -44,11 +42,10 @@ interface ListState {
   // list actions
   getLists: (userId: string) => Promise<StoreResult<void>>;
   hydrateDefaultLists: () => Promise<void>;
-  addListToState: (list: ListWithMeta) => void;
+  cacheList: (list: ListWithMeta) => void;
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
   deleteList: (userId: string, listId: number) => Promise<StoreResult<void>>;
-  searchLists: (query: string) => Promise<StoreResult<SearchPublicListResult[]>>;
 
   likeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
   unlikeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
@@ -76,60 +73,56 @@ export const useLists = create<ListState>((set, get) => ({
 
   // ---- LIST ACTIONS ----
   getLists: async (userId) => {
-    try {
-      const [ownedResult, likedResult] = await Promise.all([
-        getOwnedLists(userId),
-        getLikedLists(userId),
-      ]);
+    const [ownedResult, likedResult] = await Promise.all([
+      getOwnedLists(userId),
+      getLikedLists(userId),
+    ]);
 
-      if (!ownedResult.success) {
-        return { success: false, error: ownedResult.error };
-      }
-
-      const ownedLists = ownedResult.data ?? [];
-      const likedLists = likedResult.success ? (likedResult.data ?? []) : [];
-
-      const listsById: Record<number, ListWithMeta> = {};
-      const customListIds: number[] = [];
-
-      let libraryId: number | null = null;
-      let favoritesId: number | null = null;
-
-      for (const list of ownedLists) {
-        listsById[list.id] = {
-          ...list,
-          owner: null,
-          is_liked: false,
-        };
-
-        if (list.is_default) {
-          if (list.list_type === 'library') {
-            libraryId = list.id;
-          } else if (list.list_type === 'favorites') {
-            favoritesId = list.id;
-          }
-        } else {
-          customListIds.push(list.id);
-        }
-      }
-
-      for (const liked of likedLists) {
-        listsById[liked.id] = liked;
-      }
-
-      set({
-        listsById,
-        defaultListIds: {
-          library: libraryId,
-          favorites: favoritesId,
-        },
-        customListIds,
-      });
-
-      return { success: true };
-    } catch {
-      return { success: false, error: 'An unexpected error ocurred while retrieving your lists.' };
+    if (!ownedResult.success) {
+      return { success: false, error: ownedResult.error };
     }
+
+    const ownedLists = ownedResult.data ?? [];
+    const likedLists = likedResult.success ? (likedResult.data ?? []) : [];
+
+    const listsById: Record<number, ListWithMeta> = {};
+    const customListIds: number[] = [];
+
+    let libraryId: number | null = null;
+    let favoritesId: number | null = null;
+
+    for (const list of ownedLists) {
+      listsById[list.id] = {
+        ...list,
+        owner: null,
+        is_liked: false,
+      };
+
+      if (list.is_default) {
+        if (list.list_type === 'library') {
+          libraryId = list.id;
+        } else if (list.list_type === 'favorites') {
+          favoritesId = list.id;
+        }
+      } else {
+        customListIds.push(list.id);
+      }
+    }
+
+    for (const liked of likedLists) {
+      listsById[liked.id] = liked;
+    }
+
+    set({
+      listsById,
+      defaultListIds: {
+        library: libraryId,
+        favorites: favoritesId,
+      },
+      customListIds,
+    });
+
+    return { success: true };
   },
   hydrateDefaultLists: async () => {
     const { defaultListIds, listItems, getListItems } = get();
@@ -145,17 +138,13 @@ export const useLists = create<ListState>((set, get) => ({
       getListItems(favoritesId);
     }
   },
-  addListToState: (list) => {
-    set((state) => {
-      return {
-        listsById: {
-          ...state.listsById,
-          [list.id]: {
-            ...list,
-          },
-        },
-      };
-    });
+  cacheList: (list) => {
+    set((state) => ({
+      listsById: {
+        ...state.listsById,
+        [list.id]: { ...list },
+      },
+    }));
   },
   createList: async (userId, newList) => {
     const result = await createList(userId, newList);
@@ -250,18 +239,6 @@ export const useLists = create<ListState>((set, get) => ({
 
     return { success: true };
   },
-  searchLists: async (query) => {
-    const result = await searchLists(query);
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error,
-      };
-    } else {
-      return { success: true, data: result.data };
-    }
-  },
-
   likeList: async (listId, userId) => {
     const prevCount = get().listsById[listId]?.like_count ?? 0;
 
