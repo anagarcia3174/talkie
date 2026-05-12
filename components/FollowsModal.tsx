@@ -162,7 +162,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
                   {item.display_name}
                 </Text>
               </TouchableOpacity>
-              <FollowButton targetUserId={item.id} isSmall />
+              <FollowButton targetUserId={item.id} targetProfile={item} isSmall />
             </View>
           )}
         />

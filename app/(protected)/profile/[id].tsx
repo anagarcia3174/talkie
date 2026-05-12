@@ -109,7 +109,7 @@ export default function ProfileScreen() {
           onAvatarPress={() => {
             setPreviewImage(profile.avatar_url);
           }}
-          followButton={<FollowButton targetUserId={profile.id} />}
+          followButton={<FollowButton targetUserId={profile.id} targetProfile={profile} />}
         />
         {profileStats && <StatsSection stats={profileStats} />}
         <Text className="mb-2 font-SpaceGrotesk-Medium text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">

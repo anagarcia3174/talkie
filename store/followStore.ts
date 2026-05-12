@@ -8,7 +8,6 @@ import {
   unFollowUser,
 } from '~/services/followService';
 import { Profile, StoreResult } from '~/types/supabaseTypes';
-import { useProfile } from './profileStore';
 
 
 interface FollowState {
@@ -22,7 +21,7 @@ interface FollowState {
   hydrateFollowingIds: (userId: string) => Promise<StoreResult<void>>;
   hydrateFollowerIds: (userId: string) => Promise<StoreResult<void>>;
 
-  follow: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
+  follow: (currentUserId: string, targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
   unfollow: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
 
   getFollowers: (userId: string) => Promise<StoreResult<void>>;
@@ -59,7 +58,7 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
-  follow: async (currentUserId, targetUserId) => {
+  follow: async (currentUserId, targetUserId, targetProfile) => {
     const result = await followUser(currentUserId, targetUserId);
 
     if (!result.success) {
@@ -67,13 +66,14 @@ export const useFollow = create<FollowState>((set, get) => ({
     }
 
     set((state) => {
-      const updated = new Set(state.followingIds);
-      updated.add(targetUserId);
+      const updatedIds = new Set(state.followingIds);
+      updatedIds.add(targetUserId);
 
-      return { followingIds: updated };
+      return {
+        followingIds: updatedIds,
+        following: [...state.following, targetProfile],
+      };
     });
-
-    await useProfile.getState().getStats(currentUserId);
 
     return { success: true };
   },
@@ -86,12 +86,14 @@ export const useFollow = create<FollowState>((set, get) => ({
     }
 
     set((state) => {
-      const updated = new Set(state.followingIds);
-      updated.delete(targetUserId);
+      const updatedIds = new Set(state.followingIds);
+      updatedIds.delete(targetUserId);
 
-      return { followingIds: updated };
+      return {
+        followingIds: updatedIds,
+        following: state.following.filter((p) => p.id !== targetUserId),
+      };
     });
-    await useProfile.getState().getStats(currentUserId);
 
     return { success: true };
   },
