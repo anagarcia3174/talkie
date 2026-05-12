@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ReportReason, Review, ReviewWithUser, StoreResult } from '~/types/supabaseTypes';
+import type { CreateReviewInput, ReportReason, Review, ReviewWithUser, StoreResult } from '~/types/supabaseTypes';
 import {
   getReviewsForMedia,
   postReview,
@@ -21,10 +21,7 @@ interface ReviewsState {
 
   fetchReviewsForMedia: (mediaId: number, force?: boolean) => Promise<StoreResult>;
   submitReview: (
-    review: Omit<
-      Review,
-      'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'
-    >
+    review: CreateReviewInput
   ) => Promise<StoreResult>;
   removeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
   toggleLikeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;

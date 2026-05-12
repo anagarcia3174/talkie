@@ -150,6 +150,11 @@ export type CreateCommentInput = Omit<
   'id' | 'user_id' | 'created_at' | 'updated_at' | 'like_count'
 >;
 
+export type CreateReviewInput = Omit<
+      Review,
+      'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'
+    >;
+
 export interface CommentWithUser extends Comment {
   is_liked: boolean;
   owner: {

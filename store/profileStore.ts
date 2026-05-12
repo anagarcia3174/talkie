@@ -22,6 +22,7 @@ interface OtherProfilesState {
   stats: ProfileStats | null;
   lists: ListWithMeta[];
   loading: boolean;
+  hasFetched: boolean;
   error: string | null;
 }
 
@@ -71,11 +72,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
   getOthersProfile: async (userId) => {
     const cached = get().otherProfiles[userId];
 
-    if (cached && !cached.loading && !cached.error) {
-      return { success: true };
-    }
-
-    if (cached?.loading) {
+    if (cached?.hasFetched || cached?.loading) {
       return { success: true };
     }
 
@@ -87,6 +84,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
           stats: cached?.stats ?? null,
           lists: cached?.lists ?? [],
           loading: true,
+          hasFetched: false,
           error: null,
         },
       },
@@ -106,6 +104,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
             stats: cached?.stats ?? null,
             lists: cached?.lists ?? [],
             loading: false,
+            hasFetched: false,
             error: profileResult.error,
           },
         },
@@ -127,6 +126,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
           stats,
           lists,
           loading: false,
+          hasFetched: true,
           error: !statsResult.success
             ? statsResult.error
             : !listsResult.success
