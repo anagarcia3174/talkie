@@ -9,6 +9,7 @@ import ErrorScreen from './ErrorScreen';
 import ReviewForm from './ReviewForm';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { haptics } from '~/utils/haptics';
+import { useProfile } from '~/store/profileStore';
 
 interface MediaReviewSectionProps {
   mediaId: number;
@@ -26,6 +27,7 @@ const hasDatePassed = (dateString?: string | null) => {
 
 export default function MediaReviewSection({ mediaId, releaseDate }: MediaReviewSectionProps) {
   const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReviews();
+  const { adjustProfileStats } = useProfile();
   const { user } = useAuth();
   const theme = useTheme();
   const mediaReviews = fetchedReviews[mediaId];
@@ -71,6 +73,7 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
           autoHide: true,
           onPress: () => Toast.hide(),
         });
+        adjustProfileStats({reviews: 1})
       } else {
         haptics.error();
         Toast.show({

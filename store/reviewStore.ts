@@ -33,7 +33,12 @@ interface ReviewsState {
     mediaId: number;
     updates: Partial<Pick<Review, 'rating' | 'content'>>;
   }) => Promise<StoreResult>;
-  reportReview: (reviewId: number, reason: ReportReason, details?: string) => Promise<StoreResult>;
+  reportReview: (
+    reviewId: number,
+    reason: ReportReason,
+    mediaId: number,
+    details?: string
+  ) => Promise<StoreResult>;
 }
 
 export const useReviews = create<ReviewsState>((set, get) => ({
@@ -195,7 +200,7 @@ export const useReviews = create<ReviewsState>((set, get) => ({
 
       return result;
     }
-  
+
     return { success: true };
   },
   updateReview: async ({ reviewId, mediaId, updates }) => {
@@ -263,7 +268,24 @@ export const useReviews = create<ReviewsState>((set, get) => ({
 
     return { success: true };
   },
-  reportReview: async (reviewId, reason, details) => {
-    return await reportReview(reviewId, reason, details);
+  reportReview: async (reviewId, reason, mediaId, details) => {
+    const result = await reportReview(reviewId, reason, details);
+
+    if (!result.success) {
+      return result;
+    }
+
+    set((state) => {
+      const updated = { ...state.fetchedReviews };
+      if (updated[mediaId]) {
+        updated[mediaId] = {
+          ...updated[mediaId],
+          reviews: updated[mediaId].reviews.filter((r) => r.id !== reviewId),
+        };
+      }
+      return { fetchedReviews: updated };
+    });
+
+    return { success: true };
   },
 }));
