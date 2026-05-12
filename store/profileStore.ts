@@ -32,10 +32,10 @@ interface ProfileState {
   loading: boolean;
 
   otherProfiles: Record<string, OtherProfilesState>;
-  getOtherProfile: (userId: string) => Promise<StoreResult<void>>;
+  fetchOtherProfile: (userId: string) => Promise<StoreResult<void>>;
 
-  getProfile: (userId: string) => Promise<StoreResult<void>>;
-  getStats: (userId: string) => Promise<StoreResult<void>>;
+  fetchProfile: (userId: string) => Promise<StoreResult<void>>;
+  fetchStats: (userId: string) => Promise<StoreResult<void>>;
   adjustProfileStats: (deltas: Partial<Record<keyof ProfileStats, number>>) => void;
   uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
   updateProfile: (userId: string, updates: Partial<Profile>) => Promise<StoreResult<void>>;
@@ -69,7 +69,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
   loading: false,
 
   otherProfiles: {},
-  getOtherProfile: async (userId) => {
+  fetchOtherProfile: async (userId) => {
     const cached = get().otherProfiles[userId];
 
     if (cached?.hasFetched || cached?.loading) {
@@ -138,8 +138,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
 
     return { success: true };
   },
-  // Fetch current user's profile
-  getProfile: async (userId) => {
+  fetchProfile: async (userId) => {
     set({ loading: true });
     const result = await getProfileById(userId);
 
@@ -157,7 +156,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
     return { success: true };
   },
 
-  getStats: async (userId) => {
+  fetchStats: async (userId) => {
     const result = await getProfileStats(userId);
 
     if (!result.success) {

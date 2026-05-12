@@ -19,7 +19,7 @@ export default function ListScreen() {
   const listId = Number(id);
   const isValidListId = Number.isFinite(listId);
 
-  const { listsById, listItems, getListItems } = useLists();
+  const { listsById, listItems, fetchListItems } = useLists();
   const { user } = useAuth();
   const { blockedIds } = useBlock();
   const list = isValidListId ? listsById[listId] : undefined;
@@ -37,7 +37,7 @@ export default function ListScreen() {
       setLoadingItems(true);
       setItemsError(null);
 
-      const result = await getListItems(listId);
+      const result = await fetchListItems(listId);
 
       if (!result.success) {
         setItemsError(result.error);
@@ -47,7 +47,7 @@ export default function ListScreen() {
     };
 
     loadItems();
-  }, [isValidListId, list, items, listId, getListItems]);
+  }, [isValidListId, list, items, listId, fetchListItems]);
 
   if (!isValidListId) {
     return (

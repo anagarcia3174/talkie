@@ -40,7 +40,7 @@ interface ListState {
   listItems: Record<number, ListItemWithMedia[] | undefined>;
 
   // list actions
-  getLists: (userId: string) => Promise<StoreResult<void>>;
+  fetchLists: (userId: string) => Promise<StoreResult<void>>;
   hydrateDefaultLists: () => Promise<void>;
   cacheList: (list: ListWithMeta) => void;
   createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
@@ -51,7 +51,7 @@ interface ListState {
   unlikeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
 
   // item actions
-  getListItems: (listId: number) => Promise<StoreResult<void>>;
+  fetchListItems: (listId: number) => Promise<StoreResult<void>>;
   addItemToList: (listId: number, mediaId: number, userId: string) => Promise<StoreResult<void>>;
   deleteItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
   updateItemStatus: (
@@ -72,7 +72,7 @@ export const useLists = create<ListState>((set, get) => ({
   listItems: {},
 
   // ---- LIST ACTIONS ----
-  getLists: async (userId) => {
+  fetchLists: async (userId) => {
     const [ownedResult, likedResult] = await Promise.all([
       getOwnedLists(userId),
       getLikedLists(userId),
@@ -125,17 +125,17 @@ export const useLists = create<ListState>((set, get) => ({
     return { success: true };
   },
   hydrateDefaultLists: async () => {
-    const { defaultListIds, listItems, getListItems } = get();
+    const { defaultListIds, listItems, fetchListItems } = get();
 
     const libraryId = defaultListIds.library;
     const favoritesId = defaultListIds.favorites;
 
     if (libraryId && !listItems[libraryId]) {
-      getListItems(libraryId);
+      fetchListItems(libraryId);
     }
 
     if (favoritesId && !listItems[favoritesId]) {
-      getListItems(favoritesId);
+      fetchListItems(favoritesId);
     }
   },
   cacheList: (list) => {
@@ -177,7 +177,7 @@ export const useLists = create<ListState>((set, get) => ({
       customListIds: [...state.customListIds, createdList.id],
     }));
 
-    await useProfile.getState().getStats(userId);
+    await useProfile.getState().fetchStats(userId);
 
     return { success: true };
   },
@@ -235,7 +235,7 @@ export const useLists = create<ListState>((set, get) => ({
       };
     });
 
-    await useProfile.getState().getStats(userId);
+    await useProfile.getState().fetchStats(userId);
 
     return { success: true };
   },
@@ -306,7 +306,7 @@ export const useLists = create<ListState>((set, get) => ({
   },
 
   // ---- ITEM ACTIONS ----
-  getListItems: async (listId) => {
+  fetchListItems: async (listId) => {
     const result = await getListItems(listId);
     if (!result.success) {
       return {

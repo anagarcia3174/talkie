@@ -47,12 +47,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Load user data function with proper error handling
   const loadUserData = useCallback(async (userId: string) => {
-    const { getProfile, getStats } = useProfile.getState();
-    const { getLists } = useLists.getState();
-    const { hydrateFollowerIds, hydrateFollowingIds } = useFollow.getState();
+    const { fetchProfile, fetchStats } = useProfile.getState();
+    const { fetchLists } = useLists.getState();
+    const { fetchFollowerIds, fetchFollowingIds } = useFollow.getState();
     const { fetchBlockedIds } = useBlock.getState();
 
-    const profileResult = await getProfile(userId);
+    const profileResult = await fetchProfile(userId);
 
     if (!profileResult.success) {
       if (profileResult.error === 'ACCOUNT_DELETED') {
@@ -63,10 +63,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Only load additional data if active
     await Promise.allSettled([
-      getStats(userId),
-      getLists(userId),
-      hydrateFollowerIds(userId),
-      hydrateFollowingIds(userId),
+      fetchStats(userId),
+      fetchLists(userId),
+      fetchFollowerIds(userId),
+      fetchFollowingIds(userId),
       fetchBlockedIds(userId),
     ]);
 

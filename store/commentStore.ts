@@ -55,7 +55,7 @@ interface CommentState {
     episodeNumber?: number;
     force?: boolean;
   }) => Promise<StoreResult>;
-  getRecentCommentsFeed: (force?: boolean) => Promise<StoreResult>;
+  fetchRecentCommentsFeed: (force?: boolean) => Promise<StoreResult>;
   postComment: (comment: CreateCommentInput) => Promise<StoreResult>;
   deleteComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult>;
   toggleLikeComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult>;
@@ -182,7 +182,7 @@ export const useComments = create<CommentState>((set, get) => ({
 
     return { success: true };
   },
-  getRecentCommentsFeed: async (force = false) => {
+  fetchRecentCommentsFeed: async (force = false) => {
     const cachedRecentCommentsFeed = get().recentCommentsFeed;
 
     if (cachedRecentCommentsFeed.isLoading) {

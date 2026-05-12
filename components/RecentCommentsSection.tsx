@@ -7,11 +7,11 @@ export default function RecentCommentsSection() {
   const recentComments = useComments((s) => s.recentCommentsFeed.recentComments);
   const isLoading = useComments((s) => s.recentCommentsFeed.isLoading);
   const hasFetched = useComments((s) => s.recentCommentsFeed.hasFetched);
-  const getRecentCommentsFeed = useComments((s) => s.getRecentCommentsFeed);
+  const fetchRecentCommentsFeed = useComments((s) => s.fetchRecentCommentsFeed);
 
   useEffect(() => {
-    void getRecentCommentsFeed();
-  }, [getRecentCommentsFeed]);
+    void fetchRecentCommentsFeed();
+  }, [fetchRecentCommentsFeed]);
 
   if (isLoading && recentComments.length === 0) {
     return (

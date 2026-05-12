@@ -18,14 +18,14 @@ interface FollowState {
   followers: Profile[];
   following: Profile[];
 
-  hydrateFollowingIds: (userId: string) => Promise<StoreResult<void>>;
-  hydrateFollowerIds: (userId: string) => Promise<StoreResult<void>>;
+  fetchFollowingIds: (userId: string) => Promise<StoreResult<void>>;
+  fetchFollowerIds: (userId: string) => Promise<StoreResult<void>>;
 
   follow: (currentUserId: string, targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
   unfollow: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
 
-  getFollowers: (userId: string) => Promise<StoreResult<void>>;
-  getFollowing: (userId: string) => Promise<StoreResult<void>>;
+  fetchFollowers: (userId: string) => Promise<StoreResult<void>>;
+  fetchFollowing: (userId: string) => Promise<StoreResult<void>>;
 
   purgeUserContent: (targetUserId: string) => { wasFollowing: boolean; wasFollower: boolean };
   clearFollowData: () => void;
@@ -36,7 +36,7 @@ export const useFollow = create<FollowState>((set, get) => ({
   followerIds: new Set<string>(),
   followers: [],
   following: [],
-  hydrateFollowingIds: async (userId) => {
+  fetchFollowingIds: async (userId) => {
     const result = await getFollowingIds(userId);
 
     if (!result.success) {
@@ -47,7 +47,7 @@ export const useFollow = create<FollowState>((set, get) => ({
 
     return { success: true };
   },
-  hydrateFollowerIds: async (userId) => {
+  fetchFollowerIds: async (userId) => {
     const result = await getFollowerIds(userId);
 
     if (!result.success) {
@@ -99,7 +99,7 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
-  getFollowers: async (userId) => {
+  fetchFollowers: async (userId) => {
     const result = await getFollowers(userId);
 
     if (!result.success) {
@@ -116,7 +116,7 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
-  getFollowing: async (userId) => {
+  fetchFollowing: async (userId) => {
     const result = await getFollowing(userId);
 
     if (!result.success) {
