@@ -1,4 +1,10 @@
-import { DEFAULT_PROFILE_STATS, ListWithMeta, Profile, ProfileStats, StoreResult } from '~/types/supabaseTypes';
+import {
+  DEFAULT_PROFILE_STATS,
+  ListWithMeta,
+  Profile,
+  ProfileStats,
+  StoreResult,
+} from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { withPublicUrl } from '~/utils/storageUrl';
@@ -29,6 +35,7 @@ interface ProfileState {
 
   getProfile: (userId: string) => Promise<StoreResult<void>>;
   getStats: (userId: string) => Promise<StoreResult<void>>;
+  adjustProfileStats: (deltas: Partial<Record<keyof ProfileStats, number>>) => void;
   uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
   updateProfile: (userId: string, updates: Partial<Profile>) => Promise<StoreResult<void>>;
   clearProfile: () => void;
@@ -163,12 +170,26 @@ export const useProfile = create<ProfileState>((set, get) => ({
       comments: data.comments,
       lists: data.lists,
       totalLogged: data.totalLogged,
-      reviews: 0
+      reviews: 0,
     };
 
     set({ stats });
     return { success: true };
   },
+  adjustProfileStats: (deltas) =>
+    set((state) => ({
+      stats: state.stats
+        ? {
+            ...state.stats,
+            comments: Math.max(0, state.stats.comments + (deltas.comments ?? 0)),
+            reviews: Math.max(0, state.stats.reviews + (deltas.reviews ?? 0)),
+            lists: Math.max(0, state.stats.lists + (deltas.lists ?? 0)),
+            followers: Math.max(0, state.stats.followers + (deltas.followers ?? 0)),
+            following: Math.max(0, state.stats.following + (deltas.following ?? 0)),
+            totalLogged: Math.max(0, state.stats.totalLogged + (deltas.comments ?? 0)),
+          }
+        : state.stats,
+    })),
 
   uploadAvatar: async (userId, image) => {
     try {

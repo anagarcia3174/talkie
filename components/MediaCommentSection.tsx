@@ -13,6 +13,7 @@ import CommentForm from './CommentForm';
 import { useMedia } from '~/store/mediaStore';
 import { haptics } from '~/utils/haptics';
 import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
+import { useProfile } from '~/store/profileStore';
 
 interface MediaCommentSectionProps {
   mediaType: 'movie' | 'tv';
@@ -35,6 +36,7 @@ export default function MediaCommentSection({
   releaseDate,
 }: MediaCommentSectionProps) {
   const { fetchedComments, fetchCommentsForMedia, postComment } = useComments();
+  const { adjustProfileStats } = useProfile();
   const { mediaDetails, fetchMediaDetails } = useMedia();
   const { user } = useAuth();
   const theme = useTheme();
@@ -131,6 +133,7 @@ export default function MediaCommentSection({
         autoHide: true,
         onPress: () => Toast.hide(),
       });
+      adjustProfileStats({ comments: 1})
     } else {
       haptics.error();
       Toast.show({

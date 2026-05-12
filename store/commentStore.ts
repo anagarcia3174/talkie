@@ -17,7 +17,6 @@ import {
   StoreResult,
 } from '~/types/supabaseTypes';
 
-
 type ContextKey = {
   mediaId: number;
   seasonNumber?: number;
@@ -58,6 +57,7 @@ interface CommentState {
   }) => Promise<StoreResult>;
   reportComment: (
     commentId: number,
+    contextKey: ContextKey,
     reportReason: ReportReason,
     details?: string
   ) => Promise<StoreResult>;
@@ -288,7 +288,6 @@ export const useComments = create<CommentState>((set, get) => ({
     set((state) => {
       const updated = { ...state.fetchedComments };
 
-      // Remove from base
       if (updated[baseKey]) {
         updated[baseKey] = {
           ...updated[baseKey],
@@ -296,7 +295,6 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      //  Remove from episode slice (if different)
       if (episodeKey !== baseKey && updated[episodeKey]) {
         updated[episodeKey] = {
           ...updated[episodeKey],
@@ -304,7 +302,13 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      return { fetchedComments: updated };
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.filter((c) => c.id !== commentId),
+        },
+      };
     });
 
     return result;
@@ -356,7 +360,17 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      return { fetchedComments: updated };
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+            c.id === commentId
+              ? { ...c, is_liked: !prevLiked, like_count: prevLiked ? prevCount - 1 : prevCount + 1 }
+              : c
+          ),
+        },
+      };
     });
 
     const result = await toggleCommentLike(commentId);
@@ -367,13 +381,7 @@ export const useComments = create<CommentState>((set, get) => ({
 
         const rollback = (comments: CommentWithUser[]) =>
           comments.map((c) =>
-            c.id === commentId
-              ? {
-                  ...c,
-                  is_liked: prevLiked,
-                  like_count: prevCount,
-                }
-              : c
+            c.id === commentId ? { ...c, is_liked: prevLiked, like_count: prevCount } : c
           );
 
         if (updated[baseKey]) {
@@ -390,7 +398,15 @@ export const useComments = create<CommentState>((set, get) => ({
           };
         }
 
-        return { fetchedComments: updated };
+        return {
+          fetchedComments: updated,
+          recentCommentsFeed: {
+            ...state.recentCommentsFeed,
+            recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+              c.id === commentId ? { ...c, is_liked: prevLiked, like_count: prevCount } : c
+            ),
+          },
+        };
       });
 
       return result;
@@ -447,7 +463,15 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      return { fetchedComments: updated };
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+            c.id === commentId ? { ...c, ...updates } : c
+          ),
+        },
+      };
     });
 
     // -------------------------
@@ -456,20 +480,13 @@ export const useComments = create<CommentState>((set, get) => ({
     const result = await updateCommentService(commentId, updates);
 
     if (!result.success) {
-      // -------------------------
-      // Rollback
-      // -------------------------
       set((state) => {
         const updated = { ...state.fetchedComments };
 
         const rollback = (comments: CommentWithUser[]) =>
           comments.map((c) =>
             c.id === commentId
-              ? {
-                  ...c,
-                  content: prevContent,
-                  timestamp_seconds: prevTimestamp,
-                }
+              ? { ...c, content: prevContent, timestamp_seconds: prevTimestamp }
               : c
           );
 
@@ -487,7 +504,17 @@ export const useComments = create<CommentState>((set, get) => ({
           };
         }
 
-        return { fetchedComments: updated };
+        return {
+          fetchedComments: updated,
+          recentCommentsFeed: {
+            ...state.recentCommentsFeed,
+            recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+              c.id === commentId
+                ? { ...c, content: prevContent, timestamp_seconds: prevTimestamp }
+                : c
+            ),
+          },
+        };
       });
 
       return result;
@@ -495,7 +522,45 @@ export const useComments = create<CommentState>((set, get) => ({
 
     return { success: true };
   },
-  reportComment: async (commentId, reason, details) => {
-    return await reportComment(commentId, reason, details);
+  reportComment: async (commentId, contextKey, reason, details) => {
+    const result = await reportComment(commentId, reason, details);
+
+    if (!result.success) {
+      return result;
+    }
+
+    const baseKey = `media-${contextKey.mediaId}`;
+    const episodeKey =
+      contextKey.seasonNumber != null && contextKey.episodeNumber != null
+        ? `media-${contextKey.mediaId}-s${contextKey.seasonNumber}-e${contextKey.episodeNumber}`
+        : baseKey;
+
+    set((state) => {
+      const updated = { ...state.fetchedComments };
+
+      if (updated[baseKey]) {
+        updated[baseKey] = {
+          ...updated[baseKey],
+          comments: updated[baseKey].comments.filter((c) => c.id !== commentId),
+        };
+      }
+
+      if (episodeKey !== baseKey && updated[episodeKey]) {
+        updated[episodeKey] = {
+          ...updated[episodeKey],
+          comments: updated[episodeKey].comments.filter((c) => c.id !== commentId),
+        };
+      }
+
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.filter((c) => c.id !== commentId),
+        },
+      };
+    });
+
+    return { success: true };
   },
 }));

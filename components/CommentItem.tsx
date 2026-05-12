@@ -12,6 +12,7 @@ import CommentEditModal from './CommentEditModal';
 import ReportModal from './ReportModal';
 import { haptics } from '~/utils/haptics';
 import ConfirmModal from './ConfirmModal';
+import { useProfile } from '~/store/profileStore';
 
 interface CommentItemProps {
   comment: CommentWithUser;
@@ -48,6 +49,7 @@ function formatRelativeTime(dateString: string): string {
 export default function CommentItem({ comment, isUser }: CommentItemProps) {
   const uri = comment.owner.avatar_url ? getPublicUrl(comment.owner.avatar_url) : null;
   const { toggleLikeComment, deleteComment, updateComment, reportComment } = useComments();
+  const { adjustProfileStats } = useProfile();
   const hasAvatar = uri && uri.length > 0;
   const theme = useTheme();
   const isReply = comment.parent_comment_id !== null;
@@ -94,6 +96,8 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
         visibilityTime: 4000,
         autoHide: true,
       });
+    }else {
+      adjustProfileStats({ comments: -1})
     }
   };
 
@@ -127,7 +131,11 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
   };
 
   const handleCommentReport = async (reason: ReportReason, details?: string) => {
-    const result = await reportComment(comment.id, reason, details);
+    const result = await reportComment(comment.id, {
+      mediaId: comment.media_id,
+      seasonNumber: comment.season_number ?? undefined,
+      episodeNumber: comment.episode_number ?? undefined,
+    }, reason, details);
     setReportModalVisible(false);
     if (!result.success) {
       haptics.error();
