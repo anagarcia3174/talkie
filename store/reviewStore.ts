@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ReportReason, Review, ReviewWithUser } from '~/types/supabaseTypes';
+import type { ReportReason, Review, ReviewWithUser, StoreResult } from '~/types/supabaseTypes';
 import {
   getReviewsForMedia,
   postReview,
@@ -8,8 +8,6 @@ import {
   updateReview as updateReviewService,
 } from '~/services/reviewService';
 import { reportReview } from '~/services/reportService';
-
-type StoreResult = { success: true } | { success: false; error: string };
 
 interface MediaReviewsState {
   reviews: ReviewWithUser[];

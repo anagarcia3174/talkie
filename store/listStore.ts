@@ -5,6 +5,7 @@ import {
   Status,
   SearchPublicListResult,
   ListWithMeta,
+  StoreResult,
 } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import {
@@ -23,7 +24,6 @@ import {
 } from '~/services/listService';
 import { useProfile } from './profileStore';
 
-type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
 interface ListState {
   listsById: Record<number, ListWithMeta>;
@@ -71,7 +71,6 @@ export const useLists = create<ListState>((set, get) => ({
     favorites: null,
   },
   customListIds: [],
-  likedListIds: [],
   listItems: {},
 
   // ---- LIST ACTIONS ----

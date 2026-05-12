@@ -14,9 +14,9 @@ import {
   CreateCommentInput,
   ReportReason,
   CommentWithUserAndMedia,
+  StoreResult,
 } from '~/types/supabaseTypes';
 
-type StoreResult = { success: true } | { success: false; error: string };
 
 type ContextKey = {
   mediaId: number;

@@ -303,6 +303,7 @@ export interface ProfileStats {
   comments: number;
   lists: number;
   totalLogged: number;
+  reviews: number;
 }
 
 export interface CreateBugReportInput {
@@ -316,3 +317,14 @@ export interface CreateFeedbackInput {
   message: string;
   category?: FeedbackCategory;
 }
+
+export type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
+
+export const DEFAULT_PROFILE_STATS: ProfileStats = {
+  followers: 0,
+  following: 0,
+  comments: 0,
+  totalLogged: 0,
+  lists: 0,
+  reviews: 0,
+};

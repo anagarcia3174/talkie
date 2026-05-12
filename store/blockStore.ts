@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 import { blockUser, getBlockedIds, getBlockedUsers, unBlockUser } from '~/services/blockService';
-import { Profile } from '~/types/supabaseTypes';
+import { Profile, StoreResult } from '~/types/supabaseTypes';
 import { useLists } from './listStore';
 import { useProfile } from './profileStore';
-
-type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
 interface BlockState {
   // relationship cache

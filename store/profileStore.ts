@@ -1,4 +1,4 @@
-import { ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
+import { DEFAULT_PROFILE_STATS, ListWithMeta, Profile, ProfileStats, StoreResult } from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { withPublicUrl } from '~/utils/storageUrl';
@@ -10,8 +10,6 @@ import {
   uploadAvatar as uploadAvatarService,
 } from '~/services/profileService';
 import { getPublicListsByUserId } from '~/services/listService';
-
-type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
 interface OtherProfilesState {
   profile: Profile | null;
@@ -54,13 +52,7 @@ const addCacheBuster = (profile: Profile): Profile => {
 
 export const useProfile = create<ProfileState>((set, get) => ({
   profile: null,
-  stats: {
-    followers: 0,
-    following: 0,
-    comments: 0,
-    totalLogged: 0,
-    lists: 0,
-  },
+  stats: DEFAULT_PROFILE_STATS,
   loading: false,
 
   otherProfiles: {},
@@ -160,13 +152,14 @@ export const useProfile = create<ProfileState>((set, get) => ({
       return { success: false, error: result.error };
     }
 
-    const data = result.data!;
+    const data = result.data;
     const stats: ProfileStats = {
       followers: data.followers,
       following: data.following,
       comments: data.comments,
       lists: data.lists,
       totalLogged: data.totalLogged,
+      reviews: 0
     };
 
     set({ stats });
@@ -234,13 +227,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
     // Clear local state immediately
     set({
       profile: null,
-      stats: {
-        followers: 0,
-        following: 0,
-        comments: 0,
-        totalLogged: 0,
-        lists: 0,
-      },
+      stats: DEFAULT_PROFILE_STATS,
       loading: false,
     });
 

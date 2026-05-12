@@ -7,10 +7,9 @@ import {
   getFollowingIds,
   unFollowUser,
 } from '~/services/followService';
-import { Profile } from '~/types/supabaseTypes';
+import { Profile, StoreResult } from '~/types/supabaseTypes';
 import { useProfile } from './profileStore';
 
-type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
 
 interface FollowState {
   // relationship cache (keyed by target user id)
