@@ -5,7 +5,7 @@ import {
   getFollowers,
   getFollowing,
   getFollowingIds,
-  unFollowUser,
+  unfollowUser,
 } from '~/services/followService';
 import { Profile, StoreResult } from '~/types/supabaseTypes';
 
@@ -79,7 +79,7 @@ export const useFollow = create<FollowState>((set, get) => ({
   },
 
   unfollow: async (targetUserId) => {
-    const result = await unFollowUser(targetUserId);
+    const result = await unfollowUser(targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };

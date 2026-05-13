@@ -31,7 +31,7 @@ export async function followUser(targetUserId: string): Promise<VoidResult> {
   }
 }
 
-export async function unFollowUser(
+export async function unfollowUser(
   targetUserId: string
 ): Promise<VoidResult> {
   try {
