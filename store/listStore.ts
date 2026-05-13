@@ -378,11 +378,25 @@ export const useList = create<ListState>((set, get) => ({
     return { success: true };
   },
   purgeUserContent: (targetUserId) => {
-    set((state) => ({
-      listsById: Object.fromEntries(
-        Object.entries(state.listsById).filter(([, list]) => list.owner?.id !== targetUserId)
-      ) as typeof state.listsById,
-    }));
+    set((state) => {
+      const removedIds = new Set(
+        Object.entries(state.listsById)
+          .filter(([, list]) => list.owner?.id === targetUserId)
+          .map(([id]) => Number(id))
+      );
+
+      const updatedListItems = { ...state.listItems };
+      for (const id of removedIds) {
+        delete updatedListItems[id];
+      }
+
+      return {
+        listsById: Object.fromEntries(
+          Object.entries(state.listsById).filter(([, list]) => list.owner?.id !== targetUserId)
+        ) as typeof state.listsById,
+        listItems: updatedListItems,
+      };
+    });
   },
   updateItemStatus: async (item, status) => {
     const prevStatus = item.status;

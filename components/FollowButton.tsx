@@ -26,7 +26,7 @@ export default function FollowButton({
   const [loading, setLoading] = useState(false);
 
   const { followingIds, followerIds, follow, unfollow } = useFollow();
-  const { adjustProfileStats } = useProfile();
+  const { adjustProfileStats, patchOtherProfileStats } = useProfile();
   const { user } = useAuth();
 
   const isFollowing = followingIds.has(targetUserId);
@@ -105,6 +105,7 @@ export default function FollowButton({
       const result = await unfollow(targetUserId);
       if (result.success) {
         adjustProfileStats({ following: -1 });
+        patchOtherProfileStats(targetUserId, { followers: -1 });
       } else {
         haptics.error();
         Toast.show({
@@ -116,6 +117,7 @@ export default function FollowButton({
       const result = await follow(targetUserId, targetProfile);
       if (result.success) {
         adjustProfileStats({ following: 1 });
+        patchOtherProfileStats(targetUserId, { followers: 1 });
       } else {
         haptics.error();
         Toast.show({

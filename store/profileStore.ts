@@ -37,6 +37,7 @@ interface ProfileState {
   fetchProfile: () => Promise<StoreResult<void>>;
   fetchStats: () => Promise<StoreResult<void>>;
   adjustProfileStats: (deltas: Partial<Record<keyof ProfileStats, number>>) => void;
+  patchOtherProfileStats: (targetUserId: string, deltas: Partial<Record<keyof ProfileStats, number>>) => void;
   uploadAvatar: (fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
   updateProfile: (updates: Partial<Profile>) => Promise<StoreResult<void>>;
   purgeUserContent: (targetUserId: string) => void;
@@ -190,6 +191,28 @@ export const useProfile = create<ProfileState>((set, get) => ({
           }
         : state.stats,
     })),
+
+  patchOtherProfileStats: (targetUserId, deltas) =>
+    set((state) => {
+      const existing = state.otherProfiles[targetUserId];
+      if (!existing?.stats) return state;
+      return {
+        otherProfiles: {
+          ...state.otherProfiles,
+          [targetUserId]: {
+            ...existing,
+            stats: {
+              comments: Math.max(0, existing.stats.comments + (deltas.comments ?? 0)),
+              reviews: Math.max(0, existing.stats.reviews + (deltas.reviews ?? 0)),
+              lists: Math.max(0, existing.stats.lists + (deltas.lists ?? 0)),
+              followers: Math.max(0, existing.stats.followers + (deltas.followers ?? 0)),
+              following: Math.max(0, existing.stats.following + (deltas.following ?? 0)),
+              totalLogged: Math.max(0, existing.stats.totalLogged + (deltas.totalLogged ?? 0)),
+            },
+          },
+        },
+      };
+    }),
 
   uploadAvatar: async (image) => {
     try {
