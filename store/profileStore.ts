@@ -174,7 +174,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
       comments: data.comments,
       lists: data.lists,
       totalLogged: data.totalLogged,
-      reviews: 0,
+      reviews: data.reviews,
     };
 
     set({ stats });

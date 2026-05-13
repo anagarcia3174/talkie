@@ -36,7 +36,7 @@ export default function StatsSection({ stats, onTilePress }: StatsSectionProps) 
       {
         key: 'reviews' as const,
         label: 'Reviews',
-        value: 0,
+        value: stats.reviews,
         Icon: Star,
         color: theme.isDark ? '#f87171' : '#dc2626',
         flex: 2,
