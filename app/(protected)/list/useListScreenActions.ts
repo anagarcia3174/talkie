@@ -40,11 +40,18 @@ export default function useListScreenActions(listId: number) {
     updateItemStatus: async (item: ListItemWithMedia, status: Status) => {
       if (!userId) return;
 
-      withToast(
+      const success = await withToast(
         () => updateItemStatus(item, status),
         "The item's status was updated!",
         "Failed to change the item's status."
       );
+      if (success) {
+        const wasWatched = item.status === 'watched';
+        const willBeWatched = status === 'watched';
+        adjustProfileStats({
+          totalLogged: !wasWatched && willBeWatched ? 1 : wasWatched && !willBeWatched ? -1 : 0,
+        });
+      }
     },
 
     deleteItem: (item: ListItem) =>

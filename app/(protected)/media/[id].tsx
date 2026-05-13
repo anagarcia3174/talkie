@@ -44,7 +44,7 @@ export default function MediaScreen() {
       onPress: () => Toast.hide(),
     });
 
-    const results = await Promise.all(listIds.map((id) => addItemToList(id, media.id, user.id)));
+    const results = await Promise.all(listIds.map((id) => addItemToList(id, media.id)));
     const firstError = results.find((r) => !r.success);
 
     if (firstError) {

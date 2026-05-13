@@ -71,7 +71,7 @@ export default function Home() {
     });
 
     try {
-      const result = await addItemToList(library.id, mediaId, library.user_id);
+      const result = await addItemToList(library.id, mediaId);
 
       if (!result.success) {
         haptics.error();

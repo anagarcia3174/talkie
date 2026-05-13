@@ -36,7 +36,7 @@ yarn-error.log*
 .metro-health-check*
 
 supabase/
-full_schema.sql
+*.sql
 CLAUDE.md
 ISSUE.md
 STORE_AUDIT.md
