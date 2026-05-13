@@ -186,7 +186,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
             lists: Math.max(0, state.stats.lists + (deltas.lists ?? 0)),
             followers: Math.max(0, state.stats.followers + (deltas.followers ?? 0)),
             following: Math.max(0, state.stats.following + (deltas.following ?? 0)),
-            totalLogged: Math.max(0, state.stats.totalLogged + (deltas.comments ?? 0)),
+            totalLogged: Math.max(0, state.stats.totalLogged + (deltas.totalLogged ?? 0)),
           }
         : state.stats,
     })),
