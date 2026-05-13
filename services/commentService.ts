@@ -135,7 +135,7 @@ export async function updateComment(
 
     return successVoid();
   } catch (err) {
-    return errorData(err, {
+    return errorVoid(err, {
       operation: 'update_comment',
       table: 'comments',
       isWrite: true,

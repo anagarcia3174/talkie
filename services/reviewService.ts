@@ -137,7 +137,7 @@ export async function updateReview(
 
     return successVoid();
   } catch (err) {
-    return errorData(err, {
+    return errorVoid(err, {
       operation: 'update_review',
       table: 'reviews',
       isWrite: true,
