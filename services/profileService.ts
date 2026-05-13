@@ -6,8 +6,8 @@ import { withPublicUrl } from '~/utils/storageUrl';
 export async function getProfileById(id?: string): Promise<DataResult<Profile>> {
   try {
     const userId = id ?? (await supabase.auth.getUser()).data.user?.id;
-    if (!userId) return errorData('Not authenticated', { operation: 'get_profile_stats', rpc: 'get_profile_stats' });
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+    if (!userId) return errorData('Not authenticated', { operation: 'get_profile' });
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
     if (error)
       return errorData(error, {
         operation: 'get_profile',
@@ -74,7 +74,7 @@ export async function updateProfile(
       .from('profiles')
       .update({
         ...updates,
-        updated_at: new Date().toISOString,
+        updated_at: new Date().toISOString(),
       })
       .select()
       .single();
