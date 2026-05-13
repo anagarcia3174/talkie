@@ -37,7 +37,10 @@ interface ProfileState {
   fetchProfile: () => Promise<StoreResult<void>>;
   fetchStats: () => Promise<StoreResult<void>>;
   adjustProfileStats: (deltas: Partial<Record<keyof ProfileStats, number>>) => void;
-  patchOtherProfileStats: (targetUserId: string, deltas: Partial<Record<keyof ProfileStats, number>>) => void;
+  patchOtherProfileStats: (
+    targetUserId: string,
+    deltas: Partial<Record<keyof ProfileStats, number>>
+  ) => void;
   uploadAvatar: (fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
   updateProfile: (updates: Partial<Profile>) => Promise<StoreResult<void>>;
   purgeUserContent: (targetUserId: string) => void;
