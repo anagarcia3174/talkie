@@ -10,7 +10,7 @@ import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import MediaTabs from '~/components/MediaTabs';
 import MediaHeader from '~/components/MediaHeader';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import PosterPreviewModal from '~/components/PosterPreviewModal';
 import MediaCommentSection from '~/components/MediaCommentSection';
 import MediaReviewSection from '~/components/MediaReviewSection';
@@ -29,7 +29,7 @@ export default function MediaScreen() {
   const [listModalVisible, setListModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const { addItemToList } = useLists();
+  const { addItemToList } = useList();
 
   const handleAddToList = async (listIds: number[]) => {
     if (!listIds.length || !user?.id) return;

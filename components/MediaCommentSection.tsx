@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import TimestampPicker from './TimestampPicker';
-import { useComments } from '~/store/commentStore';
+import { useComment } from '~/store/commentStore';
 import { useTheme } from '~/hooks/useTheme';
 import { FlatList } from 'react-native-gesture-handler';
 import CommentItem from './CommentItem';
@@ -35,7 +35,7 @@ export default function MediaCommentSection({
   mediaId,
   releaseDate,
 }: MediaCommentSectionProps) {
-  const { fetchedComments, fetchCommentsForMedia, postComment } = useComments();
+  const { fetchedComments, fetchCommentsForMedia, postComment } = useComment();
   const { adjustProfileStats } = useProfile();
   const { mediaDetails, fetchMediaDetails } = useMedia();
   const { user } = useAuth();

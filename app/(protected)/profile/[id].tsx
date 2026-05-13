@@ -9,12 +9,12 @@ import StatsSection from '~/components/StatsSection';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { ChevronLeft, Heart, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import FollowButton from '~/components/FollowButton';
 import { useBlock } from '~/store/blockStore';
 import { useFollow } from '~/store/followStore';
-import { useComments } from '~/store/commentStore';
-import { useReviews } from '~/store/reviewStore';
+import { useComment } from '~/store/commentStore';
+import { useReview } from '~/store/reviewStore';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { useProfile } from '~/store/profileStore';
@@ -37,7 +37,7 @@ export default function ProfileScreen() {
   const [blocking, setBlocking] = useState(false);
   const [confirmBlockVisible, setConfirmBlockVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const { cacheList } = useLists();
+  const { cacheList } = useList();
   const { block, blockedIds } = useBlock();
   const { user } = useAuth();
   const router = useRouter();
@@ -88,9 +88,9 @@ export default function ProfileScreen() {
     }
 
     const { wasFollowing, wasFollower } = useFollow.getState().purgeUserContent(profile.id);
-    useComments.getState().purgeUserContent(profile.id);
-    useReviews.getState().purgeUserContent(profile.id);
-    useLists.getState().purgeUserContent(profile.id);
+    useComment.getState().purgeUserContent(profile.id);
+    useReview.getState().purgeUserContent(profile.id);
+    useList.getState().purgeUserContent(profile.id);
     useProfile.getState().purgeUserContent(profile.id);
     if (wasFollowing) useProfile.getState().adjustProfileStats({ following: -1 });
     if (wasFollower) useProfile.getState().adjustProfileStats({ followers: -1 });

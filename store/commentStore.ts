@@ -32,7 +32,7 @@ function buildCommentKey({ mediaId, seasonNumber, episodeNumber }: ContextKey) {
   return { baseKey, episodeKey };
 }
 
-interface MediaCommentsState {
+interface MediaCommentState {
   comments: CommentWithUser[];
   isLoading: boolean;
   hasFetched: boolean;
@@ -47,7 +47,7 @@ interface RecentCommentsFeedState {
 }
 
 interface CommentState {
-  fetchedComments: Record<string, MediaCommentsState>;
+  fetchedComments: Record<string, MediaCommentState>;
   recentCommentsFeed: RecentCommentsFeedState;
   fetchCommentsForMedia: (params: {
     mediaId: number;
@@ -73,7 +73,7 @@ interface CommentState {
   purgeUserContent: (targetUserId: string) => void;
 }
 
-export const useComments = create<CommentState>((set, get) => ({
+export const useComment = create<CommentState>((set, get) => ({
   fetchedComments: {},
   recentCommentsFeed: {
     recentComments: [],

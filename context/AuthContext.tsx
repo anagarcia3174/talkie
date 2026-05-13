@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '~/utils/supabase';
 import { useProfile } from '~/store/profileStore';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { restoreUser } from '~/services/profileService';
 import { useFollow } from '~/store/followStore';
 import { useBlock } from '~/store/blockStore';
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Load user data function with proper error handling
   const loadUserData = useCallback(async () => {
     const { fetchProfile, fetchStats } = useProfile.getState();
-    const { fetchLists } = useLists.getState();
+    const { fetchLists } = useList.getState();
     const { fetchFollowerIds, fetchFollowingIds } = useFollow.getState();
     const { fetchBlockedIds } = useBlock.getState();
 

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { X, Plus, Check } from 'lucide-react-native';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { useEffect, useState } from 'react';
 import { haptics } from '~/utils/haptics';
@@ -17,7 +17,7 @@ export default function ListSelectionModal({
   onClose,
   onConfirm,
 }: ListSelectionModalProps) {
-  const { listsById, defaultListIds, customListIds } = useLists();
+  const { listsById, defaultListIds, customListIds } = useList();
   const [selectedLists, setSelectedLists] = useState<number[]>([]);
   const theme = useTheme();
 

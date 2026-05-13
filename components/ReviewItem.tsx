@@ -4,7 +4,7 @@ import { Heart, MoreHorizontal, Star, UserRound } from 'lucide-react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
 import { useTheme } from '~/hooks/useTheme';
 import { useRouter } from 'expo-router';
-import { useReviews } from '~/store/reviewStore';
+import { useReview } from '~/store/reviewStore';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 import ReviewEditModal from './ReviewEditModal';
@@ -40,7 +40,7 @@ function formatRelativeTime(dateString: string): string {
 
 export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   const uri = getPublicUrl(review.owner.avatar_url);
-  const { toggleLikeReview, deleteReview, updateReview, reportReview } = useReviews();
+  const { toggleLikeReview, deleteReview, updateReview, reportReview } = useReview();
   const { adjustProfileStats} = useProfile();
   const [loading, setLoading] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);

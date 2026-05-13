@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
-import { useReviews } from '~/store/reviewStore';
+import { useReview } from '~/store/reviewStore';
 import ReviewItem from './ReviewItem';
 import Toast from 'react-native-toast-message';
 import ErrorScreen from './ErrorScreen';
@@ -26,7 +26,7 @@ const hasDatePassed = (dateString?: string | null) => {
 };
 
 export default function MediaReviewSection({ mediaId, releaseDate }: MediaReviewSectionProps) {
-  const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReviews();
+  const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReview();
   const { adjustProfileStats } = useProfile();
   const { user } = useAuth();
   const theme = useTheme();

@@ -1,14 +1,14 @@
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '~/context/AuthContext';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { useProfile } from '~/store/profileStore';
 import { Status, List, ListItem, ListItemWithMedia } from '~/types/supabaseTypes';
 import { haptics } from '~/utils/haptics';
 
-export default function useListScreenActions(listId: number) {
+export default function useListcreenActions(listId: number) {
   const { updateItemStatus, deleteItemFromList, updateList, deleteList, likeList, unlikeList } =
-    useLists();
+    useList();
   const { adjustProfileStats } = useProfile();
   const { user } = useAuth();
   const userId = user?.id;

@@ -5,7 +5,7 @@ import { getPublicUrl } from '~/utils/storageUrl';
 import { useTheme } from '~/hooks/useTheme';
 import ItemOptions from './ItemOptions';
 import { useState } from 'react';
-import { useComments } from '~/store/commentStore';
+import { useComment } from '~/store/commentStore';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
 import CommentEditModal from './CommentEditModal';
@@ -48,7 +48,7 @@ function formatRelativeTime(dateString: string): string {
 
 export default function CommentItem({ comment, isUser }: CommentItemProps) {
   const uri = comment.owner.avatar_url ? getPublicUrl(comment.owner.avatar_url) : null;
-  const { toggleLikeComment, deleteComment, updateComment, reportComment } = useComments();
+  const { toggleLikeComment, deleteComment, updateComment, reportComment } = useComment();
   const { adjustProfileStats } = useProfile();
   const hasAvatar = uri && uri.length > 0;
   const theme = useTheme();

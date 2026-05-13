@@ -7,7 +7,7 @@ import { searchMedia } from '~/services/mediaService';
 import { Media, SearchPublicListResult } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { haptics } from '~/utils/haptics';
 import MediaSearchResults from '~/components/MediaSearchResults';
 import ListSearchResults from '~/components/ListSearchResults';
@@ -33,7 +33,7 @@ export default function Search() {
   const [listResults, setListResults] = useState<SearchPublicListResult[]>([]);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [listLoading, setListLoading] = useState(false);
-  const { cacheList } = useLists();
+  const { cacheList } = useList();
   const theme = useTheme();
   const router = useRouter();
   const [sortModalVisible, setSortModalVisible] = useState(false);

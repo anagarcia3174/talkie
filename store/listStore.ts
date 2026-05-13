@@ -60,7 +60,7 @@ interface ListState {
   purgeUserContent: (targetUserId: string) => void;
 }
 
-export const useLists = create<ListState>((set, get) => ({
+export const useList = create<ListState>((set, get) => ({
   listsById: {},
   defaultListIds: {
     library: null,

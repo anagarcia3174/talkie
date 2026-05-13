@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Lock, Plus } from 'lucide-react-native';
@@ -50,7 +50,7 @@ export default function Lists() {
     deleteList,
     listItems,
     hydrateDefaultLists,
-  } = useLists();
+  } = useList();
   const { adjustProfileStats } = useProfile();
   const { user } = useAuth();
   const { blockedIds } = useBlock();

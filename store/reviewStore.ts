@@ -22,7 +22,7 @@ interface MediaReviewsState {
   error: string | null;
 }
 
-interface ReviewsState {
+interface ReviewState {
   fetchedReviews: Record<number, MediaReviewsState>;
 
   fetchReviewsForMedia: (mediaId: number, force?: boolean) => Promise<StoreResult>;
@@ -43,7 +43,7 @@ interface ReviewsState {
   purgeUserContent: (targetUserId: string) => void;
 }
 
-export const useReviews = create<ReviewsState>((set, get) => ({
+export const useReview = create<ReviewState>((set, get) => ({
   fetchedReviews: {},
   fetchReviewsForMedia: async (mediaId, force = false) => {
     const cachedReviews = get().fetchedReviews[mediaId];
