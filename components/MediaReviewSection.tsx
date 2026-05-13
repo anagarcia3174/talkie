@@ -59,7 +59,6 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
       const result = await submitReview({
         rating,
         content,
-        user_id: user.id,
         media_id: mediaId,
       });
 

@@ -20,7 +20,6 @@ import {
   updateItemStatus,
   getLikedLists,
 } from '~/services/listService';
-import { useProfile } from './profileStore';
 
 
 interface ListState {
@@ -40,22 +39,21 @@ interface ListState {
   listItems: Record<number, ListItemWithMedia[] | undefined>;
 
   // list actions
-  fetchLists: (userId: string) => Promise<StoreResult<void>>;
+  fetchLists: () => Promise<StoreResult<void>>;
   hydrateDefaultLists: () => Promise<void>;
   cacheList: (list: ListWithMeta) => void;
-  createList: (userId: string, newList: Partial<List>) => Promise<StoreResult<void>>;
+  createList: (newList: Partial<List>) => Promise<StoreResult<void>>;
   updateList: (listId: number, updates: Partial<List>) => Promise<StoreResult<void>>;
-  deleteList: (userId: string, listId: number) => Promise<StoreResult<void>>;
+  deleteList: (listId: number) => Promise<StoreResult<void>>;
 
-  likeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
-  unlikeList: (listId: number, userId: string) => Promise<StoreResult<void>>;
+  likeList: (listId: number) => Promise<StoreResult<void>>;
+  unlikeList: (listId: number) => Promise<StoreResult<void>>;
 
   // item actions
   fetchListItems: (listId: number) => Promise<StoreResult<void>>;
-  addItemToList: (listId: number, mediaId: number, userId: string) => Promise<StoreResult<void>>;
+  addItemToList: (listId: number, mediaId: number) => Promise<StoreResult<void>>;
   deleteItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
   updateItemStatus: (
-    userId: string,
     item: ListItemWithMedia,
     status: Status
   ) => Promise<StoreResult<void>>;
@@ -72,10 +70,10 @@ export const useLists = create<ListState>((set, get) => ({
   listItems: {},
 
   // ---- LIST ACTIONS ----
-  fetchLists: async (userId) => {
+  fetchLists: async () => {
     const [ownedResult, likedResult] = await Promise.all([
-      getOwnedLists(userId),
-      getLikedLists(userId),
+      getOwnedLists(),
+      getLikedLists(),
     ]);
 
     if (!ownedResult.success) {
@@ -146,8 +144,8 @@ export const useLists = create<ListState>((set, get) => ({
       },
     }));
   },
-  createList: async (userId, newList) => {
-    const result = await createList(userId, newList);
+  createList: async (newList) => {
+    const result = await createList(newList);
 
     if (!result.success) {
       return {
@@ -176,8 +174,6 @@ export const useLists = create<ListState>((set, get) => ({
       },
       customListIds: [...state.customListIds, createdList.id],
     }));
-
-    await useProfile.getState().fetchStats(userId);
 
     return { success: true };
   },
@@ -210,7 +206,7 @@ export const useLists = create<ListState>((set, get) => ({
     return { success: true };
   },
 
-  deleteList: async (userId, listId) => {
+  deleteList: async (listId) => {
     const result = await deleteList(listId);
     if (!result.success) {
       return {
@@ -235,11 +231,9 @@ export const useLists = create<ListState>((set, get) => ({
       };
     });
 
-    await useProfile.getState().fetchStats(userId);
-
     return { success: true };
   },
-  likeList: async (listId, userId) => {
+  likeList: async (listId) => {
     const prevCount = get().listsById[listId]?.like_count ?? 0;
 
     set((state) => ({
@@ -253,7 +247,7 @@ export const useLists = create<ListState>((set, get) => ({
       },
     }));
 
-    const result = await likeList(listId, userId);
+    const result = await likeList(listId);
 
     if (!result.success) {
       set((state) => ({
@@ -272,7 +266,7 @@ export const useLists = create<ListState>((set, get) => ({
     return { success: true };
   },
 
-  unlikeList: async (listId, userId) => {
+  unlikeList: async (listId) => {
     const prevCount = get().listsById[listId]?.like_count ?? 0;
 
     set((state) => ({
@@ -286,7 +280,7 @@ export const useLists = create<ListState>((set, get) => ({
       },
     }));
 
-    const result = await unlikeList(listId, userId);
+    const result = await unlikeList(listId);
 
     if (!result.success) {
       set((state) => ({
@@ -334,8 +328,8 @@ export const useLists = create<ListState>((set, get) => ({
     return { success: true };
   },
 
-  addItemToList: async (listId, mediaId, userId) => {
-    const result = await addListItem(listId, mediaId, userId);
+  addItemToList: async (listId, mediaId) => {
+    const result = await addListItem(listId, mediaId);
     if (!result.success) {
       return { success: false, error: result.error };
     }
@@ -396,7 +390,7 @@ export const useLists = create<ListState>((set, get) => ({
       ) as typeof state.listsById,
     }));
   },
-  updateItemStatus: async (userId, item, status) => {
+  updateItemStatus: async (item, status) => {
     const prevStatus = item.status;
 
     const applyToAll = (s: Status) =>
@@ -411,7 +405,7 @@ export const useLists = create<ListState>((set, get) => ({
 
     applyToAll(status);
 
-    const result = await updateItemStatus(userId, item.media_id, status);
+    const result = await updateItemStatus(item.media_id, status);
 
     if (!result.success) {
       applyToAll(prevStatus);

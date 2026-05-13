@@ -40,7 +40,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
         if (!isOutOfSync) return;
 
         setLoading(true);
-        const result = await fetchFollowers(user.id);
+        const result = await fetchFollowers();
 
         if (!result.success) {
           setError(result.error);
@@ -58,7 +58,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
         if (!isOutOfSync) return;
 
         setLoading(true);
-        const result = await fetchFollowing(user.id);
+        const result = await fetchFollowing();
 
         if (!result.success) {
           setError(result.error);
@@ -109,9 +109,9 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
               onPress={() => {
                 if (!user) return;
                 if (checking === 'followers') {
-                  fetchFollowers(user.id);
+                  fetchFollowers();
                 } else {
-                  fetchFollowing(user.id);
+                  fetchFollowing();
                 }
               }}>
               <Text className="text-primary-600">Retry</Text>

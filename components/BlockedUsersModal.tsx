@@ -41,7 +41,7 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
 
   const handleUnblock = async (targetUserId: string) => {
     if (!user) return;
-    const result = await unblock(user.id, targetUserId);
+    const result = await unblock(targetUserId);
     onClose();
     if (!result.success) {
       haptics.error();

@@ -2,18 +2,17 @@ import { create } from 'zustand';
 import { blockUser, getBlockedIds, getBlockedUsers, unblockUser } from '~/services/blockService';
 import { Profile, StoreResult } from '~/types/supabaseTypes';
 
-
 interface BlockState {
   // relationship cache
   blockedIds: Set<string>;
-  fetchBlockedIds: (userId: string) => Promise<StoreResult<void>>;
+  fetchBlockedIds: () => Promise<StoreResult<void>>;
 
   // users I blocked
   blockedUsers: Profile[];
 
   // actions
-  block: (currentUserId: string, targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
-  unblock: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
+  block: (targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
+  unblock: (targetUserId: string) => Promise<StoreResult<void>>;
 
   fetchBlockedUsers: () => Promise<StoreResult<void>>;
 
@@ -23,8 +22,8 @@ interface BlockState {
 export const useBlock = create<BlockState>((set, get) => ({
   blockedIds: new Set<string>(),
   blockedUsers: [],
-  fetchBlockedIds: async (userId) => {
-    const result = await getBlockedIds(userId);
+  fetchBlockedIds: async () => {
+    const result = await getBlockedIds();
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -34,8 +33,8 @@ export const useBlock = create<BlockState>((set, get) => ({
 
     return { success: true };
   },
-  block: async (currentUserId, targetUserId, targetProfile) => {
-    const result = await blockUser(currentUserId, targetUserId);
+  block: async (targetUserId, targetProfile) => {
+    const result = await blockUser(targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -45,17 +44,14 @@ export const useBlock = create<BlockState>((set, get) => ({
       const updated = new Set(state.blockedIds);
       updated.add(targetUserId);
 
-      return { blockedIds: updated,
-        blockedUsers: [...state.blockedUsers, targetProfile]
-
-       };
+      return { blockedIds: updated, blockedUsers: [...state.blockedUsers, targetProfile] };
     });
 
     return { success: true };
   },
 
-  unblock: async (currentUserId, targetUserId) => {
-    const result = await unblockUser(currentUserId, targetUserId);
+  unblock: async (targetUserId) => {
+    const result = await unblockUser(targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -67,7 +63,7 @@ export const useBlock = create<BlockState>((set, get) => ({
 
       return {
         blockedIds: updated,
-        blockedUsers: state.blockedUsers.filter((b) => b.id !== targetUserId)
+        blockedUsers: state.blockedUsers.filter((b) => b.id !== targetUserId),
       };
     });
 

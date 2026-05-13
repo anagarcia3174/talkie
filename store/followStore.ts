@@ -9,7 +9,6 @@ import {
 } from '~/services/followService';
 import { Profile, StoreResult } from '~/types/supabaseTypes';
 
-
 interface FollowState {
   // relationship cache (keyed by target user id)
   followingIds: Set<string>;
@@ -18,14 +17,14 @@ interface FollowState {
   followers: Profile[];
   following: Profile[];
 
-  fetchFollowingIds: (userId: string) => Promise<StoreResult<void>>;
-  fetchFollowerIds: (userId: string) => Promise<StoreResult<void>>;
+  fetchFollowingIds: () => Promise<StoreResult<void>>;
+  fetchFollowerIds: () => Promise<StoreResult<void>>;
 
-  follow: (currentUserId: string, targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
-  unfollow: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
+  follow: (targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
+  unfollow: (targetUserId: string) => Promise<StoreResult<void>>;
 
-  fetchFollowers: (userId: string) => Promise<StoreResult<void>>;
-  fetchFollowing: (userId: string) => Promise<StoreResult<void>>;
+  fetchFollowers: () => Promise<StoreResult<void>>;
+  fetchFollowing: () => Promise<StoreResult<void>>;
 
   purgeUserContent: (targetUserId: string) => { wasFollowing: boolean; wasFollower: boolean };
   clearFollowData: () => void;
@@ -36,8 +35,8 @@ export const useFollow = create<FollowState>((set, get) => ({
   followerIds: new Set<string>(),
   followers: [],
   following: [],
-  fetchFollowingIds: async (userId) => {
-    const result = await getFollowingIds(userId);
+  fetchFollowingIds: async () => {
+    const result = await getFollowingIds();
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -47,8 +46,8 @@ export const useFollow = create<FollowState>((set, get) => ({
 
     return { success: true };
   },
-  fetchFollowerIds: async (userId) => {
-    const result = await getFollowerIds(userId);
+  fetchFollowerIds: async () => {
+    const result = await getFollowerIds();
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -59,8 +58,8 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
-  follow: async (currentUserId, targetUserId, targetProfile) => {
-    const result = await followUser(currentUserId, targetUserId);
+  follow: async (targetUserId, targetProfile) => {
+    const result = await followUser(targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -79,8 +78,8 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
-  unfollow: async (currentUserId, targetUserId) => {
-    const result = await unFollowUser(currentUserId, targetUserId);
+  unfollow: async (targetUserId) => {
+    const result = await unFollowUser(targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -99,8 +98,8 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
-  fetchFollowers: async (userId) => {
-    const result = await getFollowers(userId);
+  fetchFollowers: async () => {
+    const result = await getFollowers();
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -116,8 +115,8 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
 
-  fetchFollowing: async (userId) => {
-    const result = await getFollowing(userId);
+  fetchFollowing: async () => {
+    const result = await getFollowing();
 
     if (!result.success) {
       return { success: false, error: result.error };

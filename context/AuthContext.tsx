@@ -46,13 +46,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isInitializedRef = useRef(false);
 
   // Load user data function with proper error handling
-  const loadUserData = useCallback(async (userId: string) => {
+  const loadUserData = useCallback(async () => {
     const { fetchProfile, fetchStats } = useProfile.getState();
     const { fetchLists } = useLists.getState();
     const { fetchFollowerIds, fetchFollowingIds } = useFollow.getState();
     const { fetchBlockedIds } = useBlock.getState();
 
-    const profileResult = await fetchProfile(userId);
+    const profileResult = await fetchProfile();
 
     if (!profileResult.success) {
       if (profileResult.error === 'ACCOUNT_DELETED') {
@@ -63,11 +63,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Only load additional data if active
     await Promise.allSettled([
-      fetchStats(userId),
-      fetchLists(userId),
-      fetchFollowerIds(userId),
-      fetchFollowingIds(userId),
-      fetchBlockedIds(userId),
+      fetchStats(),
+      fetchLists(),
+      fetchFollowerIds(),
+      fetchFollowingIds(),
+      fetchBlockedIds(),
     ]);
 
     return { accountDeleted: false };
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(newSession?.user ?? null);
 
       if (newSession?.user?.id) {
-        const result = await loadUserData(newSession.user.id);
+        const result = await loadUserData();
 
         if (result.accountDeleted) {
           setAccountDeleted(true);
@@ -180,7 +180,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     setLoading(true);
     setAccountDeleted(false);
-    await loadUserData(user.id);
+    await loadUserData();
 
     return { success: true };
   };

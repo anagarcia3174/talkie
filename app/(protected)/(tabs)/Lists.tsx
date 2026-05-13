@@ -13,6 +13,7 @@ import Toast from 'react-native-toast-message';
 import ListRow from '~/components/ListRow';
 import { useBlock } from '~/store/blockStore';
 import { haptics } from '~/utils/haptics';
+import { useProfile } from '~/store/profileStore';
 
 const STATUS_TILES = [
   {
@@ -50,6 +51,7 @@ export default function Lists() {
     listItems,
     hydrateDefaultLists,
   } = useLists();
+  const { adjustProfileStats } = useProfile();
   const { user } = useAuth();
   const { blockedIds } = useBlock();
 
@@ -103,7 +105,7 @@ export default function Lists() {
     }
     setCreateLoading(true);
     setCreateListModalVisible(false);
-    const result = await createList(user.id, list);
+    const result = await createList(list);
 
     if (!result.success) {
       haptics.error();
@@ -125,6 +127,7 @@ export default function Lists() {
         autoHide: true,
         onPress: () => Toast.hide(),
       });
+      adjustProfileStats({ lists: 1})
     }
     setCreateLoading(false);
   };
@@ -148,7 +151,7 @@ export default function Lists() {
       return;
     }
     setDeleteLoading(true);
-    const result = await deleteList(user.id, listId);
+    const result = await deleteList(listId);
     if (!result.success) {
       haptics.error();
 
@@ -162,7 +165,6 @@ export default function Lists() {
       });
     } else {
       haptics.success();
-
       Toast.show({
         type: 'success',
         text1: 'Your list was deleted',
@@ -171,6 +173,7 @@ export default function Lists() {
         autoHide: true,
         onPress: () => Toast.hide(),
       });
+      adjustProfileStats({ lists: -1})
     }
     setDeleteLoading(false);
   };

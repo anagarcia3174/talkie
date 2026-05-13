@@ -13,12 +13,15 @@ import {
   ListWithMeta,
 } from '~/types/supabaseTypes';
 
-export async function getOwnedLists(userId: string): Promise<DataResult<List[]>> {
+export async function getOwnedLists(): Promise<DataResult<List[]>> {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return errorData('Not authenticated', { operation: 'get_owned_lists', table: 'lists' });
+
     const { data, error } = await supabase
       .from('lists')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .order('updated_at', { ascending: false });
 
     if (error)
@@ -57,9 +60,12 @@ export async function getPublicListsByUserId(userId: string): Promise<DataResult
   }
 }
 
-export async function getLikedLists(userId: string): Promise<DataResult<ListWithMeta[]>> {
+export async function getLikedLists(): Promise<DataResult<ListWithMeta[]>> {
   try {
-    const { data, error } = await supabase.rpc('get_liked_lists', { p_user_id: userId });
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return errorData('Not authenticated', { operation: 'get_liked_lists', rpc: 'get_liked_lists' });
+
+    const { data, error } = await supabase.rpc('get_liked_lists', { p_user_id: user.id });
 
     if (error)
       return errorData(error, {
@@ -77,13 +83,12 @@ export async function getLikedLists(userId: string): Promise<DataResult<ListWith
 }
 
 export async function createList(
-  userId: string,
   newList: Partial<List>
 ): Promise<DataResult<List>> {
   try {
     const { data, error } = await supabase
       .from('lists')
-      .insert([{ ...newList, user_id: userId }])
+      .insert([{ ...newList }])
       .select()
       .single();
 
@@ -172,7 +177,6 @@ export async function getListItems(listId: number): Promise<DataResult<ListItemW
 export async function addListItem(
   listId: number,
   mediaId: number,
-  userId: string
 ): Promise<VoidResult> {
   try {
     const { error } = await supabase
@@ -216,7 +220,7 @@ export async function removeListItem(itemId: number): Promise<VoidResult> {
   }
 }
 
-export async function likeList(listId: number, userId: string): Promise<VoidResult> {
+export async function likeList(listId: number): Promise<VoidResult> {
   try {
     const { error } = await supabase.rpc('like_list', { p_list_id: listId });
     if (error)
@@ -235,7 +239,7 @@ export async function likeList(listId: number, userId: string): Promise<VoidResu
   }
 }
 
-export async function unlikeList(listId: number, userId: string): Promise<VoidResult> {
+export async function unlikeList(listId: number): Promise<VoidResult> {
   try {
     const { error } = await supabase.rpc('unlike_list', { p_list_id: listId });
     if (error)
@@ -255,7 +259,6 @@ export async function unlikeList(listId: number, userId: string): Promise<VoidRe
 }
 
 export async function updateItemStatus(
-  user_id: string,
   mediaId: number,
   status: Status
 ): Promise<VoidResult> {
@@ -263,7 +266,6 @@ export async function updateItemStatus(
     const { error } = await supabase
       .from('user_media')
       .update({ status: status })
-      .eq('user_id', user_id)
       .eq('media_id', mediaId);
 
     if (error)

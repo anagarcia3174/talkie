@@ -32,13 +32,13 @@ interface ProfileState {
   loading: boolean;
 
   otherProfiles: Record<string, OtherProfilesState>;
-  fetchOtherProfile: (userId: string) => Promise<StoreResult<void>>;
+  fetchOtherProfile: (targetUserId: string) => Promise<StoreResult<void>>;
 
-  fetchProfile: (userId: string) => Promise<StoreResult<void>>;
-  fetchStats: (userId: string) => Promise<StoreResult<void>>;
+  fetchProfile: () => Promise<StoreResult<void>>;
+  fetchStats: () => Promise<StoreResult<void>>;
   adjustProfileStats: (deltas: Partial<Record<keyof ProfileStats, number>>) => void;
-  uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
-  updateProfile: (userId: string, updates: Partial<Profile>) => Promise<StoreResult<void>>;
+  uploadAvatar: (fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
+  updateProfile: (updates: Partial<Profile>) => Promise<StoreResult<void>>;
   purgeUserContent: (targetUserId: string) => void;
   clearProfile: () => void;
   deleteAccount: () => Promise<StoreResult<void>>;
@@ -69,8 +69,8 @@ export const useProfile = create<ProfileState>((set, get) => ({
   loading: false,
 
   otherProfiles: {},
-  fetchOtherProfile: async (userId) => {
-    const cached = get().otherProfiles[userId];
+  fetchOtherProfile: async (targetUserId) => {
+    const cached = get().otherProfiles[targetUserId];
 
     if (cached?.hasFetched || cached?.loading) {
       return { success: true };
@@ -79,7 +79,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
     set((state) => ({
       otherProfiles: {
         ...state.otherProfiles,
-        [userId]: {
+        [targetUserId]: {
           profile: cached?.profile ?? null,
           stats: cached?.stats ?? null,
           lists: cached?.lists ?? [],
@@ -90,16 +90,16 @@ export const useProfile = create<ProfileState>((set, get) => ({
       },
     }));
     const [profileResult, statsResult, listsResult] = await Promise.all([
-      getProfileById(userId),
-      getProfileStats(userId),
-      getPublicListsByUserId(userId),
+      getProfileById(targetUserId),
+      getProfileStats(targetUserId),
+      getPublicListsByUserId(targetUserId),
     ]);
 
     if (!profileResult.success) {
       set((state) => ({
         otherProfiles: {
           ...state.otherProfiles,
-          [userId]: {
+          [targetUserId]: {
             profile: cached?.profile ?? null,
             stats: cached?.stats ?? null,
             lists: cached?.lists ?? [],
@@ -121,7 +121,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
     set((state) => ({
       otherProfiles: {
         ...state.otherProfiles,
-        [userId]: {
+        [targetUserId]: {
           profile,
           stats,
           lists,
@@ -138,9 +138,9 @@ export const useProfile = create<ProfileState>((set, get) => ({
 
     return { success: true };
   },
-  fetchProfile: async (userId) => {
+  fetchProfile: async () => {
     set({ loading: true });
-    const result = await getProfileById(userId);
+    const result = await getProfileById();
 
     if (!result.success) {
       set({ loading: false });
@@ -156,8 +156,8 @@ export const useProfile = create<ProfileState>((set, get) => ({
     return { success: true };
   },
 
-  fetchStats: async (userId) => {
-    const result = await getProfileStats(userId);
+  fetchStats: async () => {
+    const result = await getProfileStats();
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -191,40 +191,29 @@ export const useProfile = create<ProfileState>((set, get) => ({
         : state.stats,
     })),
 
-  uploadAvatar: async (userId, image) => {
+  uploadAvatar: async (image) => {
     try {
       const arrayBuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
-
-      if (arrayBuffer.byteLength > MAX_BYTES) {
-        return {
-          success: false,
-          error: `Image too large. Max size is ${MAX_MB} MB.`,
-        };
-      }
-
-      const filePath = `${userId}/avatar.jpg`;
-      const mimeType = image.mimeType ?? 'image/jpeg';
-
-      const result = await uploadAvatarService(filePath, arrayBuffer, mimeType);
-
-      if (!result.success) {
-        return { success: false, error: result.error };
-      }
-
+      if (arrayBuffer.byteLength > MAX_BYTES)
+        return { success: false, error: `Image too large. Max size is ${MAX_MB} MB.` };
+        
+      const result = await uploadAvatarService(arrayBuffer, image.mimeType ?? 'image/jpeg');
+      if (!result.success) return { success: false, error: result.error }; 
+      
       const currentProfile = get().profile;
       if (currentProfile) {
-        const avatarUrl = getPublicUrl(`/object/public/avatars/${filePath}`);
+        const avatarUrl = getPublicUrl(`/object/public/avatars/${result.data}`);
         set({ profile: addCacheBuster({ ...currentProfile, avatar_url: avatarUrl }) });
-      }
+      } 
       return { success: true };
     } catch {
       return { success: false, error: 'There was an error uploading your profile picture.' };
-    }
+    } 
   },
 
   // ─── Update profile ─────────────────────────────────────────────────
-  updateProfile: async (userId, updates) => {
-    const result = await updateProfile(userId, updates);
+  updateProfile: async (updates) => {
+    const result = await updateProfile(updates);
 
     if (!result.success) {
       return { success: false, error: result.error };

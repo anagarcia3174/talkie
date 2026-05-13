@@ -75,7 +75,7 @@ export default function ProfileScreen() {
   const handleBlock = async () => {
     if (!user) return;
     setBlocking(true);
-    const result = await block(user.id, profile.id, profile);
+    const result = await block(profile.id, profile);
     if (!result.success) {
       Toast.show({
         type: 'error',

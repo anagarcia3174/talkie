@@ -3,8 +3,10 @@ import type { Profile, ProfileStats, DataResult, VoidResult } from '~/types/supa
 import { errorData, errorVoid, successData, successVoid } from '~/types/supabaseTypes';
 import { withPublicUrl } from '~/utils/storageUrl';
 
-export async function getProfileById(id: string): Promise<DataResult<Profile>> {
+export async function getProfileById(id?: string): Promise<DataResult<Profile>> {
   try {
+    const userId = id ?? (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) return errorData('Not authenticated', { operation: 'get_profile_stats', rpc: 'get_profile_stats' });
     const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
     if (error)
       return errorData(error, {
@@ -21,10 +23,13 @@ export async function getProfileById(id: string): Promise<DataResult<Profile>> {
   }
 }
 
-export async function getProfileStats(id: string): Promise<DataResult<ProfileStats>> {
+export async function getProfileStats(id?: string): Promise<DataResult<ProfileStats>> {
   try {
+    const userId = id ?? (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) return errorData('Not authenticated', { operation: 'get_profile_stats', rpc: 'get_profile_stats' });
+
     const { data, error } = await supabase.rpc('get_profile_stats', {
-      user_id: id,
+      user_id: userId,
     });
     if (error)
       return errorData(error, {
@@ -41,29 +46,27 @@ export async function getProfileStats(id: string): Promise<DataResult<ProfileSta
   }
 }
 
-export async function uploadAvatar(
-  filePath: string,
-  arrayBuffer: ArrayBuffer,
-  mimeType: string
-): Promise<VoidResult> {
-  try {
-    const { error } = await supabase.storage.from('avatars').upload(filePath, arrayBuffer, {
-      upsert: true,
-      contentType: mimeType,
-    });
-    if (error)
-      return errorVoid(error, {
-        operation: 'upload_avatar',
-        isWrite: true,
+ export async function uploadAvatar(
+    arrayBuffer: ArrayBuffer,
+    mimeType: string
+  ): Promise<DataResult<string>> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return errorData('Not authenticated', { operation: 'upload_avatar', isWrite: true });
+      
+      const filePath = `${user.id}/avatar.jpg`;
+      const { error } = await supabase.storage.from('avatars').upload(filePath, arrayBuffer, {
+        upsert: true, 
+        contentType: mimeType,
       });
-    return successVoid();
-  } catch (err) {
-    return errorVoid(err);
+      if (error) return errorData(error, { operation: 'upload_avatar', isWrite: true });
+      return successData(filePath);
+    } catch (err) {
+      return errorData(err, { operation: 'upload_avatar', isWrite: true });
+    }
   }
-}
 
 export async function updateProfile(
-  id: string,
   updates: Partial<Profile>
 ): Promise<DataResult<Profile>> {
   try {
@@ -73,7 +76,6 @@ export async function updateProfile(
         ...updates,
         updated_at: new Date().toISOString,
       })
-      .eq('id', id)
       .select()
       .single();
 

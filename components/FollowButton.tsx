@@ -98,7 +98,7 @@ export default function FollowButton({ targetUserId, targetProfile, isSmall = fa
 
     setLoading(true);
     if (isFollowing) {
-      const result = await unfollow(user.id, targetUserId);
+      const result = await unfollow(targetUserId);
       if (result.success) {
         adjustProfileStats({ following: -1 });
       } else {
@@ -109,7 +109,7 @@ export default function FollowButton({ targetUserId, targetProfile, isSmall = fa
         });
       }
     } else {
-      const result = await follow(user.id, targetUserId, targetProfile);
+      const result = await follow(targetUserId, targetProfile);
       if (result.success) {
         adjustProfileStats({ following: 1 });
       } else {

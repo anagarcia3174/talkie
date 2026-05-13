@@ -211,7 +211,7 @@ export default function Profile() {
               }
             }
             if (data && Object.keys(data).length > 0) {
-              const res = await updateProfile(user.id, data);
+              const res = await updateProfile(data);
               if (!res.success) {
                 Toast.hide();
                 haptics.error();
