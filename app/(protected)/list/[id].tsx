@@ -1,13 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ListContent from '~/components/ListContent';
 import LoadingScreen from '~/components/LoadingScreen';
 
 import { useAuth } from '~/context/AuthContext';
-import useListScreenActions from './useListScreenActions';
+import useListcreenActions from './useListScreenActions';
 import { useBlock } from '~/store/blockStore';
 import ErrorScreen from '~/components/ErrorScreen';
 import { ChevronLeft } from 'lucide-react-native';
@@ -19,14 +19,14 @@ export default function ListScreen() {
   const listId = Number(id);
   const isValidListId = Number.isFinite(listId);
 
-  const { listsById, listItems, getListItems } = useLists();
+  const { listsById, listItems, fetchListItems } = useList();
   const { user } = useAuth();
   const { blockedIds } = useBlock();
   const list = isValidListId ? listsById[listId] : undefined;
   const items = isValidListId ? listItems[listId] : undefined;
   const [itemsError, setItemsError] = useState<string | null>(null);
   const [loadingItems, setLoadingItems] = useState(false);
-  const actions = useListScreenActions(listId);
+  const actions = useListcreenActions(listId);
   const theme = useTheme();
   const router = useRouter();
 
@@ -37,7 +37,7 @@ export default function ListScreen() {
       setLoadingItems(true);
       setItemsError(null);
 
-      const result = await getListItems(listId);
+      const result = await fetchListItems(listId);
 
       if (!result.success) {
         setItemsError(result.error);
@@ -47,7 +47,7 @@ export default function ListScreen() {
     };
 
     loadItems();
-  }, [isValidListId, list, items, listId, getListItems]);
+  }, [isValidListId, list, items, listId, fetchListItems]);
 
   if (!isValidListId) {
     return (

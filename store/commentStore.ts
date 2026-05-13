@@ -14,9 +14,8 @@ import {
   CreateCommentInput,
   ReportReason,
   CommentWithUserAndMedia,
+  StoreResult,
 } from '~/types/supabaseTypes';
-
-type StoreResult = { success: true } | { success: false; error: string };
 
 type ContextKey = {
   mediaId: number;
@@ -24,7 +23,16 @@ type ContextKey = {
   episodeNumber?: number;
 };
 
-interface MediaCommentsState {
+function buildCommentKey({ mediaId, seasonNumber, episodeNumber }: ContextKey) {
+  const baseKey = `media-${mediaId}`;
+  const episodeKey =
+    seasonNumber != null && episodeNumber != null
+      ? `media-${mediaId}-s${seasonNumber}-e${episodeNumber}`
+      : baseKey;
+  return { baseKey, episodeKey };
+}
+
+interface MediaCommentState {
   comments: CommentWithUser[];
   isLoading: boolean;
   hasFetched: boolean;
@@ -39,7 +47,7 @@ interface RecentCommentsFeedState {
 }
 
 interface CommentState {
-  fetchedComments: Record<string, MediaCommentsState>;
+  fetchedComments: Record<string, MediaCommentState>;
   recentCommentsFeed: RecentCommentsFeedState;
   fetchCommentsForMedia: (params: {
     mediaId: number;
@@ -47,7 +55,7 @@ interface CommentState {
     episodeNumber?: number;
     force?: boolean;
   }) => Promise<StoreResult>;
-  getRecentCommentsFeed: () => Promise<StoreResult>;
+  fetchRecentCommentsFeed: (force?: boolean) => Promise<StoreResult>;
   postComment: (comment: CreateCommentInput) => Promise<StoreResult>;
   deleteComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult>;
   toggleLikeComment: (commentId: number, contextKey: ContextKey) => Promise<StoreResult>;
@@ -58,12 +66,14 @@ interface CommentState {
   }) => Promise<StoreResult>;
   reportComment: (
     commentId: number,
+    contextKey: ContextKey,
     reportReason: ReportReason,
     details?: string
   ) => Promise<StoreResult>;
+  purgeUserContent: (targetUserId: string) => void;
 }
 
-export const useComments = create<CommentState>((set, get) => ({
+export const useComment = create<CommentState>((set, get) => ({
   fetchedComments: {},
   recentCommentsFeed: {
     recentComments: [],
@@ -72,11 +82,7 @@ export const useComments = create<CommentState>((set, get) => ({
     error: null,
   },
   fetchCommentsForMedia: async ({ mediaId, seasonNumber, episodeNumber, force = false }) => {
-    const baseKey = `media-${mediaId}`;
-    const contextKey =
-      seasonNumber != null && episodeNumber != null
-        ? `media-${mediaId}-s${seasonNumber}-e${episodeNumber}`
-        : baseKey;
+    const { baseKey, episodeKey } = buildCommentKey({ mediaId, seasonNumber, episodeNumber });
 
     const baseExisting = get().fetchedComments[baseKey];
 
@@ -97,7 +103,7 @@ export const useComments = create<CommentState>((set, get) => ({
         set((state) => ({
           fetchedComments: {
             ...state.fetchedComments,
-            [contextKey]: {
+            [episodeKey]: {
               comments,
               isLoading: false,
               hasFetched: true,
@@ -162,7 +168,7 @@ export const useComments = create<CommentState>((set, get) => ({
       set((state) => ({
         fetchedComments: {
           ...state.fetchedComments,
-          [contextKey]: {
+          [episodeKey]: {
             comments: filtered,
             isLoading: false,
             hasFetched: true,
@@ -176,14 +182,14 @@ export const useComments = create<CommentState>((set, get) => ({
 
     return { success: true };
   },
-  getRecentCommentsFeed: async () => {
+  fetchRecentCommentsFeed: async (force = false) => {
     const cachedRecentCommentsFeed = get().recentCommentsFeed;
 
     if (cachedRecentCommentsFeed.isLoading) {
       return { success: true };
     }
 
-    if (cachedRecentCommentsFeed.hasFetched) {
+    if (cachedRecentCommentsFeed.hasFetched && !force) {
       return { success: true };
     }
 
@@ -234,12 +240,11 @@ export const useComments = create<CommentState>((set, get) => ({
 
     const newComment = result.data;
 
-    // Extract base key from contextKey
-    const baseKey = `media-${comment.media_id}`;
-    const episodeKey =
-      comment.season_number != null && comment.episode_number != null
-        ? `media-${comment.media_id}-s${comment.season_number}-e${comment.episode_number}`
-        : baseKey;
+    const { baseKey, episodeKey } = buildCommentKey({
+      mediaId: comment.media_id,
+      seasonNumber: comment.season_number ?? undefined,
+      episodeNumber: comment.episode_number ?? undefined,
+    });
 
     set((state) => {
       const baseExisting = state.fetchedComments[baseKey];
@@ -279,16 +284,11 @@ export const useComments = create<CommentState>((set, get) => ({
       return result;
     }
 
-    const baseKey = `media-${contextKey.mediaId}`;
-    const episodeKey =
-      contextKey.seasonNumber != null && contextKey.episodeNumber != null
-        ? `media-${contextKey.mediaId}-s${contextKey.seasonNumber}-e${contextKey.episodeNumber}`
-        : baseKey;
+    const { baseKey, episodeKey } = buildCommentKey(contextKey);
 
     set((state) => {
       const updated = { ...state.fetchedComments };
 
-      // Remove from base
       if (updated[baseKey]) {
         updated[baseKey] = {
           ...updated[baseKey],
@@ -296,7 +296,6 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      //  Remove from episode slice (if different)
       if (episodeKey !== baseKey && updated[episodeKey]) {
         updated[episodeKey] = {
           ...updated[episodeKey],
@@ -304,7 +303,13 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      return { fetchedComments: updated };
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.filter((c) => c.id !== commentId),
+        },
+      };
     });
 
     return result;
@@ -312,11 +317,7 @@ export const useComments = create<CommentState>((set, get) => ({
   toggleLikeComment: async (commentId, contextKey) => {
     const state = get();
 
-    const baseKey = `media-${contextKey.mediaId}`;
-    const episodeKey =
-      contextKey.seasonNumber != null && contextKey.episodeNumber != null
-        ? `media-${contextKey.mediaId}-s${contextKey.seasonNumber}-e${contextKey.episodeNumber}`
-        : baseKey;
+    const { baseKey, episodeKey } = buildCommentKey(contextKey);
 
     const baseComments = state.fetchedComments[baseKey]?.comments ?? [];
 
@@ -356,7 +357,21 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      return { fetchedComments: updated };
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+            c.id === commentId
+              ? {
+                  ...c,
+                  is_liked: !prevLiked,
+                  like_count: c.like_count + (prevLiked ? -1 : 1),
+                }
+              : c
+          ),
+        },
+      };
     });
 
     const result = await toggleCommentLike(commentId);
@@ -367,13 +382,7 @@ export const useComments = create<CommentState>((set, get) => ({
 
         const rollback = (comments: CommentWithUser[]) =>
           comments.map((c) =>
-            c.id === commentId
-              ? {
-                  ...c,
-                  is_liked: prevLiked,
-                  like_count: prevCount,
-                }
-              : c
+            c.id === commentId ? { ...c, is_liked: prevLiked, like_count: prevCount } : c
           );
 
         if (updated[baseKey]) {
@@ -390,7 +399,17 @@ export const useComments = create<CommentState>((set, get) => ({
           };
         }
 
-        return { fetchedComments: updated };
+        return {
+          fetchedComments: updated,
+          recentCommentsFeed: {
+            ...state.recentCommentsFeed,
+            recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+              c.id === commentId
+                ? { ...c, is_liked: prevLiked, like_count: c.like_count + (prevLiked ? 1 : -1) }
+                : c
+            ),
+          },
+        };
       });
 
       return result;
@@ -400,11 +419,7 @@ export const useComments = create<CommentState>((set, get) => ({
   },
   updateComment: async ({ commentId, contextKey, updates }) => {
     const state = get();
-    const baseKey = `media-${contextKey.mediaId}`;
-    const episodeKey =
-      contextKey.seasonNumber != null && contextKey.episodeNumber != null
-        ? `media-${contextKey.mediaId}-s${contextKey.seasonNumber}-e${contextKey.episodeNumber}`
-        : baseKey;
+    const { baseKey, episodeKey } = buildCommentKey(contextKey);
 
     const baseComments = state.fetchedComments[baseKey]?.comments ?? [];
 
@@ -413,19 +428,13 @@ export const useComments = create<CommentState>((set, get) => ({
       return { success: false, error: 'Comment not found' };
     }
 
-    // Save previous state for rollback
-    const prevContent = existingComment.content;
-    const prevTimestamp = existingComment.timestamp_seconds;
+    const prevValues = {} as Partial<Pick<Comment, 'timestamp_seconds' | 'content'>>;
+    for (const key of Object.keys(updates) as (keyof typeof updates)[]) {
+      prevValues[key] = existingComment[key] as any;
+    }
 
     const applyUpdate = (comments: CommentWithUser[]) =>
-      comments.map((c) =>
-        c.id === commentId
-          ? {
-              ...c,
-              ...updates,
-            }
-          : c
-      );
+      comments.map((c) => (c.id === commentId ? { ...c, ...updates } : c));
 
     // -------------------------
     // Optimistic update
@@ -447,31 +456,25 @@ export const useComments = create<CommentState>((set, get) => ({
         };
       }
 
-      return { fetchedComments: updated };
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+            c.id === commentId ? { ...c, ...updates } : c
+          ),
+        },
+      };
     });
 
-    // -------------------------
-    // API call (you need this service)
-    // -------------------------
     const result = await updateCommentService(commentId, updates);
 
     if (!result.success) {
-      // -------------------------
-      // Rollback
-      // -------------------------
       set((state) => {
         const updated = { ...state.fetchedComments };
 
         const rollback = (comments: CommentWithUser[]) =>
-          comments.map((c) =>
-            c.id === commentId
-              ? {
-                  ...c,
-                  content: prevContent,
-                  timestamp_seconds: prevTimestamp,
-                }
-              : c
-          );
+          comments.map((c) => (c.id === commentId ? { ...c, ...prevValues } : c));
 
         if (updated[baseKey]) {
           updated[baseKey] = {
@@ -487,7 +490,15 @@ export const useComments = create<CommentState>((set, get) => ({
           };
         }
 
-        return { fetchedComments: updated };
+        return {
+          fetchedComments: updated,
+          recentCommentsFeed: {
+            ...state.recentCommentsFeed,
+            recentComments: state.recentCommentsFeed.recentComments.map((c) =>
+              c.id === commentId ? { ...c, ...prevValues } : c
+            ),
+          },
+        };
       });
 
       return result;
@@ -495,7 +506,57 @@ export const useComments = create<CommentState>((set, get) => ({
 
     return { success: true };
   },
-  reportComment: async (commentId, reason, details) => {
-    return await reportComment(commentId, reason, details);
+  purgeUserContent: (targetUserId) => {
+    set((state) => ({
+      fetchedComments: Object.fromEntries(
+        Object.entries(state.fetchedComments).map(([key, val]) => [
+          key,
+          { ...val, comments: val.comments.filter((c) => c.owner.id !== targetUserId) },
+        ])
+      ) as typeof state.fetchedComments,
+      recentCommentsFeed: {
+        ...state.recentCommentsFeed,
+        recentComments: state.recentCommentsFeed.recentComments.filter(
+          (c) => c.owner.id !== targetUserId
+        ),
+      },
+    }));
+  },
+  reportComment: async (commentId, contextKey, reason, details) => {
+    const result = await reportComment(commentId, reason, details);
+
+    if (!result.success) {
+      return result;
+    }
+
+    const { baseKey, episodeKey } = buildCommentKey(contextKey);
+
+    set((state) => {
+      const updated = { ...state.fetchedComments };
+
+      if (updated[baseKey]) {
+        updated[baseKey] = {
+          ...updated[baseKey],
+          comments: updated[baseKey].comments.filter((c) => c.id !== commentId),
+        };
+      }
+
+      if (episodeKey !== baseKey && updated[episodeKey]) {
+        updated[episodeKey] = {
+          ...updated[episodeKey],
+          comments: updated[episodeKey].comments.filter((c) => c.id !== commentId),
+        };
+      }
+
+      return {
+        fetchedComments: updated,
+        recentCommentsFeed: {
+          ...state.recentCommentsFeed,
+          recentComments: state.recentCommentsFeed.recentComments.filter((c) => c.id !== commentId),
+        },
+      };
+    });
+
+    return { success: true };
   },
 }));

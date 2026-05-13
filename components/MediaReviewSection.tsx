@@ -2,13 +2,14 @@ import { useEffect, useMemo } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
-import { useReviews } from '~/store/reviewStore';
+import { useReview } from '~/store/reviewStore';
 import ReviewItem from './ReviewItem';
 import Toast from 'react-native-toast-message';
 import ErrorScreen from './ErrorScreen';
 import ReviewForm from './ReviewForm';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { haptics } from '~/utils/haptics';
+import { useProfile } from '~/store/profileStore';
 
 interface MediaReviewSectionProps {
   mediaId: number;
@@ -25,7 +26,8 @@ const hasDatePassed = (dateString?: string | null) => {
 };
 
 export default function MediaReviewSection({ mediaId, releaseDate }: MediaReviewSectionProps) {
-  const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReviews();
+  const { fetchReviewsForMedia, fetchedReviews, submitReview } = useReview();
+  const { adjustProfileStats } = useProfile();
   const { user } = useAuth();
   const theme = useTheme();
   const mediaReviews = fetchedReviews[mediaId];
@@ -57,7 +59,6 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
       const result = await submitReview({
         rating,
         content,
-        user_id: user.id,
         media_id: mediaId,
       });
 
@@ -71,6 +72,7 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
           autoHide: true,
           onPress: () => Toast.hide(),
         });
+        adjustProfileStats({ reviews: 1 });
       } else {
         haptics.error();
         Toast.show({

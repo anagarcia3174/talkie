@@ -4,7 +4,7 @@ import { Heart, MoreHorizontal, Star, UserRound } from 'lucide-react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
 import { useTheme } from '~/hooks/useTheme';
 import { useRouter } from 'expo-router';
-import { useReviews } from '~/store/reviewStore';
+import { useReview } from '~/store/reviewStore';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 import ReviewEditModal from './ReviewEditModal';
@@ -12,6 +12,7 @@ import ItemOptions from './ItemOptions';
 import ReportModal from './ReportModal';
 import { haptics } from '~/utils/haptics';
 import ConfirmModal from './ConfirmModal';
+import { useProfile } from '~/store/profileStore';
 
 interface ReviewItemProps {
   review: ReviewWithUser;
@@ -39,7 +40,8 @@ function formatRelativeTime(dateString: string): string {
 
 export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   const uri = getPublicUrl(review.owner.avatar_url);
-  const { toggleLikeReview, removeReview, updateReview, reportReview } = useReviews();
+  const { toggleLikeReview, deleteReview, updateReview, reportReview } = useReview();
+  const { adjustProfileStats } = useProfile();
   const [loading, setLoading] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -66,7 +68,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   };
 
   const handleReviewDelete = async () => {
-    const result = await removeReview(review.id, review.media_id);
+    const result = await deleteReview(review.id, review.media_id);
     if (!result.success) {
       haptics.error();
       Toast.show({
@@ -75,6 +77,8 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
         visibilityTime: 4000,
         autoHide: true,
       });
+    } else {
+      adjustProfileStats({ reviews: -1 });
     }
   };
 
@@ -100,7 +104,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   };
 
   const handleReviewReport = async (reason: ReportReason, details?: string) => {
-    const result = await reportReview(review.id, reason, details);
+    const result = await reportReview(review.id, reason, review.media_id, details);
     setReportModalVisible(false);
     if (!result.success) {
       haptics.error();

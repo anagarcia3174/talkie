@@ -16,7 +16,7 @@ interface FollowsModalProps {
 }
 
 export default function FollowsModal({ checking, visible, onClose }: FollowsModalProps) {
-  const { followerIds, followingIds, followers, following, getFollowers, getFollowing } =
+  const { followerIds, followingIds, followers, following, fetchFollowers, fetchFollowing } =
     useFollow();
   const theme = useTheme();
   const { user } = useAuth();
@@ -40,7 +40,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
         if (!isOutOfSync) return;
 
         setLoading(true);
-        const result = await getFollowers(user.id);
+        const result = await fetchFollowers();
 
         if (!result.success) {
           setError(result.error);
@@ -58,7 +58,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
         if (!isOutOfSync) return;
 
         setLoading(true);
-        const result = await getFollowing(user.id);
+        const result = await fetchFollowing();
 
         if (!result.success) {
           setError(result.error);
@@ -76,8 +76,8 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
     followingIds,
     followers,
     following,
-    getFollowers,
-    getFollowing,
+    fetchFollowers,
+    fetchFollowing,
   ]);
 
   return (
@@ -109,9 +109,9 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
               onPress={() => {
                 if (!user) return;
                 if (checking === 'followers') {
-                  getFollowers(user.id);
+                  fetchFollowers();
                 } else {
-                  getFollowing(user.id);
+                  fetchFollowing();
                 }
               }}>
               <Text className="text-primary-600">Retry</Text>
@@ -162,7 +162,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
                   {item.display_name}
                 </Text>
               </TouchableOpacity>
-              <FollowButton targetUserId={item.id} isSmall />
+              <FollowButton targetUserId={item.id} targetProfile={item} isSmall />
             </View>
           )}
         />

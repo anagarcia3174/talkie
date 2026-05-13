@@ -9,10 +9,9 @@ import {
 } from '~/types/supabaseTypes';
 import { supabase } from '~/utils/supabase';
 
-export async function blockUser(currentUser: string, targetUserId: string): Promise<VoidResult> {
+export async function blockUser(targetUserId: string): Promise<VoidResult> {
   try {
     const { error } = await supabase.from('blocks').insert({
-      blocker_id: currentUser,
       blocked_id: targetUserId,
     });
 
@@ -33,13 +32,9 @@ export async function blockUser(currentUser: string, targetUserId: string): Prom
   }
 }
 
-export async function unBlockUser(currentUser: string, blockedUser: string): Promise<VoidResult> {
+export async function unblockUser(blockedUser: string): Promise<VoidResult> {
   try {
-    const { error } = await supabase
-      .from('blocks')
-      .delete()
-      .eq('blocker_id', currentUser)
-      .eq('blocked_id', blockedUser);
+    const { error } = await supabase.from('blocks').delete().eq('blocked_id', blockedUser);
 
     if (error) {
       return errorVoid(error, {
@@ -77,12 +72,9 @@ export async function getBlockedUsers(): Promise<DataResult<Profile[]>> {
     });
   }
 }
-export async function getBlockedIds(currentUserId: string): Promise<DataResult<string[]>> {
+export async function getBlockedIds(): Promise<DataResult<string[]>> {
   try {
-    const { data, error } = await supabase
-      .from('blocks')
-      .select('blocked_id')
-      .eq('blocker_id', currentUserId);
+    const { data, error } = await supabase.from('blocks').select('blocked_id');
 
     if (error) {
       return errorData(error, {

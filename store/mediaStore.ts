@@ -1,10 +1,8 @@
 import { create } from 'zustand';
-import { Media, MovieDetails, TVDetails } from '~/types/supabaseTypes';
+import { Media, MovieDetails, TVDetails, StoreResult } from '~/types/supabaseTypes';
 import { getMediaDetails, getTrendingMovies, getTrendingShows } from '~/services/mediaService';
 
-type StoreResult = { success: true } | { success: false; error: string };
-
-interface MediaCommentsState {
+interface MediaDetailsState {
   details: TVDetails | MovieDetails | null;
   isLoading: boolean;
   hasFetched: boolean;
@@ -13,19 +11,31 @@ interface MediaCommentsState {
 
 interface MediaState {
   loading: boolean;
+  hasFetchedHomeData: boolean;
   trendingMovies: Media[];
   trendingShows: Media[];
-  mediaDetails: Record<number, MediaCommentsState>;
-  fetchHomeData: () => Promise<StoreResult>;
-  fetchMediaDetails: (media_id: number, force?: boolean) => Promise<StoreResult>;
+  mediaDetails: Record<number, MediaDetailsState>;
+  fetchHomeData: (force?: boolean) => Promise<StoreResult>;
+  fetchMediaDetails: (mediaId: number, force?: boolean) => Promise<StoreResult>;
 }
 
 export const useMedia = create<MediaState>((set, get) => ({
   loading: false,
+  hasFetchedHomeData: false,
   trendingMovies: [],
   trendingShows: [],
   mediaDetails: {},
-  fetchHomeData: async () => {
+  fetchHomeData: async (force = false) => {
+    const { loading, hasFetchedHomeData } = get();
+
+    if (loading) {
+      return { success: true };
+    }
+
+    if (!force && hasFetchedHomeData) {
+      return { success: true };
+    }
+
     set({ loading: true });
 
     const [trendingMoviesResult, trendingShowsResult] = await Promise.all([
@@ -33,27 +43,28 @@ export const useMedia = create<MediaState>((set, get) => ({
       getTrendingShows(),
     ]);
 
-    // Check if any requests failed
     if (!trendingMoviesResult.success) {
       set({ loading: false });
       return { success: false, error: trendingMoviesResult.error };
     }
+
     if (!trendingShowsResult.success) {
       set({ loading: false });
       return { success: false, error: trendingShowsResult.error };
     }
 
-    // All requests succeeded
     set({
       trendingMovies: trendingMoviesResult.data,
       trendingShows: trendingShowsResult.data,
       loading: false,
+      hasFetchedHomeData: true,
     });
+
     return { success: true };
   },
-  fetchMediaDetails: async (media_id, force = false) => {
+  fetchMediaDetails: async (mediaId, force = false) => {
     const { mediaDetails } = get();
-    const existing = mediaDetails[media_id];
+    const existing = mediaDetails[mediaId];
 
     // Return cached data if available and not forcing refresh
     if (!force && existing?.hasFetched) {
@@ -63,8 +74,8 @@ export const useMedia = create<MediaState>((set, get) => ({
     set((state) => ({
       mediaDetails: {
         ...state.mediaDetails,
-        [media_id]: {
-          details: state.mediaDetails[media_id]?.details ?? null,
+        [mediaId]: {
+          details: state.mediaDetails[mediaId]?.details ?? null,
           isLoading: true,
           hasFetched: false,
           error: null,
@@ -72,13 +83,13 @@ export const useMedia = create<MediaState>((set, get) => ({
       },
     }));
 
-    const result = await getMediaDetails(media_id);
+    const result = await getMediaDetails(mediaId);
 
     if (!result.success) {
       set((state) => ({
         mediaDetails: {
           ...state.mediaDetails,
-          [media_id]: {
+          [mediaId]: {
             details: null,
             isLoading: false,
             hasFetched: false,
@@ -93,7 +104,7 @@ export const useMedia = create<MediaState>((set, get) => ({
     set((state) => ({
       mediaDetails: {
         ...state.mediaDetails,
-        [media_id]: {
+        [mediaId]: {
           details: result.data,
           isLoading: false,
           hasFetched: true,

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '~/utils/supabase';
 import { useProfile } from '~/store/profileStore';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { restoreUser } from '~/services/profileService';
 import { useFollow } from '~/store/followStore';
 import { useBlock } from '~/store/blockStore';
@@ -46,13 +46,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isInitializedRef = useRef(false);
 
   // Load user data function with proper error handling
-  const loadUserData = useCallback(async (userId: string) => {
-    const { getProfile, getStats } = useProfile.getState();
-    const { getLists } = useLists.getState();
-    const { hydrateFollowerIds, hydrateFollowingIds } = useFollow.getState();
-    const { hydrateBlockedIds } = useBlock.getState();
+  const loadUserData = useCallback(async () => {
+    const { fetchProfile, fetchStats } = useProfile.getState();
+    const { fetchLists } = useList.getState();
+    const { fetchFollowerIds, fetchFollowingIds } = useFollow.getState();
+    const { fetchBlockedIds } = useBlock.getState();
 
-    const profileResult = await getProfile(userId);
+    const profileResult = await fetchProfile();
 
     if (!profileResult.success) {
       if (profileResult.error === 'ACCOUNT_DELETED') {
@@ -63,11 +63,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Only load additional data if active
     await Promise.allSettled([
-      getStats(userId),
-      getLists(userId),
-      hydrateFollowerIds(userId),
-      hydrateFollowingIds(userId),
-      hydrateBlockedIds(userId),
+      fetchStats(),
+      fetchLists(),
+      fetchFollowerIds(),
+      fetchFollowingIds(),
+      fetchBlockedIds(),
     ]);
 
     return { accountDeleted: false };
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(newSession?.user ?? null);
 
       if (newSession?.user?.id) {
-        const result = await loadUserData(newSession.user.id);
+        const result = await loadUserData();
 
         if (result.accountDeleted) {
           setAccountDeleted(true);
@@ -180,7 +180,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     setLoading(true);
     setAccountDeleted(false);
-    await loadUserData(user.id);
+    await loadUserData();
 
     return { success: true };
   };

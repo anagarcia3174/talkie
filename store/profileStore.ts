@@ -1,7 +1,13 @@
-import { ListWithMeta, Profile, ProfileStats } from '~/types/supabaseTypes';
+import {
+  DEFAULT_PROFILE_STATS,
+  ListWithMeta,
+  Profile,
+  ProfileStats,
+  StoreResult,
+} from '~/types/supabaseTypes';
 import { create } from 'zustand';
 import { ImagePickerAsset } from 'expo-image-picker';
-import { withPublicUrl } from '~/utils/storageUrl';
+import { getPublicUrl, withPublicUrl } from '~/utils/storageUrl';
 import {
   getProfileById,
   getProfileStats,
@@ -11,13 +17,12 @@ import {
 } from '~/services/profileService';
 import { getPublicListsByUserId } from '~/services/listService';
 
-type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
-
 interface OtherProfilesState {
   profile: Profile | null;
   stats: ProfileStats | null;
   lists: ListWithMeta[];
   loading: boolean;
+  hasFetched: boolean;
   error: string | null;
 }
 
@@ -27,12 +32,18 @@ interface ProfileState {
   loading: boolean;
 
   otherProfiles: Record<string, OtherProfilesState>;
-  getOthersProfile: (userId: string) => Promise<StoreResult<void>>;
+  fetchOtherProfile: (targetUserId: string) => Promise<StoreResult<void>>;
 
-  getProfile: (userId: string) => Promise<StoreResult<void>>;
-  getStats: (userId: string) => Promise<StoreResult<void>>;
-  uploadAvatar: (userId: string, fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
-  updateProfile: (userId: string, updates: Partial<Profile>) => Promise<StoreResult<void>>;
+  fetchProfile: () => Promise<StoreResult<void>>;
+  fetchStats: () => Promise<StoreResult<void>>;
+  adjustProfileStats: (deltas: Partial<Record<keyof ProfileStats, number>>) => void;
+  patchOtherProfileStats: (
+    targetUserId: string,
+    deltas: Partial<Record<keyof ProfileStats, number>>
+  ) => void;
+  uploadAvatar: (fileUri: ImagePickerAsset) => Promise<StoreResult<void>>;
+  updateProfile: (updates: Partial<Profile>) => Promise<StoreResult<void>>;
+  purgeUserContent: (targetUserId: string) => void;
   clearProfile: () => void;
   deleteAccount: () => Promise<StoreResult<void>>;
 }
@@ -41,67 +52,63 @@ const MAX_MB = 6;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 
 const addCacheBuster = (profile: Profile): Profile => {
-  if (profile.avatar_url) {
-    const timestamp = Date.now();
-    const separator = profile.avatar_url.includes('?') ? '&' : '?';
-    return {
-      ...profile,
-      avatar_url: `${profile.avatar_url}${separator}t=${timestamp}`,
-    };
-  }
-  return profile;
+  if (!profile.avatar_url) return profile;
+
+  const timestamp = Date.now();
+
+  // Remove any existing `t` cache param first
+  const url = new URL(profile.avatar_url);
+
+  url.searchParams.set('t', timestamp.toString());
+
+  return {
+    ...profile,
+    avatar_url: url.toString(),
+  };
 };
 
 export const useProfile = create<ProfileState>((set, get) => ({
   profile: null,
-  stats: {
-    followers: 0,
-    following: 0,
-    comments: 0,
-    totalLogged: 0,
-    lists: 0,
-  },
+  stats: DEFAULT_PROFILE_STATS,
   loading: false,
 
   otherProfiles: {},
-  getOthersProfile: async (userId) => {
-    const cached = get().otherProfiles[userId];
+  fetchOtherProfile: async (targetUserId) => {
+    const cached = get().otherProfiles[targetUserId];
 
-    if (cached && !cached.loading && !cached.error) {
-      return { success: true };
-    }
-
-    if (cached?.loading) {
+    if (cached?.hasFetched || cached?.loading) {
       return { success: true };
     }
 
     set((state) => ({
       otherProfiles: {
         ...state.otherProfiles,
-        [userId]: {
+        [targetUserId]: {
           profile: cached?.profile ?? null,
           stats: cached?.stats ?? null,
           lists: cached?.lists ?? [],
           loading: true,
+          hasFetched: false,
           error: null,
         },
       },
     }));
     const [profileResult, statsResult, listsResult] = await Promise.all([
-      getProfileById(userId),
-      getProfileStats(userId),
-      getPublicListsByUserId(userId),
+      getProfileById(targetUserId),
+      getProfileStats(targetUserId),
+      getPublicListsByUserId(targetUserId),
     ]);
 
     if (!profileResult.success) {
       set((state) => ({
         otherProfiles: {
           ...state.otherProfiles,
-          [userId]: {
+          [targetUserId]: {
             profile: cached?.profile ?? null,
             stats: cached?.stats ?? null,
             lists: cached?.lists ?? [],
             loading: false,
+            hasFetched: false,
             error: profileResult.error,
           },
         },
@@ -118,11 +125,12 @@ export const useProfile = create<ProfileState>((set, get) => ({
     set((state) => ({
       otherProfiles: {
         ...state.otherProfiles,
-        [userId]: {
+        [targetUserId]: {
           profile,
           stats,
           lists,
           loading: false,
+          hasFetched: true,
           error: !statsResult.success
             ? statsResult.error
             : !listsResult.success
@@ -134,10 +142,9 @@ export const useProfile = create<ProfileState>((set, get) => ({
 
     return { success: true };
   },
-  // Fetch current user's profile
-  getProfile: async (userId) => {
+  fetchProfile: async () => {
     set({ loading: true });
-    const result = await getProfileById(userId);
+    const result = await getProfileById();
 
     if (!result.success) {
       set({ loading: false });
@@ -153,52 +160,76 @@ export const useProfile = create<ProfileState>((set, get) => ({
     return { success: true };
   },
 
-  getStats: async (userId) => {
-    const result = await getProfileStats(userId);
+  fetchStats: async () => {
+    const result = await getProfileStats();
 
     if (!result.success) {
       return { success: false, error: result.error };
     }
 
-    const data = result.data!;
+    const data = result.data;
     const stats: ProfileStats = {
       followers: data.followers,
       following: data.following,
       comments: data.comments,
       lists: data.lists,
       totalLogged: data.totalLogged,
+      reviews: data.reviews,
     };
 
     set({ stats });
     return { success: true };
   },
+  adjustProfileStats: (deltas) =>
+    set((state) => ({
+      stats: state.stats
+        ? {
+            ...state.stats,
+            comments: Math.max(0, state.stats.comments + (deltas.comments ?? 0)),
+            reviews: Math.max(0, state.stats.reviews + (deltas.reviews ?? 0)),
+            lists: Math.max(0, state.stats.lists + (deltas.lists ?? 0)),
+            followers: Math.max(0, state.stats.followers + (deltas.followers ?? 0)),
+            following: Math.max(0, state.stats.following + (deltas.following ?? 0)),
+            totalLogged: Math.max(0, state.stats.totalLogged + (deltas.totalLogged ?? 0)),
+          }
+        : state.stats,
+    })),
 
-  uploadAvatar: async (userId, image) => {
+  patchOtherProfileStats: (targetUserId, deltas) =>
+    set((state) => {
+      const existing = state.otherProfiles[targetUserId];
+      if (!existing?.stats) return state;
+      return {
+        otherProfiles: {
+          ...state.otherProfiles,
+          [targetUserId]: {
+            ...existing,
+            stats: {
+              comments: Math.max(0, existing.stats.comments + (deltas.comments ?? 0)),
+              reviews: Math.max(0, existing.stats.reviews + (deltas.reviews ?? 0)),
+              lists: Math.max(0, existing.stats.lists + (deltas.lists ?? 0)),
+              followers: Math.max(0, existing.stats.followers + (deltas.followers ?? 0)),
+              following: Math.max(0, existing.stats.following + (deltas.following ?? 0)),
+              totalLogged: Math.max(0, existing.stats.totalLogged + (deltas.totalLogged ?? 0)),
+            },
+          },
+        },
+      };
+    }),
+
+  uploadAvatar: async (image) => {
     try {
       const arrayBuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
+      if (arrayBuffer.byteLength > MAX_BYTES)
+        return { success: false, error: `Image too large. Max size is ${MAX_MB} MB.` };
 
-      if (arrayBuffer.byteLength > MAX_BYTES) {
-        return {
-          success: false,
-          error: `Image too large. Max size is ${MAX_MB} MB.`,
-        };
-      }
+      const result = await uploadAvatarService(arrayBuffer, image.mimeType ?? 'image/jpeg');
+      if (!result.success) return { success: false, error: result.error };
 
-      const filePath = `${userId}/avatar.jpg`;
-      const mimeType = image.mimeType ?? 'image/jpeg';
-
-      const result = await uploadAvatarService(filePath, arrayBuffer, mimeType);
-
-      if (!result.success) {
-        return { success: false, error: result.error };
-      }
-
-      // Refresh the profile after upload
-      const profileResult = await get().getProfile(userId);
-
-      if (profileResult.success && get().profile) {
-        // Add cache-busting timestamp to force image reload
-        set({ profile: addCacheBuster(get().profile!) });
+      const currentProfile = get().profile;
+      if (currentProfile) {
+        const avatarUrl = getPublicUrl(`/object/public/avatars/${result.data}`);
+        set({ profile: addCacheBuster({ ...currentProfile, avatar_url: avatarUrl }) });
       }
       return { success: true };
     } catch {
@@ -207,8 +238,8 @@ export const useProfile = create<ProfileState>((set, get) => ({
   },
 
   // ─── Update profile ─────────────────────────────────────────────────
-  updateProfile: async (userId, updates) => {
-    const result = await updateProfile(userId, updates);
+  updateProfile: async (updates) => {
+    const result = await updateProfile(updates);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -220,7 +251,13 @@ export const useProfile = create<ProfileState>((set, get) => ({
     return { success: true };
   },
 
-  clearProfile: () => set({ profile: null }),
+  purgeUserContent: (targetUserId) => {
+    set((state) => {
+      const { [targetUserId]: _, ...remaining } = state.otherProfiles;
+      return { otherProfiles: remaining };
+    });
+  },
+  clearProfile: () => set({ profile: null, stats: DEFAULT_PROFILE_STATS, otherProfiles: {} }),
   deleteAccount: async () => {
     set({ loading: true });
 
@@ -234,13 +271,7 @@ export const useProfile = create<ProfileState>((set, get) => ({
     // Clear local state immediately
     set({
       profile: null,
-      stats: {
-        followers: 0,
-        following: 0,
-        comments: 0,
-        totalLogged: 0,
-        lists: 0,
-      },
+      stats: DEFAULT_PROFILE_STATS,
       loading: false,
     });
 

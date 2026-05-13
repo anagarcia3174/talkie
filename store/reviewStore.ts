@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import type { ReportReason, Review, ReviewWithUser } from '~/types/supabaseTypes';
+import type {
+  CreateReviewInput,
+  ReportReason,
+  Review,
+  ReviewWithUser,
+  StoreResult,
+} from '~/types/supabaseTypes';
 import {
   getReviewsForMedia,
   postReview,
@@ -9,8 +15,6 @@ import {
 } from '~/services/reviewService';
 import { reportReview } from '~/services/reportService';
 
-type StoreResult = { success: true } | { success: false; error: string };
-
 interface MediaReviewsState {
   reviews: ReviewWithUser[];
   isLoading: boolean;
@@ -18,27 +22,28 @@ interface MediaReviewsState {
   error: string | null;
 }
 
-interface ReviewsState {
+interface ReviewState {
   fetchedReviews: Record<number, MediaReviewsState>;
 
   fetchReviewsForMedia: (mediaId: number, force?: boolean) => Promise<StoreResult>;
-  submitReview: (
-    review: Omit<
-      Review,
-      'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted'
-    >
-  ) => Promise<StoreResult>;
-  removeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
+  submitReview: (review: CreateReviewInput) => Promise<StoreResult>;
+  deleteReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
   toggleLikeReview: (reviewId: number, mediaId: number) => Promise<StoreResult>;
   updateReview: (params: {
     reviewId: number;
     mediaId: number;
     updates: Partial<Pick<Review, 'rating' | 'content'>>;
   }) => Promise<StoreResult>;
-  reportReview: (reviewId: number, reason: ReportReason, details?: string) => Promise<StoreResult>;
+  reportReview: (
+    reviewId: number,
+    reason: ReportReason,
+    mediaId: number,
+    details?: string
+  ) => Promise<StoreResult>;
+  purgeUserContent: (targetUserId: string) => void;
 }
 
-export const useReviews = create<ReviewsState>((set, get) => ({
+export const useReview = create<ReviewState>((set, get) => ({
   fetchedReviews: {},
   fetchReviewsForMedia: async (mediaId, force = false) => {
     const cachedReviews = get().fetchedReviews[mediaId];
@@ -120,7 +125,7 @@ export const useReviews = create<ReviewsState>((set, get) => ({
     }
     return { success: true };
   },
-  removeReview: async (reviewId, mediaId) => {
+  deleteReview: async (reviewId, mediaId) => {
     const result = await deleteReview(reviewId);
 
     if (!result.success) {
@@ -197,22 +202,6 @@ export const useReviews = create<ReviewsState>((set, get) => ({
 
       return result;
     }
-    set((state) => ({
-      fetchedReviews: {
-        ...state.fetchedReviews,
-        [mediaId]: {
-          ...state.fetchedReviews[mediaId],
-          reviews: state.fetchedReviews[mediaId].reviews.map((r) =>
-            r.id === reviewId
-              ? {
-                  ...r,
-                  is_liked: result.data,
-                }
-              : r
-          ),
-        },
-      },
-    }));
 
     return { success: true };
   },
@@ -281,7 +270,34 @@ export const useReviews = create<ReviewsState>((set, get) => ({
 
     return { success: true };
   },
-  reportReview: async (reviewId, reason, details) => {
-    return await reportReview(reviewId, reason, details);
+  purgeUserContent: (targetUserId) => {
+    set((state) => ({
+      fetchedReviews: Object.fromEntries(
+        Object.entries(state.fetchedReviews).map(([key, val]) => [
+          key,
+          { ...val, reviews: val.reviews.filter((r) => r.owner.id !== targetUserId) },
+        ])
+      ) as typeof state.fetchedReviews,
+    }));
+  },
+  reportReview: async (reviewId, reason, mediaId, details) => {
+    const result = await reportReview(reviewId, reason, details);
+
+    if (!result.success) {
+      return result;
+    }
+
+    set((state) => {
+      const updated = { ...state.fetchedReviews };
+      if (updated[mediaId]) {
+        updated[mediaId] = {
+          ...updated[mediaId],
+          reviews: updated[mediaId].reviews.filter((r) => r.id !== reviewId),
+        };
+      }
+      return { fetchedReviews: updated };
+    });
+
+    return { success: true };
   },
 }));

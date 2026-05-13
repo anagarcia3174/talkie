@@ -100,8 +100,6 @@ export async function toggleCommentLike(commentId: number): Promise<DataResult<b
     }
     return successData(data);
   } catch (err) {
-    console.log(err);
-
     return errorData(err, {
       operation: 'toggle_comment_like',
       table: 'comment_likes',
@@ -135,7 +133,7 @@ export async function updateComment(
 
     return successVoid();
   } catch (err) {
-    return errorData(err, {
+    return errorVoid(err, {
       operation: 'update_comment',
       table: 'comments',
       isWrite: true,

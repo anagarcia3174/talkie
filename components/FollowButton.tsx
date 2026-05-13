@@ -2,24 +2,31 @@ import { Pressable, Text, ActivityIndicator } from 'react-native';
 import { useState, useMemo } from 'react';
 import { useTheme } from '~/hooks/useTheme';
 import { useFollow } from '~/store/followStore';
+import { useProfile } from '~/store/profileStore';
 import { useAuth } from '~/context/AuthContext';
 import { UserPlus, UserRoundCheck, UserCheck, Users } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import { haptics } from '~/utils/haptics';
+import { Profile } from '~/types/supabaseTypes';
 
 interface FollowButtonProps {
   targetUserId: string;
+  targetProfile: Profile;
   isSmall?: boolean;
 }
 
 type FollowState = 'follow' | 'followBack' | 'following' | 'friends';
 
-export default function FollowButton({ targetUserId, isSmall = false }: FollowButtonProps) {
+export default function FollowButton({
+  targetUserId,
+  targetProfile,
+  isSmall = false,
+}: FollowButtonProps) {
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
 
   const { followingIds, followerIds, follow, unfollow } = useFollow();
-
+  const { adjustProfileStats, patchOtherProfileStats } = useProfile();
   const { user } = useAuth();
 
   const isFollowing = followingIds.has(targetUserId);
@@ -95,8 +102,11 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
 
     setLoading(true);
     if (isFollowing) {
-      const result = await unfollow(user.id, targetUserId);
-      if (!result.success) {
+      const result = await unfollow(targetUserId);
+      if (result.success) {
+        adjustProfileStats({ following: -1 });
+        patchOtherProfileStats(targetUserId, { followers: -1 });
+      } else {
         haptics.error();
         Toast.show({
           type: 'error',
@@ -104,8 +114,11 @@ export default function FollowButton({ targetUserId, isSmall = false }: FollowBu
         });
       }
     } else {
-      const result = await follow(user.id, targetUserId);
-      if (!result.success) {
+      const result = await follow(targetUserId, targetProfile);
+      if (result.success) {
+        adjustProfileStats({ following: 1 });
+        patchOtherProfileStats(targetUserId, { followers: 1 });
+      } else {
         haptics.error();
         Toast.show({
           type: 'error',

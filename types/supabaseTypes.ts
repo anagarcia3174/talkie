@@ -150,6 +150,11 @@ export type CreateCommentInput = Omit<
   'id' | 'user_id' | 'created_at' | 'updated_at' | 'like_count'
 >;
 
+export type CreateReviewInput = Omit<
+  Review,
+  'id' | 'created_at' | 'updated_at' | 'like_count' | 'is_spoiler' | 'is_deleted' | 'user_id'
+>;
+
 export interface CommentWithUser extends Comment {
   is_liked: boolean;
   owner: {
@@ -303,6 +308,7 @@ export interface ProfileStats {
   comments: number;
   lists: number;
   totalLogged: number;
+  reviews: number;
 }
 
 export interface CreateBugReportInput {
@@ -316,3 +322,14 @@ export interface CreateFeedbackInput {
   message: string;
   category?: FeedbackCategory;
 }
+
+export type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
+
+export const DEFAULT_PROFILE_STATS: ProfileStats = {
+  followers: 0,
+  following: 0,
+  comments: 0,
+  totalLogged: 0,
+  lists: 0,
+  reviews: 0,
+};

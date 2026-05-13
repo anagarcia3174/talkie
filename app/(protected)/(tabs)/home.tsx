@@ -6,7 +6,7 @@ import { ScrollView, View } from 'react-native';
 import MediaRowSection from '~/components/MediaRowSection';
 import { useEffect, useState } from 'react';
 import LibraryProgressChart from '~/components/LibraryProgressChart';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from '~/components/LoadingScreen';
@@ -17,7 +17,7 @@ import RecentCommentsSection from '~/components/RecentCommentsSection';
 export default function Home() {
   const { fetchHomeData, trendingMovies, trendingShows } = useMedia();
   const tabBarHeight = useBottomTabBarHeight();
-  const { listsById, defaultListIds, addItemToList, listItems, hydrateDefaultLists } = useLists();
+  const { listsById, defaultListIds, addItemToList, listItems, hydrateDefaultLists } = useList();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isInitialLoading = loading && trendingMovies.length === 0 && trendingShows.length === 0;
@@ -71,7 +71,7 @@ export default function Home() {
     });
 
     try {
-      const result = await addItemToList(library.id, mediaId, library.user_id);
+      const result = await addItemToList(library.id, mediaId);
 
       if (!result.success) {
         haptics.error();

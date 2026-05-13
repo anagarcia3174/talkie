@@ -1,17 +1,17 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import RecentComment from '~/components/RecentComment';
-import { useComments } from '~/store/commentStore';
+import { useComment } from '~/store/commentStore';
 
 export default function RecentCommentsSection() {
-  const recentComments = useComments((s) => s.recentCommentsFeed.recentComments);
-  const isLoading = useComments((s) => s.recentCommentsFeed.isLoading);
-  const hasFetched = useComments((s) => s.recentCommentsFeed.hasFetched);
-  const getRecentCommentsFeed = useComments((s) => s.getRecentCommentsFeed);
+  const recentComments = useComment((s) => s.recentCommentsFeed.recentComments);
+  const isLoading = useComment((s) => s.recentCommentsFeed.isLoading);
+  const hasFetched = useComment((s) => s.recentCommentsFeed.hasFetched);
+  const fetchRecentCommentsFeed = useComment((s) => s.fetchRecentCommentsFeed);
 
   useEffect(() => {
-    void getRecentCommentsFeed();
-  }, [getRecentCommentsFeed]);
+    void fetchRecentCommentsFeed();
+  }, [fetchRecentCommentsFeed]);
 
   if (isLoading && recentComments.length === 0) {
     return (

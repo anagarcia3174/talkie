@@ -1,33 +1,38 @@
 import { create } from 'zustand';
-import { blockUser, getBlockedIds, getBlockedUsers, unBlockUser } from '~/services/blockService';
-import { Profile } from '~/types/supabaseTypes';
-import { useLists } from './listStore';
-import { useProfile } from './profileStore';
-
-type StoreResult<T = void> = { success: true; data?: T } | { success: false; error: string };
+import { blockUser, getBlockedIds, getBlockedUsers, unblockUser } from '~/services/blockService';
+import { Profile, StoreResult } from '~/types/supabaseTypes';
 
 interface BlockState {
   // relationship cache
   blockedIds: Set<string>;
-  hydrateBlockedIds: (userId: string) => Promise<StoreResult<void>>;
+  isLoadingBlockedIds: boolean;
+  fetchBlockedIds: () => Promise<StoreResult<void>>;
 
   // users I blocked
   blockedUsers: Profile[];
+  isLoadingBlockedUsers: boolean;
 
   // actions
-  block: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
-  unblock: (currentUserId: string, targetUserId: string) => Promise<StoreResult<void>>;
+  block: (targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
+  unblock: (targetUserId: string) => Promise<StoreResult<void>>;
 
-  getBlockedUsers: () => Promise<StoreResult<void>>;
+  fetchBlockedUsers: () => Promise<StoreResult<void>>;
 
   clearBlockData: () => void;
 }
 
 export const useBlock = create<BlockState>((set, get) => ({
   blockedIds: new Set<string>(),
+  isLoadingBlockedIds: false,
   blockedUsers: [],
-  hydrateBlockedIds: async (userId) => {
-    const result = await getBlockedIds(userId);
+  isLoadingBlockedUsers: false,
+  fetchBlockedIds: async () => {
+    if (get().isLoadingBlockedIds) return { success: true };
+    set({ isLoadingBlockedIds: true });
+
+    const result = await getBlockedIds();
+
+    set({ isLoadingBlockedIds: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -37,8 +42,8 @@ export const useBlock = create<BlockState>((set, get) => ({
 
     return { success: true };
   },
-  block: async (currentUserId, targetUserId) => {
-    const result = await blockUser(currentUserId, targetUserId);
+  block: async (targetUserId, targetProfile) => {
+    const result = await blockUser(targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -48,16 +53,14 @@ export const useBlock = create<BlockState>((set, get) => ({
       const updated = new Set(state.blockedIds);
       updated.add(targetUserId);
 
-      return { blockedIds: updated };
+      return { blockedIds: updated, blockedUsers: [...state.blockedUsers, targetProfile] };
     });
-    await useProfile.getState().getStats(currentUserId);
-    await useLists.getState().getLists(currentUserId);
 
     return { success: true };
   },
 
-  unblock: async (currentUserId, targetUserId) => {
-    const result = await unBlockUser(currentUserId, targetUserId);
+  unblock: async (targetUserId) => {
+    const result = await unblockUser(targetUserId);
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -69,17 +72,20 @@ export const useBlock = create<BlockState>((set, get) => ({
 
       return {
         blockedIds: updated,
+        blockedUsers: state.blockedUsers.filter((b) => b.id !== targetUserId),
       };
     });
-    await useProfile.getState().getStats(currentUserId);
-
-    await useLists.getState().getLists(currentUserId);
 
     return { success: true };
   },
 
-  getBlockedUsers: async () => {
+  fetchBlockedUsers: async () => {
+    if (get().isLoadingBlockedUsers) return { success: true };
+    set({ isLoadingBlockedUsers: true });
+
     const result = await getBlockedUsers();
+
+    set({ isLoadingBlockedUsers: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -98,7 +104,9 @@ export const useBlock = create<BlockState>((set, get) => ({
   clearBlockData: () => {
     set({
       blockedIds: new Set(),
+      isLoadingBlockedIds: false,
       blockedUsers: [],
+      isLoadingBlockedUsers: false,
     });
   },
 }));

@@ -9,9 +9,12 @@ import StatsSection from '~/components/StatsSection';
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { ChevronLeft, Heart, X } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useLists } from '~/store/listStore';
+import { useList } from '~/store/listStore';
 import FollowButton from '~/components/FollowButton';
 import { useBlock } from '~/store/blockStore';
+import { useFollow } from '~/store/followStore';
+import { useComment } from '~/store/commentStore';
+import { useReview } from '~/store/reviewStore';
 import { useAuth } from '~/context/AuthContext';
 import Toast from 'react-native-toast-message';
 import { useProfile } from '~/store/profileStore';
@@ -22,7 +25,7 @@ export default function ProfileScreen() {
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
-  const { otherProfiles, getOthersProfile } = useProfile();
+  const { otherProfiles, fetchOtherProfile } = useProfile();
   const profileState = otherProfiles[id];
   const profile = profileState?.profile ?? null;
   const profileStats = profileState?.stats ?? null;
@@ -34,7 +37,7 @@ export default function ProfileScreen() {
   const [blocking, setBlocking] = useState(false);
   const [confirmBlockVisible, setConfirmBlockVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const { addListToState } = useLists();
+  const { cacheList } = useList();
   const { block, blockedIds } = useBlock();
   const { user } = useAuth();
   const router = useRouter();
@@ -43,8 +46,8 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!id) return;
 
-    getOthersProfile(id);
-  }, [id, getOthersProfile]);
+    fetchOtherProfile(id);
+  }, [id, fetchOtherProfile]);
 
   useEffect(() => {
     if (!profile) return;
@@ -72,7 +75,7 @@ export default function ProfileScreen() {
   const handleBlock = async () => {
     if (!user) return;
     setBlocking(true);
-    const result = await block(user.id, profile.id);
+    const result = await block(profile.id, profile);
     if (!result.success) {
       Toast.show({
         type: 'error',
@@ -83,6 +86,15 @@ export default function ProfileScreen() {
       setBlocking(false);
       return;
     }
+
+    const { wasFollowing, wasFollower } = useFollow.getState().purgeUserContent(profile.id);
+    useComment.getState().purgeUserContent(profile.id);
+    useReview.getState().purgeUserContent(profile.id);
+    useList.getState().purgeUserContent(profile.id);
+    useProfile.getState().purgeUserContent(profile.id);
+    if (wasFollowing) useProfile.getState().adjustProfileStats({ following: -1 });
+    if (wasFollower) useProfile.getState().adjustProfileStats({ followers: -1 });
+
     setBlocking(false);
   };
 
@@ -109,7 +121,7 @@ export default function ProfileScreen() {
           onAvatarPress={() => {
             setPreviewImage(profile.avatar_url);
           }}
-          followButton={<FollowButton targetUserId={profile.id} />}
+          followButton={<FollowButton targetUserId={profile.id} targetProfile={profile} />}
         />
         {profileStats && <StatsSection stats={profileStats} />}
         <Text className="mb-2 font-SpaceGrotesk-Medium text-sm uppercase tracking-wide text-primary-500 dark:text-primary-400">
@@ -123,7 +135,7 @@ export default function ProfileScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
-                addListToState({
+                cacheList({
                   ...item,
                   owner: {
                     id: profile.id,
