@@ -133,7 +133,7 @@ export default function MediaCommentSection({
         autoHide: true,
         onPress: () => Toast.hide(),
       });
-      adjustProfileStats({ comments: 1})
+      adjustProfileStats({ comments: 1 });
     } else {
       haptics.error();
       Toast.show({

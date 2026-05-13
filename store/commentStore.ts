@@ -363,7 +363,11 @@ export const useComment = create<CommentState>((set, get) => ({
           ...state.recentCommentsFeed,
           recentComments: state.recentCommentsFeed.recentComments.map((c) =>
             c.id === commentId
-              ? { ...c, is_liked: !prevLiked, like_count: prevLiked ? prevCount - 1 : prevCount + 1 }
+              ? {
+                  ...c,
+                  is_liked: !prevLiked,
+                  like_count: prevLiked ? prevCount - 1 : prevCount + 1,
+                }
               : c
           ),
         },

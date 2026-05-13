@@ -34,10 +34,7 @@ export async function blockUser(targetUserId: string): Promise<VoidResult> {
 
 export async function unblockUser(blockedUser: string): Promise<VoidResult> {
   try {
-    const { error } = await supabase
-      .from('blocks')
-      .delete()
-      .eq('blocked_id', blockedUser);
+    const { error } = await supabase.from('blocks').delete().eq('blocked_id', blockedUser);
 
     if (error) {
       return errorVoid(error, {
@@ -77,9 +74,7 @@ export async function getBlockedUsers(): Promise<DataResult<Profile[]>> {
 }
 export async function getBlockedIds(): Promise<DataResult<string[]>> {
   try {
-    const { data, error } = await supabase
-      .from('blocks')
-      .select('blocked_id')
+    const { data, error } = await supabase.from('blocks').select('blocked_id');
 
     if (error) {
       return errorData(error, {

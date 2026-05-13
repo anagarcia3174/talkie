@@ -26,7 +26,11 @@ export async function getProfileById(id?: string): Promise<DataResult<Profile>> 
 export async function getProfileStats(id?: string): Promise<DataResult<ProfileStats>> {
   try {
     const userId = id ?? (await supabase.auth.getUser()).data.user?.id;
-    if (!userId) return errorData('Not authenticated', { operation: 'get_profile_stats', rpc: 'get_profile_stats' });
+    if (!userId)
+      return errorData('Not authenticated', {
+        operation: 'get_profile_stats',
+        rpc: 'get_profile_stats',
+      });
 
     const { data, error } = await supabase.rpc('get_profile_stats', {
       user_id: userId,
@@ -46,29 +50,29 @@ export async function getProfileStats(id?: string): Promise<DataResult<ProfileSt
   }
 }
 
- export async function uploadAvatar(
-    arrayBuffer: ArrayBuffer,
-    mimeType: string
-  ): Promise<DataResult<string>> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return errorData('Not authenticated', { operation: 'upload_avatar', isWrite: true });
-      
-      const filePath = `${user.id}/avatar.jpg`;
-      const { error } = await supabase.storage.from('avatars').upload(filePath, arrayBuffer, {
-        upsert: true, 
-        contentType: mimeType,
-      });
-      if (error) return errorData(error, { operation: 'upload_avatar', isWrite: true });
-      return successData(filePath);
-    } catch (err) {
-      return errorData(err, { operation: 'upload_avatar', isWrite: true });
-    }
-  }
+export async function uploadAvatar(
+  arrayBuffer: ArrayBuffer,
+  mimeType: string
+): Promise<DataResult<string>> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return errorData('Not authenticated', { operation: 'upload_avatar', isWrite: true });
 
-export async function updateProfile(
-  updates: Partial<Profile>
-): Promise<DataResult<Profile>> {
+    const filePath = `${user.id}/avatar.jpg`;
+    const { error } = await supabase.storage.from('avatars').upload(filePath, arrayBuffer, {
+      upsert: true,
+      contentType: mimeType,
+    });
+    if (error) return errorData(error, { operation: 'upload_avatar', isWrite: true });
+    return successData(filePath);
+  } catch (err) {
+    return errorData(err, { operation: 'upload_avatar', isWrite: true });
+  }
+}
+
+export async function updateProfile(updates: Partial<Profile>): Promise<DataResult<Profile>> {
   try {
     const { data, error } = await supabase
       .from('profiles')

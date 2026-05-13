@@ -15,8 +15,11 @@ import {
 
 export async function getOwnedLists(): Promise<DataResult<List[]>> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return errorData('Not authenticated', { operation: 'get_owned_lists', table: 'lists' });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user)
+      return errorData('Not authenticated', { operation: 'get_owned_lists', table: 'lists' });
 
     const { data, error } = await supabase
       .from('lists')
@@ -62,8 +65,14 @@ export async function getPublicListsByUserId(userId: string): Promise<DataResult
 
 export async function getLikedLists(): Promise<DataResult<ListWithMeta[]>> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return errorData('Not authenticated', { operation: 'get_liked_lists', rpc: 'get_liked_lists' });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user)
+      return errorData('Not authenticated', {
+        operation: 'get_liked_lists',
+        rpc: 'get_liked_lists',
+      });
 
     const { data, error } = await supabase.rpc('get_liked_lists', { p_user_id: user.id });
 
@@ -82,9 +91,7 @@ export async function getLikedLists(): Promise<DataResult<ListWithMeta[]>> {
   }
 }
 
-export async function createList(
-  newList: Partial<List>
-): Promise<DataResult<List>> {
+export async function createList(newList: Partial<List>): Promise<DataResult<List>> {
   try {
     const { data, error } = await supabase
       .from('lists')
@@ -174,10 +181,7 @@ export async function getListItems(listId: number): Promise<DataResult<ListItemW
   }
 }
 
-export async function addListItem(
-  listId: number,
-  mediaId: number,
-): Promise<VoidResult> {
+export async function addListItem(listId: number, mediaId: number): Promise<VoidResult> {
   try {
     const { error } = await supabase
       .from('list_items')
@@ -258,10 +262,7 @@ export async function unlikeList(listId: number): Promise<VoidResult> {
   }
 }
 
-export async function updateItemStatus(
-  mediaId: number,
-  status: Status
-): Promise<VoidResult> {
+export async function updateItemStatus(mediaId: number, status: Status): Promise<VoidResult> {
   try {
     const { error } = await supabase
       .from('user_media')

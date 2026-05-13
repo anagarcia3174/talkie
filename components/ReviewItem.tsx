@@ -41,7 +41,7 @@ function formatRelativeTime(dateString: string): string {
 export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   const uri = getPublicUrl(review.owner.avatar_url);
   const { toggleLikeReview, deleteReview, updateReview, reportReview } = useReview();
-  const { adjustProfileStats} = useProfile();
+  const { adjustProfileStats } = useProfile();
   const [loading, setLoading] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -77,8 +77,8 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
         visibilityTime: 4000,
         autoHide: true,
       });
-    }else {
-      adjustProfileStats({reviews: -1})
+    } else {
+      adjustProfileStats({ reviews: -1 });
     }
   };
 
@@ -104,7 +104,7 @@ export default function ReviewItem({ review, isUser }: ReviewItemProps) {
   };
 
   const handleReviewReport = async (reason: ReportReason, details?: string) => {
-    const result = await reportReview(review.id, reason, review.media_id ,details);
+    const result = await reportReview(review.id, reason, review.media_id, details);
     setReportModalVisible(false);
     if (!result.success) {
       haptics.error();

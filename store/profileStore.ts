@@ -196,19 +196,19 @@ export const useProfile = create<ProfileState>((set, get) => ({
       const arrayBuffer = await fetch(image.uri).then((res) => res.arrayBuffer());
       if (arrayBuffer.byteLength > MAX_BYTES)
         return { success: false, error: `Image too large. Max size is ${MAX_MB} MB.` };
-        
+
       const result = await uploadAvatarService(arrayBuffer, image.mimeType ?? 'image/jpeg');
-      if (!result.success) return { success: false, error: result.error }; 
-      
+      if (!result.success) return { success: false, error: result.error };
+
       const currentProfile = get().profile;
       if (currentProfile) {
         const avatarUrl = getPublicUrl(`/object/public/avatars/${result.data}`);
         set({ profile: addCacheBuster({ ...currentProfile, avatar_url: avatarUrl }) });
-      } 
+      }
       return { success: true };
     } catch {
       return { success: false, error: 'There was an error uploading your profile picture.' };
-    } 
+    }
   },
 
   // ─── Update profile ─────────────────────────────────────────────────

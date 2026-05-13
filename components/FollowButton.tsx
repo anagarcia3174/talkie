@@ -17,7 +17,11 @@ interface FollowButtonProps {
 
 type FollowState = 'follow' | 'followBack' | 'following' | 'friends';
 
-export default function FollowButton({ targetUserId, targetProfile, isSmall = false }: FollowButtonProps) {
+export default function FollowButton({
+  targetUserId,
+  targetProfile,
+  isSmall = false,
+}: FollowButtonProps) {
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
 

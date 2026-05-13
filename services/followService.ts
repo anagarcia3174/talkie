@@ -31,14 +31,9 @@ export async function followUser(targetUserId: string): Promise<VoidResult> {
   }
 }
 
-export async function unfollowUser(
-  targetUserId: string
-): Promise<VoidResult> {
+export async function unfollowUser(targetUserId: string): Promise<VoidResult> {
   try {
-    const { error } = await supabase
-      .from('follows')
-      .delete()
-      .eq('following_id', targetUserId);
+    const { error } = await supabase.from('follows').delete().eq('following_id', targetUserId);
     if (error) {
       return errorVoid(error, {
         operation: 'unfollow_user',
@@ -59,7 +54,8 @@ export async function unfollowUser(
 export async function getFollowers(currentUserId?: string): Promise<DataResult<Profile[]>> {
   try {
     const userId = currentUserId ?? (await supabase.auth.getUser()).data.user?.id;
-    if (!userId) return errorData('Not authenticated', { operation: 'get_followers', table: 'profiles' });
+    if (!userId)
+      return errorData('Not authenticated', { operation: 'get_followers', table: 'profiles' });
 
     const { data, error } = await supabase.rpc('get_followers', {
       user_id: userId,
@@ -84,7 +80,8 @@ export async function getFollowers(currentUserId?: string): Promise<DataResult<P
 export async function getFollowing(currentUserId?: string): Promise<DataResult<Profile[]>> {
   try {
     const userId = currentUserId ?? (await supabase.auth.getUser()).data.user?.id;
-    if (!userId) return errorData('Not authenticated', { operation: 'get_following', table: 'profiles' });
+    if (!userId)
+      return errorData('Not authenticated', { operation: 'get_following', table: 'profiles' });
 
     const { data, error } = await supabase.rpc('get_following', {
       user_id: userId,
@@ -108,8 +105,15 @@ export async function getFollowing(currentUserId?: string): Promise<DataResult<P
 
 export async function getFollowingIds(): Promise<DataResult<string[]>> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return errorData('Not authenticated', { operation: 'get_following_ids', table: 'follows', isWrite: false });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user)
+      return errorData('Not authenticated', {
+        operation: 'get_following_ids',
+        table: 'follows',
+        isWrite: false,
+      });
 
     const { data, error } = await supabase
       .from('follows')
@@ -136,8 +140,15 @@ export async function getFollowingIds(): Promise<DataResult<string[]>> {
 
 export async function getFollowerIds(): Promise<DataResult<string[]>> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return errorData('Not authenticated', { operation: 'get_follower_ids', table: 'follows', isWrite: false });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user)
+      return errorData('Not authenticated', {
+        operation: 'get_follower_ids',
+        table: 'follows',
+        isWrite: false,
+      });
 
     const { data, error } = await supabase
       .from('follows')

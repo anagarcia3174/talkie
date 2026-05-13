@@ -96,8 +96,8 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
         visibilityTime: 4000,
         autoHide: true,
       });
-    }else {
-      adjustProfileStats({ comments: -1})
+    } else {
+      adjustProfileStats({ comments: -1 });
     }
   };
 
@@ -131,11 +131,16 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
   };
 
   const handleCommentReport = async (reason: ReportReason, details?: string) => {
-    const result = await reportComment(comment.id, {
-      mediaId: comment.media_id,
-      seasonNumber: comment.season_number ?? undefined,
-      episodeNumber: comment.episode_number ?? undefined,
-    }, reason, details);
+    const result = await reportComment(
+      comment.id,
+      {
+        mediaId: comment.media_id,
+        seasonNumber: comment.season_number ?? undefined,
+        episodeNumber: comment.episode_number ?? undefined,
+      },
+      reason,
+      details
+    );
     setReportModalVisible(false);
     if (!result.success) {
       haptics.error();

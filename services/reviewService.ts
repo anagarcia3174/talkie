@@ -1,5 +1,11 @@
 import { supabase } from '~/utils/supabase';
-import type { Review, DataResult, VoidResult, ReviewWithUser, CreateReviewInput } from '~/types/supabaseTypes';
+import type {
+  Review,
+  DataResult,
+  VoidResult,
+  ReviewWithUser,
+  CreateReviewInput,
+} from '~/types/supabaseTypes';
 import { successData, successVoid, errorData, errorVoid } from '~/types/supabaseTypes';
 
 export async function getReviewsForMedia(mediaId: number): Promise<DataResult<ReviewWithUser[]>> {
@@ -23,9 +29,7 @@ export async function getReviewsForMedia(mediaId: number): Promise<DataResult<Re
   }
 }
 
-export async function postReview(
-  review: CreateReviewInput
-): Promise<DataResult<ReviewWithUser>> {
+export async function postReview(review: CreateReviewInput): Promise<DataResult<ReviewWithUser>> {
   try {
     const { data, error } = await supabase
       .from('reviews')

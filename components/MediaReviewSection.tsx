@@ -72,7 +72,7 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
           autoHide: true,
           onPress: () => Toast.hide(),
         });
-        adjustProfileStats({reviews: 1})
+        adjustProfileStats({ reviews: 1 });
       } else {
         haptics.error();
         Toast.show({

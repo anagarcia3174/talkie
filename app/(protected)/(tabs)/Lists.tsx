@@ -127,7 +127,7 @@ export default function Lists() {
         autoHide: true,
         onPress: () => Toast.hide(),
       });
-      adjustProfileStats({ lists: 1})
+      adjustProfileStats({ lists: 1 });
     }
     setCreateLoading(false);
   };
@@ -173,7 +173,7 @@ export default function Lists() {
         autoHide: true,
         onPress: () => Toast.hide(),
       });
-      adjustProfileStats({ lists: -1})
+      adjustProfileStats({ lists: -1 });
     }
     setDeleteLoading(false);
   };

@@ -21,7 +21,6 @@ import {
   getLikedLists,
 } from '~/services/listService';
 
-
 interface ListState {
   listsById: Record<number, ListWithMeta>;
 
@@ -53,10 +52,7 @@ interface ListState {
   fetchListItems: (listId: number) => Promise<StoreResult<void>>;
   addItemToList: (listId: number, mediaId: number) => Promise<StoreResult<void>>;
   deleteItemFromList: (item: ListItem) => Promise<StoreResult<void>>;
-  updateItemStatus: (
-    item: ListItemWithMedia,
-    status: Status
-  ) => Promise<StoreResult<void>>;
+  updateItemStatus: (item: ListItemWithMedia, status: Status) => Promise<StoreResult<void>>;
   purgeUserContent: (targetUserId: string) => void;
 }
 
@@ -71,10 +67,7 @@ export const useList = create<ListState>((set, get) => ({
 
   // ---- LIST ACTIONS ----
   fetchLists: async () => {
-    const [ownedResult, likedResult] = await Promise.all([
-      getOwnedLists(),
-      getLikedLists(),
-    ]);
+    const [ownedResult, likedResult] = await Promise.all([getOwnedLists(), getLikedLists()]);
 
     if (!ownedResult.success) {
       return { success: false, error: ownedResult.error };
@@ -342,9 +335,10 @@ export const useList = create<ListState>((set, get) => ({
           item_count: (state.listsById[listId]?.item_count ?? 0) + 1,
         },
       },
-      listItems: state.listItems[listId] !== undefined
-        ? { ...state.listItems, [listId]: undefined }
-        : state.listItems,
+      listItems:
+        state.listItems[listId] !== undefined
+          ? { ...state.listItems, [listId]: undefined }
+          : state.listItems,
     }));
 
     return { success: true };

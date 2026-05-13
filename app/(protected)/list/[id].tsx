@@ -7,7 +7,7 @@ import ListContent from '~/components/ListContent';
 import LoadingScreen from '~/components/LoadingScreen';
 
 import { useAuth } from '~/context/AuthContext';
-import useListcreenActions from './useListcreenActions';
+import useListcreenActions from './useListScreenActions';
 import { useBlock } from '~/store/blockStore';
 import ErrorScreen from '~/components/ErrorScreen';
 import { ChevronLeft } from 'lucide-react-native';
