@@ -56,36 +56,6 @@ export async function unFollowUser(
   }
 }
 
-export async function checkFollowing(
-  currentUserId: string,
-  targetUserId: string
-): Promise<DataResult<boolean>> {
-  try {
-    const { data, error } = await supabase
-      .from('follows')
-      .select('follower_id')
-      .eq('follower_id', currentUserId)
-      .eq('following_id', targetUserId)
-      .maybeSingle();
-
-    if (error) {
-      return errorData(error, {
-        operation: 'check_following',
-        table: 'follows',
-        isWrite: false,
-      });
-    }
-
-    return successData(data !== null);
-  } catch (err: any) {
-    return errorData(err, {
-      operation: 'check_following',
-      table: 'follows',
-      isWrite: false,
-    });
-  }
-}
-
 export async function getFollowers(currentUserId?: string): Promise<DataResult<Profile[]>> {
   try {
     const userId = currentUserId ?? (await supabase.auth.getUser()).data.user?.id;
