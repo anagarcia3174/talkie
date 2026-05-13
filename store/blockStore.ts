@@ -5,10 +5,12 @@ import { Profile, StoreResult } from '~/types/supabaseTypes';
 interface BlockState {
   // relationship cache
   blockedIds: Set<string>;
+  isLoadingBlockedIds: boolean;
   fetchBlockedIds: () => Promise<StoreResult<void>>;
 
   // users I blocked
   blockedUsers: Profile[];
+  isLoadingBlockedUsers: boolean;
 
   // actions
   block: (targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
@@ -21,9 +23,16 @@ interface BlockState {
 
 export const useBlock = create<BlockState>((set, get) => ({
   blockedIds: new Set<string>(),
+  isLoadingBlockedIds: false,
   blockedUsers: [],
+  isLoadingBlockedUsers: false,
   fetchBlockedIds: async () => {
+    if (get().isLoadingBlockedIds) return { success: true };
+    set({ isLoadingBlockedIds: true });
+
     const result = await getBlockedIds();
+
+    set({ isLoadingBlockedIds: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -71,7 +80,12 @@ export const useBlock = create<BlockState>((set, get) => ({
   },
 
   fetchBlockedUsers: async () => {
+    if (get().isLoadingBlockedUsers) return { success: true };
+    set({ isLoadingBlockedUsers: true });
+
     const result = await getBlockedUsers();
+
+    set({ isLoadingBlockedUsers: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -90,7 +104,9 @@ export const useBlock = create<BlockState>((set, get) => ({
   clearBlockData: () => {
     set({
       blockedIds: new Set(),
+      isLoadingBlockedIds: false,
       blockedUsers: [],
+      isLoadingBlockedUsers: false,
     });
   },
 }));

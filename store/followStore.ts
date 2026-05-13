@@ -13,9 +13,13 @@ interface FollowState {
   // relationship cache (keyed by target user id)
   followingIds: Set<string>;
   followerIds: Set<string>;
+  isLoadingFollowingIds: boolean;
+  isLoadingFollowerIds: boolean;
   // lists
   followers: Profile[];
   following: Profile[];
+  isLoadingFollowers: boolean;
+  isLoadingFollowing: boolean;
 
   fetchFollowingIds: () => Promise<StoreResult<void>>;
   fetchFollowerIds: () => Promise<StoreResult<void>>;
@@ -33,10 +37,19 @@ interface FollowState {
 export const useFollow = create<FollowState>((set, get) => ({
   followingIds: new Set<string>(),
   followerIds: new Set<string>(),
+  isLoadingFollowingIds: false,
+  isLoadingFollowerIds: false,
   followers: [],
   following: [],
+  isLoadingFollowers: false,
+  isLoadingFollowing: false,
   fetchFollowingIds: async () => {
+    if (get().isLoadingFollowingIds) return { success: true };
+    set({ isLoadingFollowingIds: true });
+
     const result = await getFollowingIds();
+
+    set({ isLoadingFollowingIds: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -47,7 +60,12 @@ export const useFollow = create<FollowState>((set, get) => ({
     return { success: true };
   },
   fetchFollowerIds: async () => {
+    if (get().isLoadingFollowerIds) return { success: true };
+    set({ isLoadingFollowerIds: true });
+
     const result = await getFollowerIds();
+
+    set({ isLoadingFollowerIds: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -99,7 +117,12 @@ export const useFollow = create<FollowState>((set, get) => ({
   },
 
   fetchFollowers: async () => {
+    if (get().isLoadingFollowers) return { success: true };
+    set({ isLoadingFollowers: true });
+
     const result = await getFollowers();
+
+    set({ isLoadingFollowers: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -116,7 +139,12 @@ export const useFollow = create<FollowState>((set, get) => ({
   },
 
   fetchFollowing: async () => {
+    if (get().isLoadingFollowing) return { success: true };
+    set({ isLoadingFollowing: true });
+
     const result = await getFollowing();
+
+    set({ isLoadingFollowing: false });
 
     if (!result.success) {
       return { success: false, error: result.error };
@@ -124,7 +152,6 @@ export const useFollow = create<FollowState>((set, get) => ({
 
     const followingProfiles = result.data ?? [];
 
-    // hydrate following list
     set({
       following: followingProfiles,
       followingIds: new Set(followingProfiles.map((p) => p.id)),
@@ -158,8 +185,12 @@ export const useFollow = create<FollowState>((set, get) => ({
     set({
       followingIds: new Set(),
       followerIds: new Set(),
+      isLoadingFollowingIds: false,
+      isLoadingFollowerIds: false,
       followers: [],
       following: [],
+      isLoadingFollowers: false,
+      isLoadingFollowing: false,
     });
   },
 }));
