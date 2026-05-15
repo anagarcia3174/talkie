@@ -100,7 +100,6 @@ export const useMedia = create<MediaState>((set, get) => ({
 
       return { success: false, error: result.error };
     }
-
     set((state) => ({
       mediaDetails: {
         ...state.mediaDetails,

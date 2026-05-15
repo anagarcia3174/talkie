@@ -17,6 +17,7 @@ import { useProfile } from '~/store/profileStore';
 interface CommentItemProps {
   comment: CommentWithUser;
   isUser?: boolean;
+  highlighted?: boolean;
 }
 
 function formatTimestamp(seconds: number): string {
@@ -46,7 +47,7 @@ function formatRelativeTime(dateString: string): string {
   return `${diffYears}y ago`;
 }
 
-export default function CommentItem({ comment, isUser }: CommentItemProps) {
+export default function CommentItem({ comment, isUser, highlighted }: CommentItemProps) {
   const uri = comment.owner.avatar_url ? getPublicUrl(comment.owner.avatar_url) : null;
   const { toggleLikeComment, deleteComment, updateComment, reportComment } = useComment();
   const { adjustProfileStats } = useProfile();
@@ -164,7 +165,8 @@ export default function CommentItem({ comment, isUser }: CommentItemProps) {
   };
   return (
     <>
-      <View className={isReply ? 'py-4 pl-14 pr-4' : 'p-4'}>
+      <View
+        className={`${isReply ? 'py-4 pl-14 pr-4' : 'p-4'}${highlighted ? ' bg-primary-200 dark:bg-primary-800' : ''}`}>
         <View className="flex-row">
           {/* Left column: all comment content */}
           <View className="flex-1">

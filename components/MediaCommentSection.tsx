@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, View, FlatList } from 'react-native';
 import TimestampPicker from './TimestampPicker';
 import { useComment } from '~/store/commentStore';
 import { useTheme } from '~/hooks/useTheme';
-import { FlatList } from 'react-native-gesture-handler';
 import CommentItem from './CommentItem';
 import { useAuth } from '~/context/AuthContext';
 import ErrorScreen from './ErrorScreen';
@@ -12,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CommentForm from './CommentForm';
 import { useMedia } from '~/store/mediaStore';
 import { haptics } from '~/utils/haptics';
-import { MovieDetails, TVDetails } from '~/types/supabaseTypes';
+import { CommentWithUser, MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import { useProfile } from '~/store/profileStore';
 
 interface MediaCommentSectionProps {
@@ -52,10 +51,13 @@ export default function MediaCommentSection({
   const contextKey =
     mediaType === 'movie' ? `media-${mediaId}` : `media-${mediaId}-s${season}-e${episode}`;
   const mediaComments = fetchedComments[contextKey];
-  const comments = mediaComments?.comments ?? [];
+  const comments = useMemo(() => mediaComments?.comments ?? [], [mediaComments]);
   const isLoading = mediaComments?.isLoading ?? false;
   const error = mediaComments?.error ?? null;
   const insets = useSafeAreaInsets();
+  const flatListRef = useRef<FlatList<CommentWithUser>>(null);
+  const [highlightedCommentId, setHighlightedCommentId] = useState<number | null>(null);
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!details) return;
@@ -112,6 +114,12 @@ export default function MediaCommentSection({
     }
   }, [mediaId, mediaType, season, episode, fetchCommentsForMedia]);
 
+  useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+    };
+  }, []);
+
   const handleSubmitComment = async (content: string) => {
     const result = await postComment({
       content,
@@ -146,6 +154,33 @@ export default function MediaCommentSection({
       });
     }
   };
+
+  const handleSlidingComplete = useCallback(
+    (seconds: number) => {
+      let bestIndex = -1;
+      let bestDiff = Infinity;
+
+      comments.forEach((comment, index) => {
+        if (comment.timestamp_seconds === null) return;
+        const diff = Math.abs(comment.timestamp_seconds - seconds);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          bestIndex = index;
+        }
+      });
+
+      if (bestIndex === -1) return;
+
+      flatListRef.current?.scrollToIndex({ index: bestIndex, animated: true, viewPosition: 0.3 });
+
+      const target = comments[bestIndex];
+      setHighlightedCommentId(target.id);
+
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+      highlightTimeoutRef.current = setTimeout(() => setHighlightedCommentId(null), 1500);
+    },
+    [comments]
+  );
 
   const TimestampSkeleton = () => (
     <View className="py-2">
@@ -205,6 +240,7 @@ export default function MediaCommentSection({
             onTimestampChange={setTimestamp}
             onSeasonChange={setSeason}
             onEpisodeChange={setEpisode}
+            onSlidingComplete={handleSlidingComplete}
           />
         ) : null}
       </View>
@@ -219,16 +255,27 @@ export default function MediaCommentSection({
         <View
           className={`mx-4 flex-1 overflow-hidden ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
           <FlatList
+            ref={flatListRef}
             style={{ flex: 1 }}
             data={comments}
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 110 }}
+            onScrollToIndexFailed={(info) => {
+              flatListRef.current?.scrollToOffset({
+                offset: info.index * info.averageItemLength,
+                animated: true,
+              });
+            }}
             ItemSeparatorComponent={() => (
               <View className="mx-2 h-px bg-primary-200 dark:bg-primary-700" />
             )}
             renderItem={({ item }) => (
-              <CommentItem comment={item} isUser={item.user_id === user?.id} />
+              <CommentItem
+                comment={item}
+                isUser={item.user_id === user?.id}
+                highlighted={item.id === highlightedCommentId}
+              />
             )}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
