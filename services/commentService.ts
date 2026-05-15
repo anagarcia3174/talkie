@@ -14,9 +14,9 @@ import { supabase } from '~/utils/supabase';
 
 export async function getCommentsForMedia(mediaId: number): Promise<DataResult<CommentWithUser[]>> {
   try {
-    const { data, error } = await supabase.rpc('get_comments_for_media', {
-      p_media_id: mediaId,
-    });
+    const { data, error } = await supabase
+      .rpc('get_comments_for_media', { p_media_id: mediaId })
+      .order('timestamp_seconds', { ascending: true, nullsFirst: true });
     if (error)
       return errorData(error, {
         operation: 'get_comments',

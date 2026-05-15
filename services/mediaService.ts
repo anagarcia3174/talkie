@@ -75,7 +75,6 @@ export const getTrendingShows = () => getCollection('trending', 'tv');
 export async function getMediaDetails(id: number): Promise<DataResult<MovieDetails | TVDetails>> {
   try {
     const { data, error } = await supabase.functions.invoke('get-media-details', {
-      method: 'GET',
       body: { media_id: id },
     });
 
@@ -86,7 +85,7 @@ export async function getMediaDetails(id: number): Promise<DataResult<MovieDetai
     }
 
     if (!data) return errorData('No data found');
-    return successData(data.results);
+    return successData(data);
   } catch (err) {
     return errorData(err, {
       operation: 'get_media_details',

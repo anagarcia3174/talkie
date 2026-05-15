@@ -23,6 +23,13 @@ type ContextKey = {
   episodeNumber?: number;
 };
 
+function insertSorted(comments: CommentWithUser[], newComment: CommentWithUser): CommentWithUser[] {
+  const ts = newComment.timestamp_seconds ?? 0;
+  const idx = comments.findIndex((c) => (c.timestamp_seconds ?? 0) > ts);
+  if (idx === -1) return [...comments, newComment];
+  return [...comments.slice(0, idx), newComment, ...comments.slice(idx)];
+}
+
 function buildCommentKey({ mediaId, seasonNumber, episodeNumber }: ContextKey) {
   const baseKey = `media-${mediaId}`;
   const episodeKey =
@@ -257,13 +264,13 @@ export const useComment = create<CommentState>((set, get) => ({
           ...state.fetchedComments,
           [baseKey]: {
             ...baseExisting,
-            comments: [newComment, ...baseExisting.comments],
+            comments: insertSorted(baseExisting.comments, newComment),
           },
           ...(episodeKey !== baseKey && contextExisting
             ? {
                 [episodeKey]: {
                   ...contextExisting,
-                  comments: [newComment, ...contextExisting.comments],
+                  comments: insertSorted(contextExisting.comments, newComment),
                 },
               }
             : {}),

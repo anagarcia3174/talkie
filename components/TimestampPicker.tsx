@@ -14,6 +14,7 @@ interface TimestampPickerProps {
   selectedEpisode?: number;
 
   onTimestampChange: (seconds: number) => void;
+  onSlidingComplete?: (seconds: number) => void;
   onSeasonChange?: (season: number) => void;
   onEpisodeChange?: (episode: number) => void;
   pickersDisabled?: boolean;
@@ -26,6 +27,7 @@ export default function TimestampPicker({
   selectedSeason,
   selectedEpisode,
   onTimestampChange,
+  onSlidingComplete,
   onSeasonChange,
   onEpisodeChange,
   pickersDisabled = false,
@@ -121,6 +123,7 @@ export default function TimestampPicker({
         step={1}
         value={selectedTimestamp}
         onValueChange={onTimestampChange}
+        onSlidingComplete={onSlidingComplete}
         disabled={isDisabled}
         minimumTrackTintColor={theme.primary[800]}
         maximumTrackTintColor={theme.primaryOpacity[800]}
