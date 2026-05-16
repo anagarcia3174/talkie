@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { MovieDetails, TVDetails, TVEpisode } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import CompactDropdown from './CompactDropdown';
+import { haptics } from '~/utils/haptics';
 
 interface TimestampPickerProps {
   mediaType: 'movie' | 'tv';
@@ -79,59 +80,89 @@ export default function TimestampPicker({
 
   const isDisabled = durationSeconds === 0;
 
+  const nudge = (delta: number) => {
+    haptics.action();
+    const next = Math.max(0, Math.min(durationSeconds, selectedTimestamp + delta));
+    onTimestampChange(next);
+    onSlidingComplete?.(next);
+  };
+
+  const nudgeButtons: { label: string; delta: number }[] = [
+    { label: '−10', delta: -10 },
+    { label: '−1', delta: -1 },
+    { label: '+1', delta: 1 },
+    { label: '+10', delta: 10 },
+  ];
+
   return (
-    <View className="flex-row items-center gap-2  rounded-t-2xl bg-primary-100 px-4 py-2 dark:bg-primary-900">
-      {mediaType === 'tv' && tvDetails && (
-        <>
-          <CompactDropdown
-            label="S?"
-            items={tvDetails.seasons}
-            selectedValue={selectedSeason}
-            getLabel={(s) => `S${s.season_number}`}
-            getValue={(s) => s.season_number}
-            onSelect={(val) => {
-              onSeasonChange?.(val);
-              onTimestampChange(0);
-            }}
-            disabled={pickersDisabled}
-          />
-          {selectedSeason !== undefined && availableEpisodes.length > 0 && (
+    <View className="rounded-t-2xl bg-primary-100 px-4 py-2 dark:bg-primary-900">
+      <View className="flex-row items-center gap-2">
+        {mediaType === 'tv' && tvDetails && (
+          <>
             <CompactDropdown
-              label="E?"
-              items={availableEpisodes}
-              selectedValue={selectedEpisode}
-              getLabel={(ep) => `E${ep.episode_number}`}
-              getValue={(ep) => ep.episode_number}
+              label="S?"
+              items={tvDetails.seasons}
+              selectedValue={selectedSeason}
+              getLabel={(s) => `S${s.season_number}`}
+              getValue={(s) => s.season_number}
               onSelect={(val) => {
-                onEpisodeChange?.(val);
+                onSeasonChange?.(val);
                 onTimestampChange(0);
               }}
               disabled={pickersDisabled}
             />
-          )}
-        </>
-      )}
-      {mediaType === 'movie' && (
+            {selectedSeason !== undefined && availableEpisodes.length > 0 && (
+              <CompactDropdown
+                label="E?"
+                items={availableEpisodes}
+                selectedValue={selectedEpisode}
+                getLabel={(ep) => `E${ep.episode_number}`}
+                getValue={(ep) => ep.episode_number}
+                onSelect={(val) => {
+                  onEpisodeChange?.(val);
+                  onTimestampChange(0);
+                }}
+                disabled={pickersDisabled}
+              />
+            )}
+          </>
+        )}
+        {mediaType === 'movie' && (
+          <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
+            {formatTime(selectedTimestamp)}
+          </Text>
+        )}
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={durationSeconds}
+          step={1}
+          value={selectedTimestamp}
+          onValueChange={onTimestampChange}
+          onSlidingComplete={onSlidingComplete}
+          disabled={isDisabled}
+          minimumTrackTintColor={theme.primary[800]}
+          maximumTrackTintColor={theme.primaryOpacity[800]}
+          thumbTintColor={theme.primary[800]}
+        />
         <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
-          {formatTime(selectedTimestamp)}
+          {formatTime(mediaType === 'tv' ? selectedTimestamp : durationSeconds)}
         </Text>
-      )}
-      <Slider
-        style={styles.slider}
-        minimumValue={0}
-        maximumValue={durationSeconds}
-        step={1}
-        value={selectedTimestamp}
-        onValueChange={onTimestampChange}
-        onSlidingComplete={onSlidingComplete}
-        disabled={isDisabled}
-        minimumTrackTintColor={theme.primary[800]}
-        maximumTrackTintColor={theme.primaryOpacity[800]}
-        thumbTintColor={theme.primary[800]}
-      />
-      <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
-        {formatTime(mediaType === 'tv' ? selectedTimestamp : durationSeconds)}
-      </Text>
+      </View>
+      <View className="flex-row gap-x-1">
+        {nudgeButtons.map(({ label, delta }) => (
+          <TouchableOpacity
+            key={label}
+            onPress={() => nudge(delta)}
+            disabled={isDisabled}
+            style={styles.nudgeButton}
+            className="flex-1 items-center justify-center rounded-md bg-primary-200 py-0.5 dark:bg-primary-800">
+            <Text className="font-SpaceGrotesk-Medium text-xs text-primary-600 dark:text-primary-400">
+              {label}s
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 }
@@ -149,5 +180,8 @@ const styles = StyleSheet.create({
   },
   slider: {
     flex: 1,
+  },
+  nudgeButton: {
+    minHeight: 24,
   },
 });
