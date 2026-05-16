@@ -156,7 +156,7 @@ export default function TimestampPicker({
             onPress={() => nudge(delta)}
             disabled={isDisabled}
             style={styles.nudgeButton}
-            className="flex-1 items-center justify-center rounded-md py-0.5 bg-primary-200 dark:bg-primary-800">
+            className="flex-1 items-center justify-center rounded-md bg-primary-200 py-0.5 dark:bg-primary-800">
             <Text className="font-SpaceGrotesk-Medium text-xs text-primary-600 dark:text-primary-400">
               {label}s
             </Text>
