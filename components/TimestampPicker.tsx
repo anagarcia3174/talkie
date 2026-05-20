@@ -7,6 +7,7 @@ import CompactDropdown from './CompactDropdown';
 import { haptics } from '~/utils/haptics';
 
 interface TimestampPickerProps {
+  mediaId: number;
   mediaType: 'movie' | 'tv';
   details: MovieDetails | TVDetails;
 
@@ -19,9 +20,11 @@ interface TimestampPickerProps {
   onSeasonChange?: (season: number) => void;
   onEpisodeChange?: (episode: number) => void;
   pickersDisabled?: boolean;
+  onOpenLiveMode?: () => void;
 }
 
 export default function TimestampPicker({
+  mediaId,
   mediaType,
   details,
   selectedTimestamp,
@@ -32,6 +35,7 @@ export default function TimestampPicker({
   onSeasonChange,
   onEpisodeChange,
   pickersDisabled = false,
+  onOpenLiveMode,
 }: TimestampPickerProps) {
   const theme = useTheme();
   const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"

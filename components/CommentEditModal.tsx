@@ -13,7 +13,7 @@ interface CommentEditModalProps {
   commentFormProps: CommentFormProps;
   initialTimestamp: number;
   mediaType: 'movie' | 'tv';
-  mediaId: number; // ✅ ADD THIS
+  mediaId: number;
   season?: number;
   episode?: number;
   onSubmit: (content: string, timestamp: number) => Promise<void>;
@@ -72,6 +72,7 @@ export default function CommentEditModal({
         <View className="mb-4">
           <View className="-mx-4">
             <TimestampPicker
+              mediaId={mediaId}
               mediaType={mediaType}
               details={details}
               selectedTimestamp={timestamp}

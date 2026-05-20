@@ -115,6 +115,7 @@ export default function MediaScreen() {
               mediaType={media.media_type}
               mediaId={media.id}
               releaseDate={media.release_date}
+              mediaTitle={media.title}
             />
           )}
         </KeyboardAvoidingView>
