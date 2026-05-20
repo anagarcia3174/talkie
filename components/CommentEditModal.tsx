@@ -72,7 +72,6 @@ export default function CommentEditModal({
         <View className="mb-4">
           <View className="-mx-4">
             <TimestampPicker
-              mediaId={mediaId}
               mediaType={mediaType}
               details={details}
               selectedTimestamp={timestamp}

@@ -1,14 +1,13 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Slider from '@react-native-community/slider';
 import { MovieDetails, TVDetails, TVEpisode } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import CompactDropdown from './CompactDropdown';
 import { haptics } from '~/utils/haptics';
 import { SquareArrowOutUpRight } from 'lucide-react-native';
+import TimestampSlider from './TimestampSlider';
 
 interface TimestampPickerProps {
-  mediaId: number;
   mediaType: 'movie' | 'tv';
   details: MovieDetails | TVDetails;
 
@@ -25,7 +24,6 @@ interface TimestampPickerProps {
 }
 
 export default function TimestampPicker({
-  mediaId,
   mediaType,
   details,
   selectedTimestamp,
@@ -100,7 +98,7 @@ export default function TimestampPicker({
   ];
 
   return (
-    <View className="rounded-t-2xl bg-primary-100 px-4 py-2 dark:bg-primary-900">
+    <View className="gap-2 rounded-2xl bg-primary-100 p-2 dark:bg-primary-900">
       <View className="flex-row gap-x-1">
         {mediaType === 'tv' && tvDetails && (
           <CompactDropdown
@@ -133,19 +131,21 @@ export default function TimestampPicker({
               disabled={pickersDisabled}
             />
           )}
-        <TouchableOpacity onPress={onOpenLiveMode} className="flex-1 flex-row items-center justify-center gap-x-1 rounded-md bg-primary-200 px-2.5 py-1 dark:bg-primary-800">
-          <SquareArrowOutUpRight size={12} color={theme.primary[600]} />
-          <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-900 dark:text-primary-200 ">
+        <TouchableOpacity
+          disabled={isDisabled}
+          onPress={onOpenLiveMode}
+          className="flex-1 flex-row items-center justify-center gap-x-1.5 rounded-lg bg-primary-200 px-2.5 py-1 disabled:opacity-70 dark:bg-primary-800">
+          <SquareArrowOutUpRight size={14} color={theme.primary[600]} />
+          <Text className="text-md font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-200 ">
             Live
           </Text>
         </TouchableOpacity>
       </View>
-      <View className="flex-row items-center gap-2">
-        <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
+      <View className="flex-row items-center gap-1">
+        <Text className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
           {formatTime(selectedTimestamp)}
         </Text>
-        <Slider
-          style={styles.slider}
+        <TimestampSlider
           minimumValue={0}
           maximumValue={durationSeconds}
           step={1}
@@ -153,11 +153,11 @@ export default function TimestampPicker({
           onValueChange={onTimestampChange}
           onSlidingComplete={onSlidingComplete}
           disabled={isDisabled}
-          minimumTrackTintColor={theme.primary[800]}
-          maximumTrackTintColor={theme.primaryOpacity[800]}
-          thumbTintColor={theme.primary[800]}
+          minimumTrackColor={theme.primary[800]}
+          maximumTrackColor={theme.primaryOpacity[800]}
+          thumbColor={theme.primary[800]}
         />
-        <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
+        <Text className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
           {formatTime(durationSeconds)}
         </Text>
       </View>
@@ -168,7 +168,7 @@ export default function TimestampPicker({
             onPress={() => nudge(delta)}
             disabled={isDisabled}
             style={styles.nudgeButton}
-            className="flex-1 items-center justify-center rounded-md bg-primary-200 py-0.5 dark:bg-primary-800">
+            className="flex-1 items-center justify-center rounded-lg bg-primary-200 py-0.5 dark:bg-primary-800">
             <Text className="font-SpaceGrotesk-Medium text-xs text-primary-600 dark:text-primary-400">
               {label}s
             </Text>

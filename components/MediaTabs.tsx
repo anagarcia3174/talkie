@@ -9,7 +9,7 @@ interface MediaTabsProps {
 
 export default function MediaTabs({ selectedIndex, onChange, options }: MediaTabsProps) {
   return (
-    <View className="mb-2 overflow-hidden  rounded-b-2xl bg-primary-100 dark:bg-primary-900">
+    <View className="mb-2 overflow-hidden rounded-b-2xl bg-primary-100 dark:bg-primary-900">
       <View className="flex-row gap-0.5 px-1.5 pb-1.5 pt-2">
         {options.map((option, index) => {
           const active = selectedIndex === index;

@@ -235,7 +235,6 @@ export default function MediaCommentSection({
           <TimestampSkeleton />
         ) : details ? (
           <TimestampPicker
-            mediaId={mediaId}
             mediaType={mediaType}
             details={details}
             selectedTimestamp={timestamp}
@@ -270,7 +269,7 @@ export default function MediaCommentSection({
         <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
         <View
-          className={`mx-4 flex-1 overflow-hidden ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
+          className={`mx-4 mt-2 flex-1 overflow-hidden rounded-t-2xl ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
           <FlatList
             ref={flatListRef}
             style={{ flex: 1 }}
