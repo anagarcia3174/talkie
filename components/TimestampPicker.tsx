@@ -5,6 +5,7 @@ import { MovieDetails, TVDetails, TVEpisode } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import CompactDropdown from './CompactDropdown';
 import { haptics } from '~/utils/haptics';
+import { SquareArrowOutUpRight } from 'lucide-react-native';
 
 interface TimestampPickerProps {
   mediaId: number;
@@ -100,42 +101,49 @@ export default function TimestampPicker({
 
   return (
     <View className="rounded-t-2xl bg-primary-100 px-4 py-2 dark:bg-primary-900">
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row gap-x-1">
         {mediaType === 'tv' && tvDetails && (
-          <>
+          <CompactDropdown
+            label="Season?"
+            items={tvDetails.seasons}
+            selectedValue={selectedSeason}
+            getLabel={(s) => `Season ${s.season_number}`}
+            getValue={(s) => s.season_number}
+            onSelect={(val) => {
+              onSeasonChange?.(val);
+              onTimestampChange(0);
+            }}
+            disabled={pickersDisabled}
+          />
+        )}
+        {mediaType === 'tv' &&
+          tvDetails &&
+          selectedSeason !== undefined &&
+          availableEpisodes.length > 0 && (
             <CompactDropdown
-              label="S?"
-              items={tvDetails.seasons}
-              selectedValue={selectedSeason}
-              getLabel={(s) => `S${s.season_number}`}
-              getValue={(s) => s.season_number}
+              label="Episode?"
+              items={availableEpisodes}
+              selectedValue={selectedEpisode}
+              getLabel={(ep) => `Episode ${ep.episode_number}`}
+              getValue={(ep) => ep.episode_number}
               onSelect={(val) => {
-                onSeasonChange?.(val);
+                onEpisodeChange?.(val);
                 onTimestampChange(0);
               }}
               disabled={pickersDisabled}
             />
-            {selectedSeason !== undefined && availableEpisodes.length > 0 && (
-              <CompactDropdown
-                label="E?"
-                items={availableEpisodes}
-                selectedValue={selectedEpisode}
-                getLabel={(ep) => `E${ep.episode_number}`}
-                getValue={(ep) => ep.episode_number}
-                onSelect={(val) => {
-                  onEpisodeChange?.(val);
-                  onTimestampChange(0);
-                }}
-                disabled={pickersDisabled}
-              />
-            )}
-          </>
-        )}
-        {mediaType === 'movie' && (
-          <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
-            {formatTime(selectedTimestamp)}
+          )}
+        <TouchableOpacity onPress={onOpenLiveMode} className="flex-1 flex-row items-center justify-center gap-x-1 rounded-md bg-primary-200 px-2.5 py-1 dark:bg-primary-800">
+          <SquareArrowOutUpRight size={12} color={theme.primary[600]} />
+          <Text className="font-SpaceGrotesk-SemiBold text-sm text-primary-900 dark:text-primary-200 ">
+            Live
           </Text>
-        )}
+        </TouchableOpacity>
+      </View>
+      <View className="flex-row items-center gap-2">
+        <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
+          {formatTime(selectedTimestamp)}
+        </Text>
         <Slider
           style={styles.slider}
           minimumValue={0}
@@ -150,7 +158,7 @@ export default function TimestampPicker({
           thumbTintColor={theme.primary[800]}
         />
         <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
-          {formatTime(mediaType === 'tv' ? selectedTimestamp : durationSeconds)}
+          {formatTime(durationSeconds)}
         </Text>
       </View>
       <View className="flex-row gap-x-1">
