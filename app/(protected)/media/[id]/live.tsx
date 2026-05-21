@@ -1,12 +1,19 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, Settings } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
+import { ChevronLeft, MessageSquareText, Settings } from 'lucide-react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import CommentForm from '~/components/CommentForm';
+import LiveCommentItem from '~/components/LiveCommentItem';
 import TimestampPicker from '~/components/TimestampPicker';
+import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
+import { useComment } from '~/store/commentStore';
 import { useMedia } from '~/store/mediaStore';
+import { useProfile } from '~/store/profileStore';
+import { CommentWithUser } from '~/types/supabaseTypes';
+import { haptics } from '~/utils/haptics';
 
 export default function LiveScreen() {
   const {
@@ -20,6 +27,9 @@ export default function LiveScreen() {
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { fetchedComments, fetchCommentsForMedia, postComment } = useComment();
+  const { adjustProfileStats } = useProfile();
+  const { user } = useAuth();
 
   const mediaId = Number(id);
   const parsedMediaType = (mediaType as 'movie' | 'tv') ?? 'movie';
@@ -34,12 +44,101 @@ export default function LiveScreen() {
   const [selectedSeason, setSelectedSeason] = useState(season ? Number(season) : undefined);
   const [selectedEpisode, setSelectedEpisode] = useState(episode ? Number(episode) : undefined);
 
+  const flatListRef = useRef<FlatList<CommentWithUser>>(null);
+  const isAutoScrollEnabled = useRef(true);
+  const prevVisibleCountRef = useRef(0);
+
+  const contextKey =
+    mediaType === 'movie'
+      ? `media-${mediaId}`
+      : `media-${mediaId}-s${selectedSeason}-e${selectedEpisode}`;
+  const mediaComments = fetchedComments[contextKey];
+  const comments = useMemo(() => mediaComments?.comments ?? [], [mediaComments]);
+  const commentsLoading = mediaComments?.isLoading ?? false;
+
+  const visibleComments = useMemo(
+    () =>
+      comments.filter(
+        (c) => c.timestamp_seconds === null || c.timestamp_seconds <= selectedTimestamp
+      ),
+    [comments, selectedTimestamp]
+  );
+
   useEffect(() => {
     if (!Number.isFinite(mediaId)) return;
     if (!hasFetchedDetails) {
       fetchMediaDetails(mediaId);
     }
   }, [mediaId, hasFetchedDetails, fetchMediaDetails]);
+
+  useEffect(() => {
+    if (mediaType === 'movie') {
+      fetchCommentsForMedia({ mediaId });
+    } else {
+      fetchCommentsForMedia({
+        mediaId,
+        seasonNumber: selectedSeason,
+        episodeNumber: selectedEpisode,
+      });
+    }
+  }, [mediaId, mediaType, season, episode, fetchCommentsForMedia]);
+
+  useEffect(() => {
+    const current = visibleComments.length;
+    const prev = prevVisibleCountRef.current;
+    if (current > prev && isAutoScrollEnabled.current) {
+      const t = setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 80);
+      prevVisibleCountRef.current = current;
+      return () => clearTimeout(t);
+    }
+    prevVisibleCountRef.current = current;
+  }, [visibleComments.length]);
+
+  const handleScrollBeginDrag = useCallback(() => {
+    isAutoScrollEnabled.current = false;
+  }, []);
+
+  const checkIfAtBottom = useCallback(({ nativeEvent }: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
+    if (contentSize.height - layoutMeasurement.height - contentOffset.y <= 40) {
+      isAutoScrollEnabled.current = true;
+    }
+  }, []);
+
+  const handleSubmitComment = async (content: string) => {
+    const result = await postComment({
+      content,
+      media_id: mediaId,
+      timestamp_seconds: selectedTimestamp,
+      season_number: parsedMediaType === 'movie' ? null : (selectedSeason ?? null),
+      episode_number: parsedMediaType === 'movie' ? null : (selectedEpisode ?? null),
+      parent_comment_id: null,
+      is_spoiler: false,
+    });
+
+    if (result.success) {
+      haptics.success();
+      Toast.show({
+        type: 'success',
+        text1: 'Comment Posted!',
+        position: 'top',
+        visibilityTime: 3000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+      adjustProfileStats({ comments: 1 });
+    } else {
+      haptics.error();
+      Toast.show({
+        type: 'error',
+        text1: result.error || 'Failed to post your comment',
+        position: 'top',
+        visibilityTime: 4000,
+        autoHide: true,
+        onPress: () => Toast.hide(),
+      });
+    }
+  };
 
   const TimestampSkeleton = () => (
     <View className="py-2">
@@ -68,6 +167,7 @@ export default function LiveScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
       <View className="px-4">
         {!details || detailsLoading ? (
           <TimestampSkeleton />
@@ -85,12 +185,45 @@ export default function LiveScreen() {
         )}
       </View>
 
-      <View className="flex-1" />
+      <View className="mx-4 mt-4 flex-1 overflow-hidden">
+        {commentsLoading ? (
+          <ActivityIndicator className="flex-1" color={theme.primary[500]} />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={visibleComments}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <LiveCommentItem comment={item} isUser={item.user_id === user?.id} />
+            )}
+            ListEmptyComponent={() => (
+              <View className="flex-1 items-center justify-center px-6 py-16">
+                <MessageSquareText size={36} color={theme.primary[400]} />
+                <Text className="mt-4 text-center font-SpaceGrotesk-Medium text-primary-500 dark:text-primary-400">
+                  No comments at this moment yet.{'\n'}Be the first to react!
+                </Text>
+              </View>
+            )}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            onScrollBeginDrag={handleScrollBeginDrag}
+            onScrollEndDrag={checkIfAtBottom}
+            onMomentumScrollEnd={checkIfAtBottom}
+            contentContainerStyle={
+              visibleComments.length === 0 ? { flex: 1 } : { paddingBottom: 8 }
+            }
+            ItemSeparatorComponent={() => (
+              <View className="my-1.5 h-px bg-primary-100/50 dark:bg-primary-900/50" />
+            )}
+          />
+        )}
+      </View>
 
       <View
         style={{ marginBottom: insets.bottom * 0.3 }}
         className="overflow-hidden border-t border-primary-200 bg-primary-50 px-3 py-4 dark:border-primary-800 dark:bg-primary-950">
-        <CommentForm mode="create" timestamp={selectedTimestamp} onSubmit={async () => {}} />
+        <CommentForm mode="create" timestamp={selectedTimestamp} onSubmit={handleSubmitComment} />
       </View>
     </SafeAreaView>
   );
