@@ -52,7 +52,7 @@ export default function CompactDropdown({
           haptics.action();
           openDropdown();
         }}
-        className="flex-[2] flex-row items-center justify-between gap-1 rounded-lg bg-primary-200 px-2.5 py-1.5 dark:bg-primary-800">
+        className="flex-[2] flex-row items-center justify-between gap-1 rounded-lg bg-primary-200 px-2.5 py-2.5 dark:bg-primary-800">
         <Text className="text-md font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-200 ">
           {selectedLabel}
         </Text>

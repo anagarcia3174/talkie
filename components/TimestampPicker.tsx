@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MovieDetails, TVDetails, TVEpisode } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import CompactDropdown from './CompactDropdown';
 import { haptics } from '~/utils/haptics';
-import { SquareArrowOutUpRight } from 'lucide-react-native';
+import { Pause, Play, SquareArrowOutUpRight } from 'lucide-react-native';
 import TimestampSlider from './TimestampSlider';
 
 interface TimestampPickerProps {
@@ -68,20 +68,43 @@ export default function TimestampPicker({
 
     return 0;
   }, [mediaType, details, selectedEpisode, availableEpisodes]);
+  const formatTime = (seconds: number, showHours: boolean) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
 
-  const formatTime = (seconds: number) => {
-    if (seconds >= 3600) {
-      const hrs = Math.floor(seconds / 3600);
-      const mins = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
+    if (showHours) {
       return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const isDisabled = durationSeconds === 0;
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const shouldShowHours = durationSeconds >= 3600;
+
+  useEffect(() => {
+    if (isPlaying) {
+      intervalRef.current = setInterval(() => {
+        onTimestampChange(Math.min(durationSeconds, selectedTimestamp + 1));
+        if (selectedTimestamp + 1 >= durationSeconds) {
+          setIsPlaying(false);
+        }
+      }, 1000);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPlaying, selectedTimestamp, durationSeconds, onTimestampChange]);
+
+  useEffect(() => {
+    if (isDisabled) setIsPlaying(false);
+  }, [isDisabled]);
 
   const nudge = (delta: number) => {
     haptics.action();
@@ -110,6 +133,10 @@ export default function TimestampPicker({
             onSelect={(val) => {
               onSeasonChange?.(val);
               onTimestampChange(0);
+              const firstEp = (tvDetails!.episodes?.[val] ?? [])
+                .filter((ep) => ep.air_date !== null && ep.air_date <= today)
+                .sort((a, b) => a.episode_number - b.episode_number)[0];
+              if (firstEp) onEpisodeChange?.(firstEp.episode_number);
             }}
             disabled={pickersDisabled}
           />
@@ -131,19 +158,39 @@ export default function TimestampPicker({
               disabled={pickersDisabled}
             />
           )}
-        <TouchableOpacity
-          disabled={isDisabled}
-          onPress={onOpenLiveMode}
-          className="flex-1 flex-row items-center justify-center gap-x-1.5 rounded-lg bg-primary-200 px-2.5 py-1 disabled:opacity-70 dark:bg-primary-800">
-          <SquareArrowOutUpRight size={14} color={theme.primary[600]} />
-          <Text className="text-md font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-200 ">
-            Live
-          </Text>
-        </TouchableOpacity>
+        {onOpenLiveMode && (
+          <TouchableOpacity
+            disabled={isDisabled}
+            onPress={onOpenLiveMode}
+            className="flex-1 flex-row items-center justify-center gap-x-1.5 rounded-lg bg-primary-200 px-2.5 py-2.5 disabled:opacity-70 dark:bg-primary-800">
+            <SquareArrowOutUpRight size={14} color={theme.primary[600]} />
+            <Text className="text-md font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-200 ">
+              Live
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
-      <View className="flex-row items-center gap-1">
-        <Text className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
-          {formatTime(selectedTimestamp)}
+      <View className="flex-row items-center gap-1 px-1">
+        {!onOpenLiveMode && (
+          <TouchableOpacity
+            onPress={() => {
+              haptics.action();
+              setIsPlaying((p) => !p);
+            }}
+            disabled={isDisabled}
+            className="p-2">
+            {isPlaying ? (
+              <Pause size={22} color={theme.primary[800]} fill={theme.primary[800]} />
+            ) : (
+              <Play size={22} color={theme.primary[800]} fill={theme.primary[800]} />
+            )}
+          </TouchableOpacity>
+        )}
+        <Text
+          style={styles.timeLabel}
+          numberOfLines={1}
+          className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
+          {formatTime(selectedTimestamp, shouldShowHours)}
         </Text>
         <TimestampSlider
           minimumValue={0}
@@ -157,8 +204,11 @@ export default function TimestampPicker({
           maximumTrackColor={theme.primaryOpacity[800]}
           thumbColor={theme.primary[800]}
         />
-        <Text className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
-          {formatTime(durationSeconds)}
+        <Text
+          style={styles.timeLabel}
+          numberOfLines={1}
+          className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
+          {formatTime(durationSeconds, shouldShowHours)}
         </Text>
       </View>
       <View className="flex-row gap-x-1">
@@ -167,8 +217,7 @@ export default function TimestampPicker({
             key={label}
             onPress={() => nudge(delta)}
             disabled={isDisabled}
-            style={styles.nudgeButton}
-            className="flex-1 items-center justify-center rounded-lg bg-primary-200 py-0.5 dark:bg-primary-800">
+            className="flex-1 items-center justify-center rounded-lg bg-primary-200 py-2.5 dark:bg-primary-800">
             <Text className="font-SpaceGrotesk-Medium text-xs text-primary-600 dark:text-primary-400">
               {label}s
             </Text>
@@ -193,7 +242,7 @@ const styles = StyleSheet.create({
   slider: {
     flex: 1,
   },
-  nudgeButton: {
-    minHeight: 24,
+  timeLabel: {
+    fontVariant: ['tabular-nums'],
   },
 });
