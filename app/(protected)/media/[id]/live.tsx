@@ -6,6 +6,10 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message';
 import CommentForm from '~/components/CommentForm';
 import LiveCommentItem from '~/components/LiveCommentItem';
+import LiveSettingsModal, {
+  DEFAULT_LIVE_SETTINGS,
+  LiveSettings,
+} from '~/components/LiveSettingsModal';
 import TimestampPicker from '~/components/TimestampPicker';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
@@ -43,6 +47,8 @@ export default function LiveScreen() {
   const [selectedTimestamp, setSelectedTimestamp] = useState(Number(initialTimestamp ?? 0));
   const [selectedSeason, setSelectedSeason] = useState(season ? Number(season) : undefined);
   const [selectedEpisode, setSelectedEpisode] = useState(episode ? Number(episode) : undefined);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [liveSettings, setLiveSettings] = useState<LiveSettings>(DEFAULT_LIVE_SETTINGS);
 
   const flatListRef = useRef<FlatList<CommentWithUser>>(null);
   const isAutoScrollEnabled = useRef(true);
@@ -81,7 +87,7 @@ export default function LiveScreen() {
         episodeNumber: selectedEpisode,
       });
     }
-  }, [mediaId, mediaType, season, episode, fetchCommentsForMedia]);
+  }, [mediaId, mediaType, selectedEpisode, selectedSeason, fetchCommentsForMedia]);
 
   useEffect(() => {
     const current = visibleComments.length;
@@ -162,7 +168,9 @@ export default function LiveScreen() {
             className="max-w-[80%] font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
             {mediaTitle}
           </Text>
-          <TouchableOpacity className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
+          <TouchableOpacity
+            onPress={() => setSettingsVisible(true)}
+            className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
             <Settings color={theme.primary[950]} size={20} />
           </TouchableOpacity>
         </View>
@@ -225,6 +233,16 @@ export default function LiveScreen() {
         className="overflow-hidden border-t border-primary-200 bg-primary-50 px-3 py-4 dark:border-primary-800 dark:bg-primary-950">
         <CommentForm mode="create" timestamp={selectedTimestamp} onSubmit={handleSubmitComment} />
       </View>
+
+      <LiveSettingsModal
+        isVisible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+        settings={liveSettings}
+        onApply={(s) => {
+          setLiveSettings(s);
+          setSettingsVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 }
