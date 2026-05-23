@@ -13,11 +13,13 @@ import { useMedia } from '~/store/mediaStore';
 import { haptics } from '~/utils/haptics';
 import { CommentWithUser, MovieDetails, TVDetails } from '~/types/supabaseTypes';
 import { useProfile } from '~/store/profileStore';
+import { useRouter } from 'expo-router';
 
 interface MediaCommentSectionProps {
   mediaType: 'movie' | 'tv';
   mediaId: number;
   releaseDate?: string | null;
+  mediaTitle: string;
 }
 
 const hasDatePassed = (dateString?: string | null) => {
@@ -33,6 +35,7 @@ export default function MediaCommentSection({
   mediaType,
   mediaId,
   releaseDate,
+  mediaTitle,
 }: MediaCommentSectionProps) {
   const { fetchedComments, fetchCommentsForMedia, postComment } = useComment();
   const { adjustProfileStats } = useProfile();
@@ -58,7 +61,7 @@ export default function MediaCommentSection({
   const flatListRef = useRef<FlatList<CommentWithUser>>(null);
   const [highlightedCommentId, setHighlightedCommentId] = useState<number | null>(null);
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  const router = useRouter();
   useEffect(() => {
     if (!details) return;
 
@@ -241,6 +244,19 @@ export default function MediaCommentSection({
             onSeasonChange={setSeason}
             onEpisodeChange={setEpisode}
             onSlidingComplete={handleSlidingComplete}
+            onOpenLiveMode={() => {
+              router.push({
+                pathname: '/media/[id]/live',
+                params: {
+                  id: mediaId,
+                  mediaType,
+                  mediaTitle,
+                  season,
+                  episode,
+                  timestamp,
+                },
+              });
+            }}
           />
         ) : null}
       </View>
@@ -253,7 +269,7 @@ export default function MediaCommentSection({
         <ErrorScreen fullScreen={false} title="Oops!" message={error} />
       ) : (
         <View
-          className={`mx-4 flex-1 overflow-hidden ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
+          className={`mx-4 mt-2 flex-1 overflow-hidden rounded-t-2xl ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
           <FlatList
             ref={flatListRef}
             style={{ flex: 1 }}

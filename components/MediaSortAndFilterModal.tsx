@@ -130,7 +130,7 @@ export default function MediaSortAndFilterModal({
           </Text>
         </TouchableOpacity>
       </View>
-      <View className="flex-row gap-0.5 rounded-xl bg-primary-200 p-1.5 dark:bg-primary-950">
+      <View className="flex-row gap-0.5 rounded-xl bg-primary-200 p-1.5 dark:bg-primary-800">
         <TouchableOpacity
           onPress={() => setSelected(0)}
           className={`flex-1 items-center rounded-lg ${selected === 0 ? 'bg-primary-100 dark:bg-primary-900' : ''} py-2`}>

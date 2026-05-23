@@ -13,7 +13,7 @@ interface CommentEditModalProps {
   commentFormProps: CommentFormProps;
   initialTimestamp: number;
   mediaType: 'movie' | 'tv';
-  mediaId: number; // ✅ ADD THIS
+  mediaId: number;
   season?: number;
   episode?: number;
   onSubmit: (content: string, timestamp: number) => Promise<void>;

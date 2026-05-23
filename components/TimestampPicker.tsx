@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Slider from '@react-native-community/slider';
 import { MovieDetails, TVDetails, TVEpisode } from '~/types/supabaseTypes';
 import { useTheme } from '~/hooks/useTheme';
 import CompactDropdown from './CompactDropdown';
 import { haptics } from '~/utils/haptics';
+import { Pause, Play, SquareArrowOutUpRight } from 'lucide-react-native';
+import TimestampSlider from './TimestampSlider';
 
 interface TimestampPickerProps {
   mediaType: 'movie' | 'tv';
@@ -19,6 +20,8 @@ interface TimestampPickerProps {
   onSeasonChange?: (season: number) => void;
   onEpisodeChange?: (episode: number) => void;
   pickersDisabled?: boolean;
+  onOpenLiveMode?: () => void;
+  externalPaused?: boolean;
 }
 
 export default function TimestampPicker({
@@ -32,6 +35,8 @@ export default function TimestampPicker({
   onSeasonChange,
   onEpisodeChange,
   pickersDisabled = false,
+  onOpenLiveMode,
+  externalPaused = false,
 }: TimestampPickerProps) {
   const theme = useTheme();
   const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
@@ -65,20 +70,43 @@ export default function TimestampPicker({
 
     return 0;
   }, [mediaType, details, selectedEpisode, availableEpisodes]);
+  const formatTime = (seconds: number, showHours: boolean) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
 
-  const formatTime = (seconds: number) => {
-    if (seconds >= 3600) {
-      const hrs = Math.floor(seconds / 3600);
-      const mins = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
+    if (showHours) {
       return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const isDisabled = durationSeconds === 0;
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const shouldShowHours = durationSeconds >= 3600;
+
+  useEffect(() => {
+    if (isPlaying && !externalPaused) {
+      intervalRef.current = setInterval(() => {
+        onTimestampChange(Math.min(durationSeconds, selectedTimestamp + 1));
+        if (selectedTimestamp + 1 >= durationSeconds) {
+          setIsPlaying(false);
+        }
+      }, 1000);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPlaying, externalPaused, selectedTimestamp, durationSeconds, onTimestampChange]);
+
+  useEffect(() => {
+    if (isDisabled) setIsPlaying(false);
+  }, [isDisabled]);
 
   const nudge = (delta: number) => {
     haptics.action();
@@ -95,45 +123,78 @@ export default function TimestampPicker({
   ];
 
   return (
-    <View className="rounded-t-2xl bg-primary-100 px-4 py-2 dark:bg-primary-900">
-      <View className="flex-row items-center gap-2">
+    <View className="gap-2 rounded-2xl bg-primary-100 p-2 dark:bg-primary-900">
+      <View className="flex-row gap-x-1">
         {mediaType === 'tv' && tvDetails && (
-          <>
+          <CompactDropdown
+            label="Season?"
+            items={tvDetails.seasons}
+            selectedValue={selectedSeason}
+            getLabel={(s) => `Season ${s.season_number}`}
+            getValue={(s) => s.season_number}
+            onSelect={(val) => {
+              onSeasonChange?.(val);
+              onTimestampChange(0);
+              const firstEp = (tvDetails!.episodes?.[val] ?? [])
+                .filter((ep) => ep.air_date !== null && ep.air_date <= today)
+                .sort((a, b) => a.episode_number - b.episode_number)[0];
+              if (firstEp) onEpisodeChange?.(firstEp.episode_number);
+            }}
+            disabled={pickersDisabled}
+          />
+        )}
+        {mediaType === 'tv' &&
+          tvDetails &&
+          selectedSeason !== undefined &&
+          availableEpisodes.length > 0 && (
             <CompactDropdown
-              label="S?"
-              items={tvDetails.seasons}
-              selectedValue={selectedSeason}
-              getLabel={(s) => `S${s.season_number}`}
-              getValue={(s) => s.season_number}
+              label="Episode?"
+              items={availableEpisodes}
+              selectedValue={selectedEpisode}
+              getLabel={(ep) => `Episode ${ep.episode_number}`}
+              getValue={(ep) => ep.episode_number}
               onSelect={(val) => {
-                onSeasonChange?.(val);
+                onEpisodeChange?.(val);
                 onTimestampChange(0);
               }}
               disabled={pickersDisabled}
             />
-            {selectedSeason !== undefined && availableEpisodes.length > 0 && (
-              <CompactDropdown
-                label="E?"
-                items={availableEpisodes}
-                selectedValue={selectedEpisode}
-                getLabel={(ep) => `E${ep.episode_number}`}
-                getValue={(ep) => ep.episode_number}
-                onSelect={(val) => {
-                  onEpisodeChange?.(val);
-                  onTimestampChange(0);
-                }}
-                disabled={pickersDisabled}
-              />
+          )}
+        {onOpenLiveMode && (
+          <TouchableOpacity
+            disabled={isDisabled}
+            onPress={onOpenLiveMode}
+            className="flex-1 flex-row items-center justify-center gap-x-1.5 rounded-lg bg-primary-200 px-2.5 py-2.5 disabled:opacity-70 dark:bg-primary-800">
+            <SquareArrowOutUpRight size={14} color={theme.primary[600]} />
+            <Text className="text-md font-SpaceGrotesk-Medium text-primary-900 dark:text-primary-200 ">
+              Live
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <View className="flex-row items-center gap-1 px-1">
+        {!onOpenLiveMode && (
+          <TouchableOpacity
+            onPress={() => {
+              haptics.action();
+              setIsPlaying((p) => !p);
+            }}
+            disabled={isDisabled}
+            className="p-2">
+            {isPlaying ? (
+              <Pause size={22} color={theme.primary[800]} fill={theme.primary[800]} />
+            ) : (
+              <Play size={22} color={theme.primary[800]} fill={theme.primary[800]} />
             )}
-          </>
+          </TouchableOpacity>
         )}
-        {mediaType === 'movie' && (
-          <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
-            {formatTime(selectedTimestamp)}
-          </Text>
-        )}
-        <Slider
-          style={styles.slider}
+        <Text
+          style={styles.timeLabel}
+          numberOfLines={1}
+          className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
+          {formatTime(selectedTimestamp, shouldShowHours)}
+        </Text>
+        <TimestampSlider
           minimumValue={0}
           maximumValue={durationSeconds}
           step={1}
@@ -141,12 +202,15 @@ export default function TimestampPicker({
           onValueChange={onTimestampChange}
           onSlidingComplete={onSlidingComplete}
           disabled={isDisabled}
-          minimumTrackTintColor={theme.primary[800]}
-          maximumTrackTintColor={theme.primaryOpacity[800]}
-          thumbTintColor={theme.primary[800]}
+          minimumTrackColor={theme.primary[800]}
+          maximumTrackColor={theme.primaryOpacity[800]}
+          thumbColor={theme.primary[800]}
         />
-        <Text className="text-md font-SpaceGrotesk-Regular text-primary-600 dark:text-primary-400">
-          {formatTime(mediaType === 'tv' ? selectedTimestamp : durationSeconds)}
+        <Text
+          style={styles.timeLabel}
+          numberOfLines={1}
+          className="font-SpaceGrotesk-Regular text-lg text-primary-600 dark:text-primary-400">
+          {formatTime(durationSeconds, shouldShowHours)}
         </Text>
       </View>
       <View className="flex-row gap-x-1">
@@ -155,8 +219,7 @@ export default function TimestampPicker({
             key={label}
             onPress={() => nudge(delta)}
             disabled={isDisabled}
-            style={styles.nudgeButton}
-            className="flex-1 items-center justify-center rounded-md bg-primary-200 py-0.5 dark:bg-primary-800">
+            className="flex-1 items-center justify-center rounded-lg bg-primary-200 py-2.5 dark:bg-primary-800">
             <Text className="font-SpaceGrotesk-Medium text-xs text-primary-600 dark:text-primary-400">
               {label}s
             </Text>
@@ -181,7 +244,7 @@ const styles = StyleSheet.create({
   slider: {
     flex: 1,
   },
-  nudgeButton: {
-    minHeight: 24,
+  timeLabel: {
+    fontVariant: ['tabular-nums'],
   },
 });
