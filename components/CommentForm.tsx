@@ -115,7 +115,10 @@ export default function CommentForm({
           maxLength={1000}
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
-          onFocus={() => { setOverviewExpanded(false); onFocus?.(); }}
+          onFocus={() => {
+            setOverviewExpanded(false);
+            onFocus?.();
+          }}
           onBlur={onBlur}
           editable={!disabled}
         />

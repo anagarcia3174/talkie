@@ -178,91 +178,91 @@ export default function LiveScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1">
-      <View className="px-4 pb-3 pt-2">
-        <View className="flex-row items-center justify-between">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
-            <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
-          </TouchableOpacity>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            className="max-w-[80%] font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
-            {mediaTitle}
-          </Text>
-          <TouchableOpacity
-            onPress={() => setSettingsVisible(true)}
-            className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
-            <Settings color={theme.primary[950]} size={20} />
-          </TouchableOpacity>
+        <View className="px-4 pb-3 pt-2">
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
+              <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
+            </TouchableOpacity>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="max-w-[80%] font-SpaceGrotesk-Bold text-xl text-primary-950 dark:text-primary-50">
+              {mediaTitle}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setSettingsVisible(true)}
+              className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
+              <Settings color={theme.primary[950]} size={20} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
 
-      <View className="px-4">
-        {!details || detailsLoading ? (
-          <TimestampSkeleton />
-        ) : (
-          <TimestampPicker
-            mediaType={parsedMediaType}
-            details={details}
-            selectedTimestamp={selectedTimestamp}
-            selectedSeason={selectedSeason}
-            selectedEpisode={selectedEpisode}
-            onTimestampChange={setSelectedTimestamp}
-            onSeasonChange={setSelectedSeason}
-            onEpisodeChange={setSelectedEpisode}
-            externalPaused={liveSettings.pauseWhileTyping && isTyping}
+        <View className="px-4">
+          {!details || detailsLoading ? (
+            <TimestampSkeleton />
+          ) : (
+            <TimestampPicker
+              mediaType={parsedMediaType}
+              details={details}
+              selectedTimestamp={selectedTimestamp}
+              selectedSeason={selectedSeason}
+              selectedEpisode={selectedEpisode}
+              onTimestampChange={setSelectedTimestamp}
+              onSeasonChange={setSelectedSeason}
+              onEpisodeChange={setSelectedEpisode}
+              externalPaused={liveSettings.pauseWhileTyping && isTyping}
+            />
+          )}
+        </View>
+
+        <View className="mx-4 mt-4 flex-1 overflow-hidden">
+          {commentsLoading ? (
+            <ActivityIndicator className="flex-1" color={theme.primary[500]} />
+          ) : (
+            <FlatList
+              ref={flatListRef}
+              data={visibleComments}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <LiveCommentItem comment={item} isUser={item.user_id === user?.id} />
+              )}
+              ListEmptyComponent={() => (
+                <View className="flex-1 items-center justify-center px-6 py-16">
+                  <MessageSquareText size={36} color={theme.primary[400]} />
+                  <Text className="mt-4 text-center font-SpaceGrotesk-Medium text-primary-500 dark:text-primary-400">
+                    No comments at this moment yet.{'\n'}Be the first to react!
+                  </Text>
+                </View>
+              )}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              onScrollBeginDrag={handleScrollBeginDrag}
+              onScrollEndDrag={checkIfAtBottom}
+              onMomentumScrollEnd={checkIfAtBottom}
+              contentContainerStyle={
+                visibleComments.length === 0 ? { flex: 1 } : { paddingBottom: 8 }
+              }
+              ItemSeparatorComponent={() => (
+                <View className="my-1.5 h-px bg-primary-100/50 dark:bg-primary-900/50" />
+              )}
+            />
+          )}
+        </View>
+
+        <View
+          style={{ marginBottom: insets.bottom * 0.3 }}
+          className="overflow-hidden border-t border-primary-200 bg-primary-50 px-3 py-4 dark:border-primary-800 dark:bg-primary-950">
+          <CommentForm
+            mode="create"
+            timestamp={selectedTimestamp}
+            onSubmit={handleSubmitComment}
+            onFocus={() => setIsTyping(true)}
+            onBlur={() => setIsTyping(false)}
           />
-        )}
-      </View>
-
-      <View className="mx-4 mt-4 flex-1 overflow-hidden">
-        {commentsLoading ? (
-          <ActivityIndicator className="flex-1" color={theme.primary[500]} />
-        ) : (
-          <FlatList
-            ref={flatListRef}
-            data={visibleComments}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <LiveCommentItem comment={item} isUser={item.user_id === user?.id} />
-            )}
-            ListEmptyComponent={() => (
-              <View className="flex-1 items-center justify-center px-6 py-16">
-                <MessageSquareText size={36} color={theme.primary[400]} />
-                <Text className="mt-4 text-center font-SpaceGrotesk-Medium text-primary-500 dark:text-primary-400">
-                  No comments at this moment yet.{'\n'}Be the first to react!
-                </Text>
-              </View>
-            )}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            onScrollBeginDrag={handleScrollBeginDrag}
-            onScrollEndDrag={checkIfAtBottom}
-            onMomentumScrollEnd={checkIfAtBottom}
-            contentContainerStyle={
-              visibleComments.length === 0 ? { flex: 1 } : { paddingBottom: 8 }
-            }
-            ItemSeparatorComponent={() => (
-              <View className="my-1.5 h-px bg-primary-100/50 dark:bg-primary-900/50" />
-            )}
-          />
-        )}
-      </View>
-
-      <View
-        style={{ marginBottom: insets.bottom * 0.3 }}
-        className="overflow-hidden border-t border-primary-200 bg-primary-50 px-3 py-4 dark:border-primary-800 dark:bg-primary-950">
-        <CommentForm
-          mode="create"
-          timestamp={selectedTimestamp}
-          onSubmit={handleSubmitComment}
-          onFocus={() => setIsTyping(true)}
-          onBlur={() => setIsTyping(false)}
-        />
-      </View>
+        </View>
       </KeyboardAvoidingView>
 
       <LiveSettingsModal
