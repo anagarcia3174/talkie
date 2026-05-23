@@ -1,7 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, MessageSquareText, Settings } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import CommentForm from '~/components/CommentForm';
@@ -49,6 +57,7 @@ export default function LiveScreen() {
   const [selectedEpisode, setSelectedEpisode] = useState(episode ? Number(episode) : undefined);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [liveSettings, setLiveSettings] = useState<LiveSettings>(DEFAULT_LIVE_SETTINGS);
+  const [isTyping, setIsTyping] = useState(false);
 
   const flatListRef = useRef<FlatList<CommentWithUser>>(null);
   const isAutoScrollEnabled = useRef(true);
@@ -90,32 +99,43 @@ export default function LiveScreen() {
   }, [mediaId, mediaType, selectedEpisode, selectedSeason, fetchCommentsForMedia]);
 
   useEffect(() => {
+    if (liveSettings.autoScroll) {
+      isAutoScrollEnabled.current = true;
+    }
+  }, [liveSettings.autoScroll]);
+
+  useEffect(() => {
     const current = visibleComments.length;
     const prev = prevVisibleCountRef.current;
-    if (current > prev && isAutoScrollEnabled.current) {
+    if (current > prev && liveSettings.autoScroll && isAutoScrollEnabled.current) {
       const t = setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 80);
       prevVisibleCountRef.current = current;
       return () => clearTimeout(t);
     }
     prevVisibleCountRef.current = current;
-  }, [visibleComments.length]);
+  }, [visibleComments.length, liveSettings.autoScroll]);
 
   const handleScrollBeginDrag = useCallback(() => {
     isAutoScrollEnabled.current = false;
   }, []);
 
-  const checkIfAtBottom = useCallback(({ nativeEvent }: any) => {
-    const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
-    if (contentSize.height - layoutMeasurement.height - contentOffset.y <= 40) {
-      isAutoScrollEnabled.current = true;
-    }
-  }, []);
+  const checkIfAtBottom = useCallback(
+    ({ nativeEvent }: any) => {
+      if (!liveSettings.autoScroll) return;
+      const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
+      if (contentSize.height - layoutMeasurement.height - contentOffset.y <= 40) {
+        isAutoScrollEnabled.current = true;
+      }
+    },
+    [liveSettings.autoScroll]
+  );
 
   const handleSubmitComment = async (content: string) => {
+    const postedTimestamp = Math.max(0, selectedTimestamp - liveSettings.typingDelaySeconds);
     const result = await postComment({
       content,
       media_id: mediaId,
-      timestamp_seconds: selectedTimestamp,
+      timestamp_seconds: postedTimestamp,
       season_number: parsedMediaType === 'movie' ? null : (selectedSeason ?? null),
       episode_number: parsedMediaType === 'movie' ? null : (selectedEpisode ?? null),
       parent_comment_id: null,
@@ -155,6 +175,9 @@ export default function LiveScreen() {
 
   return (
     <SafeAreaView edges={['top']} className="flex-1 bg-primary-50 dark:bg-primary-950">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1">
       <View className="px-4 pb-3 pt-2">
         <View className="flex-row items-center justify-between">
           <TouchableOpacity
@@ -189,6 +212,7 @@ export default function LiveScreen() {
             onTimestampChange={setSelectedTimestamp}
             onSeasonChange={setSelectedSeason}
             onEpisodeChange={setSelectedEpisode}
+            externalPaused={liveSettings.pauseWhileTyping && isTyping}
           />
         )}
       </View>
@@ -231,8 +255,15 @@ export default function LiveScreen() {
       <View
         style={{ marginBottom: insets.bottom * 0.3 }}
         className="overflow-hidden border-t border-primary-200 bg-primary-50 px-3 py-4 dark:border-primary-800 dark:bg-primary-950">
-        <CommentForm mode="create" timestamp={selectedTimestamp} onSubmit={handleSubmitComment} />
+        <CommentForm
+          mode="create"
+          timestamp={selectedTimestamp}
+          onSubmit={handleSubmitComment}
+          onFocus={() => setIsTyping(true)}
+          onBlur={() => setIsTyping(false)}
+        />
       </View>
+      </KeyboardAvoidingView>
 
       <LiveSettingsModal
         isVisible={settingsVisible}

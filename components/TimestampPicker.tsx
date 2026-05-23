@@ -21,6 +21,7 @@ interface TimestampPickerProps {
   onEpisodeChange?: (episode: number) => void;
   pickersDisabled?: boolean;
   onOpenLiveMode?: () => void;
+  externalPaused?: boolean;
 }
 
 export default function TimestampPicker({
@@ -35,6 +36,7 @@ export default function TimestampPicker({
   onEpisodeChange,
   pickersDisabled = false,
   onOpenLiveMode,
+  externalPaused = false,
 }: TimestampPickerProps) {
   const theme = useTheme();
   const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
@@ -87,7 +89,7 @@ export default function TimestampPicker({
   const shouldShowHours = durationSeconds >= 3600;
 
   useEffect(() => {
-    if (isPlaying) {
+    if (isPlaying && !externalPaused) {
       intervalRef.current = setInterval(() => {
         onTimestampChange(Math.min(durationSeconds, selectedTimestamp + 1));
         if (selectedTimestamp + 1 >= durationSeconds) {
@@ -100,7 +102,7 @@ export default function TimestampPicker({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isPlaying, selectedTimestamp, durationSeconds, onTimestampChange]);
+  }, [isPlaying, externalPaused, selectedTimestamp, durationSeconds, onTimestampChange]);
 
   useEffect(() => {
     if (isDisabled) setIsPlaying(false);

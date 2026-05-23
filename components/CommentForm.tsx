@@ -15,6 +15,8 @@ export interface CommentFormProps {
   showAvatar?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 export default function CommentForm({
@@ -25,6 +27,8 @@ export default function CommentForm({
   showAvatar = true,
   disabled = false,
   disabledReason = null,
+  onFocus,
+  onBlur,
 }: CommentFormProps) {
   const { profile } = useProfile();
   const [commentText, setCommentText] = useState(initialContent);
@@ -111,7 +115,8 @@ export default function CommentForm({
           maxLength={1000}
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
-          onFocus={() => setOverviewExpanded(false)}
+          onFocus={() => { setOverviewExpanded(false); onFocus?.(); }}
+          onBlur={onBlur}
           editable={!disabled}
         />
       </View>
