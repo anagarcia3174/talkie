@@ -103,6 +103,7 @@ export default function ProfileScreen() {
       <View className="mb-2 flex-row items-center justify-between px-4">
         <TouchableOpacity
           onPress={() => router.back()}
+          hitSlop={8}
           className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
           <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
         </TouchableOpacity>
@@ -223,6 +224,7 @@ export default function ProfileScreen() {
         <View className="flex-1 items-center justify-center bg-primary-100 px-4 dark:bg-primary-950">
           <TouchableOpacity
             onPress={() => setPreviewImage(null)}
+            hitSlop={10}
             className="absolute left-6 top-16 z-10 py-2">
             <X size={28} color={theme.primary[900]} />
           </TouchableOpacity>

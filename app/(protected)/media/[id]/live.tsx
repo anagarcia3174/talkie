@@ -182,6 +182,7 @@ export default function LiveScreen() {
           <View className="flex-row items-center justify-between">
             <TouchableOpacity
               onPress={() => router.back()}
+              hitSlop={8}
               className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
               <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
             </TouchableOpacity>
@@ -193,6 +194,7 @@ export default function LiveScreen() {
             </Text>
             <TouchableOpacity
               onPress={() => setSettingsVisible(true)}
+              hitSlop={8}
               className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
               <Settings color={theme.primary[950]} size={20} />
             </TouchableOpacity>

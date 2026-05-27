@@ -115,6 +115,7 @@ export default function ListRow({ list, onPress, deletable = false, onDelete }: 
           </Text>
           <TouchableOpacity
             onPress={() => setConfirmVisible(false)}
+            hitSlop={8}
             className="rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
             <X size={20} color={theme.primary[950]} strokeWidth={2} />
           </TouchableOpacity>

@@ -66,6 +66,7 @@ export default function MediaRowSection({ title, movies, onAddToLibrary }: Media
 
               <TouchableOpacity
                 disabled={loadingId === item.id}
+                hitSlop={6}
                 onPress={async () => {
                   haptics.action();
                   setLoadingId(item.id);

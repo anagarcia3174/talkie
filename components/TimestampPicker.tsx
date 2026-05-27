@@ -180,6 +180,7 @@ export default function TimestampPicker({
               setIsPlaying((p) => !p);
             }}
             disabled={isDisabled}
+            hitSlop={6}
             className="p-2">
             {isPlaying ? (
               <Pause size={22} color={theme.primary[800]} fill={theme.primary[800]} />

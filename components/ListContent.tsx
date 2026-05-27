@@ -138,6 +138,7 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
       <View className="mb-2 flex-row items-center justify-between px-4">
         <TouchableOpacity
           onPress={() => router.back()}
+          hitSlop={8}
           className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900">
           <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
         </TouchableOpacity>
@@ -147,6 +148,7 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
         {isOwner ? (
           <TouchableOpacity
             className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
+            hitSlop={8}
             disabled={!isOwner}
             onPress={() => isOwner && setListInfoModalVisible(true)}>
             <SquarePen
@@ -158,6 +160,7 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
         ) : (
           <TouchableOpacity
             className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
+            hitSlop={8}
             disabled={isOwner || loadingAction === 'like-toggle'}
             onPress={async () => {
               if (isOwner || loadingAction === 'like-toggle') return;
@@ -283,6 +286,7 @@ export default function ListContent({ list, listItems, actions, isOwner }: ListC
               />
 
               <TouchableOpacity
+                hitSlop={10}
                 onPress={() => {
                   haptics.action();
                   setModalVisible(true);

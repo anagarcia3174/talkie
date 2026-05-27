@@ -191,6 +191,7 @@ export default function Lists() {
           {customListIds.length < 5 && (
             <TouchableOpacity
               disabled={createLoading}
+              hitSlop={8}
               onPress={() => {
                 haptics.action();
                 setCreateListModalVisible(true);

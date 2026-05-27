@@ -78,11 +78,13 @@ export default function MediaScreen() {
         <View className="mb-2 flex-row justify-between px-4">
           <TouchableOpacity
             className="rounded-md   bg-primary-100 p-1  dark:bg-primary-900"
+            hitSlop={8}
             onPress={() => router.back()}>
             <ArrowLeft color={theme.primary[950]} size={20} strokeWidth={2} />
           </TouchableOpacity>
           <TouchableOpacity
             disabled={loading}
+            hitSlop={8}
             onPress={() => {
               haptics.action();
               setListModalVisible(true);
