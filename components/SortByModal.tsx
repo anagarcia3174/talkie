@@ -57,7 +57,7 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
         </TouchableOpacity>
       </View>
 
-      <View>
+      <View className="gap-y-2">
         <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
           Sort By
         </Text>
@@ -83,7 +83,7 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
           })}
         </View>
       </View>
-      <View>
+      <View className="gap-y-2">
         {/* Sort Options */}
         <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
           Sort Order

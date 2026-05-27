@@ -116,7 +116,7 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
       </View>
 
       <View className="mb-1">
-        <Text className="mb-2 px-1 text-xs uppercase tracking-widest tracking-widest text-primary-400 dark:text-primary-400">
+        <Text className="mb-2 px-1 text-xs uppercase tracking-widest text-primary-400 dark:text-primary-400">
           Help & Feedback
         </Text>
         <View className="mb-2 flex-row gap-3">
@@ -127,18 +127,18 @@ export default function AccountOverlay({ visible, onClose, onSubmit }: MenuOverl
       </View>
 
       <View>
-        <Text className="mb-2 px-1 text-xs uppercase tracking-widest tracking-widest text-red-600">
+        <Text className="mb-2 px-1 text-xs uppercase tracking-widest text-red-600">
           Danger
         </Text>
-        <View className="rounded-2xl border border-red-500/25 bg-primary-200 p-4 dark:bg-primary-800">
+        <View className="rounded-2xl border border-red-400 dark:border-red-600 bg-primary-200 p-4 dark:bg-primary-800">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={destructiveOption.onPress}
             className="flex-row items-center gap-3">
-            <View className="rounded-xl border border-red-400 bg-red-500/20 p-2 dark:border-red-500 dark:bg-red-400/25">
-              <Trash2 size={16} color="#ef4444" />
+            <View className="rounded-xl border border-red-400 bg-red-400/20 p-2 dark:border-red-600 dark:bg-red-400/25">
+              <Trash2 size={16} color={theme.isDark ? "#ef4444" :"#dc2626"} />
             </View>
-            <Text className="font-SpaceGrotesk-SemiBold text-sm leading-5 text-red-700 dark:text-red-400">
+            <Text className="font-SpaceGrotesk-SemiBold text-sm leading-5 text-red-600 dark:text-red-600">
               {destructiveOption.title}
             </Text>
           </TouchableOpacity>
