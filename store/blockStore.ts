@@ -6,11 +6,13 @@ interface BlockState {
   // relationship cache
   blockedIds: Set<string>;
   isLoadingBlockedIds: boolean;
+  blockedIdsError: string | null;
   fetchBlockedIds: () => Promise<StoreResult<void>>;
 
   // users I blocked
   blockedUsers: Profile[];
   isLoadingBlockedUsers: boolean;
+  blockedUsersError: string | null;
 
   // actions
   block: (targetUserId: string, targetProfile: Profile) => Promise<StoreResult<void>>;
@@ -24,17 +26,20 @@ interface BlockState {
 export const useBlock = create<BlockState>((set, get) => ({
   blockedIds: new Set<string>(),
   isLoadingBlockedIds: false,
+  blockedIdsError: null,
   blockedUsers: [],
   isLoadingBlockedUsers: false,
+  blockedUsersError: null,
   fetchBlockedIds: async () => {
     if (get().isLoadingBlockedIds) return { success: true };
-    set({ isLoadingBlockedIds: true });
+    set({ isLoadingBlockedIds: true, blockedIdsError: null });
 
     const result = await getBlockedIds();
 
     set({ isLoadingBlockedIds: false });
 
     if (!result.success) {
+      set({ blockedIdsError: result.error });
       return { success: false, error: result.error };
     }
 
@@ -81,13 +86,14 @@ export const useBlock = create<BlockState>((set, get) => ({
 
   fetchBlockedUsers: async () => {
     if (get().isLoadingBlockedUsers) return { success: true };
-    set({ isLoadingBlockedUsers: true });
+    set({ isLoadingBlockedUsers: true, blockedUsersError: null });
 
     const result = await getBlockedUsers();
 
     set({ isLoadingBlockedUsers: false });
 
     if (!result.success) {
+      set({ blockedUsersError: result.error });
       return { success: false, error: result.error };
     }
 
@@ -105,8 +111,10 @@ export const useBlock = create<BlockState>((set, get) => ({
     set({
       blockedIds: new Set(),
       isLoadingBlockedIds: false,
+      blockedIdsError: null,
       blockedUsers: [],
       isLoadingBlockedUsers: false,
+      blockedUsersError: null,
     });
   },
 }));

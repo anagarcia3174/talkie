@@ -1,6 +1,6 @@
 import { UserRound, X } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
-import { Text, View, TouchableOpacity, Image } from 'react-native';
+import { useEffect } from 'react';
+import { Text, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '~/context/AuthContext';
@@ -16,27 +16,14 @@ interface BlockedUsersModalProps {
 }
 
 export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModalProps) {
-  const { blockedIds, blockedUsers, fetchBlockedUsers, unblock } = useBlock();
+  const { blockedIds, blockedUsers, isLoadingBlockedUsers, blockedUsersError, fetchBlockedUsers, unblock } = useBlock();
   const { user } = useAuth();
   const theme = useTheme();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadBlockedUsers = async () => {
-      if (!visible || !user) return;
-
-      if (blockedIds.size === blockedUsers.length) return;
-
-      setLoading(true);
-      setError(null);
-
-      await fetchBlockedUsers();
-
-      setLoading(false);
-    };
-
-    loadBlockedUsers();
+    if (!visible || !user) return;
+    if (blockedIds.size === blockedUsers.length) return;
+    fetchBlockedUsers();
   }, [visible, user, blockedIds, blockedUsers.length, fetchBlockedUsers]);
 
   const handleUnblock = async (targetUserId: string) => {
@@ -77,18 +64,29 @@ export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModa
         </TouchableOpacity>
       </View>
 
-      {loading && blockedUsers.length === 0 && (
-        <Text className="font-SpaceGrotesk-Regular text-base text-neutral-500 dark:text-neutral-400">
-          Loading blocked users...
-        </Text>
+      {isLoadingBlockedUsers && blockedUsers.length === 0 && (
+        <View className="items-center py-6">
+          <ActivityIndicator color={theme.primary[500]} />
+        </View>
       )}
 
-      {error && blockedUsers.length === 0 && (
-        <Text className="mb-2 font-SpaceGrotesk-Regular text-base text-red-500">{error}</Text>
+      {blockedUsersError && !isLoadingBlockedUsers && (
+        <View className="items-center gap-3 py-6">
+          <Text className="font-SpaceGrotesk-Regular text-base text-red-500">
+            {blockedUsersError}
+          </Text>
+          <TouchableOpacity
+            onPress={() => fetchBlockedUsers()}
+            className="rounded-lg bg-primary-200 px-4 py-2 dark:bg-primary-800">
+            <Text className="font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
+              Try again
+            </Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Empty State */}
-      {blockedUsers.length === 0 && (
+      {!isLoadingBlockedUsers && !blockedUsersError && blockedUsers.length === 0 && (
         <Text className="font-SpaceGrotesk-Regular text-base text-neutral-500 dark:text-neutral-400">
           You haven’t blocked anyone.
         </Text>
