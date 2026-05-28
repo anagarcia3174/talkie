@@ -68,6 +68,7 @@ export default function ProfileScreen() {
         title="Profile not found!"
         fullScreen
         message={error || 'There was an error fetching the profile you requested.'}
+        onRetry={() => fetchOtherProfile(id)}
       />
     );
   }

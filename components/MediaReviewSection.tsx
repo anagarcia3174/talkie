@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { ActivityIndicator, FlatList, View } from 'react-native';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { useAuth } from '~/context/AuthContext';
 import { useTheme } from '~/hooks/useTheme';
 import { useReview } from '~/store/reviewStore';
@@ -33,6 +33,7 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
   const mediaReviews = fetchedReviews[mediaId];
   const reviews = useMemo(() => mediaReviews?.reviews ?? [], [mediaReviews?.reviews]);
   const isLoading = mediaReviews?.isLoading ?? false;
+  const hasFetched = mediaReviews?.hasFetched ?? false;
   const error = mediaReviews?.error ?? null;
   const insets = useSafeAreaInsets();
   const sortedReviews = useMemo(() => {
@@ -115,7 +116,12 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
           color={theme.primary[950]}
         />
       ) : error ? (
-        <ErrorScreen fullScreen={false} title="Oops!" message={error} />
+        <ErrorScreen
+          fullScreen={false}
+          title="Oops!"
+          message={error}
+          onRetry={() => fetchReviewsForMedia(mediaId, true)}
+        />
       ) : (
         <View
           className={`mx-4 flex-1 overflow-hidden ${sortedReviews.length > 0 ? 'rounded-t-2xl bg-primary-100 dark:bg-primary-900' : ''}`}>
@@ -130,6 +136,15 @@ export default function MediaReviewSection({ mediaId, releaseDate }: MediaReview
             renderItem={({ item }) => (
               <ReviewItem review={item} isUser={item.user_id === user?.id} />
             )}
+            ListEmptyComponent={
+              hasFetched ? (
+                <View className="items-center py-10">
+                  <Text className="font-SpaceGrotesk-Regular text-base text-neutral-500 dark:text-neutral-400">
+                    No reviews yet. Be the first!
+                  </Text>
+                </View>
+              ) : null
+            }
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           />
