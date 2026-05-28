@@ -1,11 +1,11 @@
 import { UserRound, X } from 'lucide-react-native';
-import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { getPublicUrl } from '~/utils/storageUrl';
 import BottomSheet from './BottomSheet';
 import FollowButton from './FollowButton';
 import { useTheme } from '~/hooks/useTheme';
 import { useFollow } from '~/store/followStore';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '~/context/AuthContext';
 import { useRouter } from 'expo-router';
 
@@ -16,58 +16,42 @@ interface FollowsModalProps {
 }
 
 export default function FollowsModal({ checking, visible, onClose }: FollowsModalProps) {
-  const { followerIds, followingIds, followers, following, fetchFollowers, fetchFollowing } =
-    useFollow();
+  const {
+    followerIds,
+    followingIds,
+    followers,
+    following,
+    isLoadingFollowers,
+    isLoadingFollowing,
+    followersError,
+    followingError,
+    fetchFollowers,
+    fetchFollowing,
+  } = useFollow();
   const theme = useTheme();
   const { user } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const isLoading = checking === 'followers' ? isLoadingFollowers : isLoadingFollowing;
+  const error = checking === 'followers' ? followersError : followingError;
+  const list = checking === 'followers' ? followers : following;
 
   useEffect(() => {
-    const loadFollows = async () => {
-      if (!visible || !user) return;
+    if (!visible || !user) return;
 
-      setError(null);
-
-      if (checking === 'followers') {
-        const profileIds = new Set(followers.map((u) => u.id));
-
-        const isOutOfSync =
-          followerIds.size !== profileIds.size ||
-          [...followerIds].some((id) => !profileIds.has(id));
-
-        if (!isOutOfSync) return;
-
-        setLoading(true);
-        const result = await fetchFollowers();
-
-        if (!result.success) {
-          setError(result.error);
-        }
-        setLoading(false);
-      }
-
-      if (checking === 'following') {
-        const profileIds = new Set(following.map((u) => u.id));
-
-        const isOutOfSync =
-          followingIds.size !== profileIds.size ||
-          [...followingIds].some((id) => !profileIds.has(id));
-
-        if (!isOutOfSync) return;
-
-        setLoading(true);
-        const result = await fetchFollowing();
-
-        if (!result.success) {
-          setError(result.error);
-        }
-        setLoading(false);
-      }
-    };
-
-    loadFollows();
+    if (checking === 'followers') {
+      const profileIds = new Set(followers.map((u) => u.id));
+      const isOutOfSync =
+        followerIds.size !== profileIds.size ||
+        [...followerIds].some((id) => !profileIds.has(id));
+      if (isOutOfSync) fetchFollowers();
+    } else {
+      const profileIds = new Set(following.map((u) => u.id));
+      const isOutOfSync =
+        followingIds.size !== profileIds.size ||
+        [...followingIds].some((id) => !profileIds.has(id));
+      if (isOutOfSync) fetchFollowing();
+    }
   }, [
     visible,
     user,
@@ -95,44 +79,40 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
         </TouchableOpacity>
       </View>
 
-      {loading &&
-        ((checking === 'followers' && followers.length === 0) ||
-          (checking === 'following' && following.length === 0)) && (
-          <Text className="text-base text-neutral-500 dark:text-neutral-400">Loading...</Text>
-        )}
-
-      {error &&
-        ((checking === 'followers' && followers.length === 0) ||
-          (checking === 'following' && following.length === 0)) && (
-          <View>
-            <Text className="mb-2 text-base text-red-500">{error}</Text>
-            <TouchableOpacity
-              onPress={() => {
-                if (!user) return;
-                if (checking === 'followers') {
-                  fetchFollowers();
-                } else {
-                  fetchFollowing();
-                }
-              }}>
-              <Text className="text-primary-600">Retry</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-      {!loading && !error && checking === 'followers' && followers.length === 0 && (
-        <Text className="text-base text-neutral-500 dark:text-neutral-400">No followers yet.</Text>
+      {isLoading && list.length === 0 && (
+        <View className="items-center py-6">
+          <ActivityIndicator color={theme.primary[500]} />
+        </View>
       )}
 
-      {!loading && !error && checking === 'following' && following.length === 0 && (
-        <Text className="text-base text-neutral-500 dark:text-neutral-400">
+      {error && !isLoading && (
+        <View className="items-center gap-3 py-6">
+          <Text className="font-SpaceGrotesk-Regular text-base text-red-500">{error}</Text>
+          <TouchableOpacity
+            onPress={() => (checking === 'followers' ? fetchFollowers() : fetchFollowing())}
+            className="rounded-lg bg-primary-200 px-4 py-2 dark:bg-primary-800">
+            <Text className="font-SpaceGrotesk-Medium text-sm text-primary-700 dark:text-primary-300">
+              Try again
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!isLoading && !error && checking === 'followers' && followers.length === 0 && (
+        <Text className="font-SpaceGrotesk-Regular text-base text-neutral-500 dark:text-neutral-400">
+          No followers yet.
+        </Text>
+      )}
+
+      {!isLoading && !error && checking === 'following' && following.length === 0 && (
+        <Text className="font-SpaceGrotesk-Regular text-base text-neutral-500 dark:text-neutral-400">
           You&apos;re not following anyone yet.
         </Text>
       )}
 
       <View className="max-h-[55vh]">
         <FlatList
-          data={checking === 'followers' ? followers : following}
+          data={list}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
@@ -170,7 +150,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
       </View>
       <View className="items-center">
         <Text className="font-SpaceGrotesk-Regular text-sm text-primary-400 dark:text-primary-600">
-          {checking === 'followers' ? followers.length : following.length} total
+          {list.length} total
         </Text>
       </View>
     </BottomSheet>
