@@ -13,6 +13,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import CommentForm from '~/components/CommentForm';
+import ErrorScreen from '~/components/ErrorScreen';
 import LiveCommentItem from '~/components/LiveCommentItem';
 import LiveSettingsModal, {
   DEFAULT_LIVE_SETTINGS,
@@ -70,6 +71,7 @@ export default function LiveScreen() {
   const mediaComments = fetchedComments[contextKey];
   const comments = useMemo(() => mediaComments?.comments ?? [], [mediaComments]);
   const commentsLoading = mediaComments?.isLoading ?? false;
+  const commentsError = mediaComments?.error ?? null;
 
   const visibleComments = useMemo(
     () =>
@@ -222,6 +224,22 @@ export default function LiveScreen() {
         <View className="mx-4 mt-4 flex-1 overflow-hidden">
           {commentsLoading ? (
             <ActivityIndicator className="flex-1" color={theme.primary[500]} />
+          ) : commentsError ? (
+            <ErrorScreen
+              fullScreen={false}
+              title="Oops!"
+              message={commentsError}
+              onRetry={() =>
+                mediaType === 'movie'
+                  ? fetchCommentsForMedia({ mediaId, force: true })
+                  : fetchCommentsForMedia({
+                      mediaId,
+                      seasonNumber: selectedSeason,
+                      episodeNumber: selectedEpisode,
+                      force: true,
+                    })
+              }
+            />
           ) : (
             <FlatList
               ref={flatListRef}

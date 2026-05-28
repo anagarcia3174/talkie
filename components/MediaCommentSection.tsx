@@ -266,7 +266,16 @@ export default function MediaCommentSection({
           color={theme.primary[950]}
         />
       ) : error ? (
-        <ErrorScreen fullScreen={false} title="Oops!" message={error} />
+        <ErrorScreen
+          fullScreen={false}
+          title="Oops!"
+          message={error}
+          onRetry={() =>
+            mediaType === 'movie'
+              ? fetchCommentsForMedia({ mediaId, force: true })
+              : fetchCommentsForMedia({ mediaId, seasonNumber: season, episodeNumber: episode, force: true })
+          }
+        />
       ) : (
         <View
           className={`mx-4 mt-2 flex-1 overflow-hidden rounded-t-2xl ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>
