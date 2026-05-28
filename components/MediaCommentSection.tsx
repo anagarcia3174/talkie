@@ -47,6 +47,7 @@ export default function MediaCommentSection({
   const details = mediaState?.details ?? null;
   const detailsLoading = mediaState?.isLoading ?? false;
   const hasFetchedDetails = mediaState?.hasFetched ?? false;
+  const detailsError = mediaState?.error ?? null;
 
   const [timestamp, setTimestamp] = useState(0);
   const [season, setSeason] = useState(1);
@@ -231,8 +232,19 @@ export default function MediaCommentSection({
   return (
     <View className="flex-1">
       <View className="px-4">
-        {!details || detailsLoading ? (
+        {detailsLoading ? (
           <TimestampSkeleton />
+        ) : detailsError ? (
+          <View className="flex-row items-center gap-3 py-3">
+            <Text className="font-SpaceGrotesk-Regular text-sm text-red-500">
+              Failed to load media details.
+            </Text>
+            <TouchableOpacity onPress={() => fetchMediaDetails(mediaId, true)}>
+              <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
+                Try again
+              </Text>
+            </TouchableOpacity>
+          </View>
         ) : details ? (
           <TimestampPicker
             mediaType={mediaType}

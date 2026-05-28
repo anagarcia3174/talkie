@@ -52,6 +52,7 @@ export default function LiveScreen() {
   const details = mediaState?.details ?? null;
   const detailsLoading = mediaState?.isLoading ?? false;
   const hasFetchedDetails = mediaState?.hasFetched ?? false;
+  const detailsError = mediaState?.error ?? null;
 
   const [selectedTimestamp, setSelectedTimestamp] = useState(Number(initialTimestamp ?? 0));
   const [selectedSeason, setSelectedSeason] = useState(season ? Number(season) : undefined);
@@ -204,8 +205,19 @@ export default function LiveScreen() {
         </View>
 
         <View className="px-4">
-          {!details || detailsLoading ? (
+          {detailsLoading ? (
             <TimestampSkeleton />
+          ) : detailsError ? (
+            <View className="flex-row items-center gap-3 py-3">
+              <Text className="font-SpaceGrotesk-Regular text-sm text-red-500">
+                Failed to load media details.
+              </Text>
+              <TouchableOpacity onPress={() => fetchMediaDetails(mediaId, true)} hitSlop={8}>
+                <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
+                  Try again
+                </Text>
+              </TouchableOpacity>
+            </View>
           ) : (
             <TimestampPicker
               mediaType={parsedMediaType}

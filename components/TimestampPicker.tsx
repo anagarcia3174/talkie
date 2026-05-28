@@ -22,6 +22,7 @@ interface TimestampPickerProps {
   pickersDisabled?: boolean;
   onOpenLiveMode?: () => void;
   externalPaused?: boolean;
+  hidePlayPause?: boolean;
 }
 
 export default function TimestampPicker({
@@ -37,6 +38,7 @@ export default function TimestampPicker({
   pickersDisabled = false,
   onOpenLiveMode,
   externalPaused = false,
+  hidePlayPause = false,
 }: TimestampPickerProps) {
   const theme = useTheme();
   const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
@@ -173,7 +175,7 @@ export default function TimestampPicker({
         )}
       </View>
       <View className="flex-row items-center gap-1 px-1">
-        {!onOpenLiveMode && (
+        {!onOpenLiveMode && !hidePlayPause && (
           <TouchableOpacity
             onPress={() => {
               haptics.action();
