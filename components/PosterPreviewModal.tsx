@@ -18,7 +18,7 @@ export default function PosterPreviewModal({
     <Modal visible={visible} transparent animationType="fade">
       <View className="flex-1 items-center justify-center bg-primary-100  dark:bg-primary-950">
         {/* Close Button */}
-        <TouchableOpacity onPress={onClose} className="absolute left-6 top-16 z-10">
+        <TouchableOpacity onPress={onClose} hitSlop={10} className="absolute left-6 top-16 z-10">
           <X size={28} color={theme.primary[900]} />
         </TouchableOpacity>
 

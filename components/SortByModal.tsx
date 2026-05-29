@@ -52,12 +52,13 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
         </Text>
         <TouchableOpacity
           onPress={onClose}
+          hitSlop={8}
           className="rounded-lg bg-primary-200 p-1  dark:bg-primary-800">
           <X size={20} color={theme.primary[950]} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
-      <View>
+      <View className="gap-y-2">
         <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
           Sort By
         </Text>
@@ -83,7 +84,7 @@ export default function SortByModal({ isVisible, onClose, onSelect }: SortByModa
           })}
         </View>
       </View>
-      <View>
+      <View className="gap-y-2">
         {/* Sort Options */}
         <Text className="font-SpaceGrotesk-Bold text-base text-primary-950 dark:text-primary-50">
           Sort Order

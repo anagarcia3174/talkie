@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useList } from '~/store/listStore';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,34 +19,21 @@ export default function ListScreen() {
   const listId = Number(id);
   const isValidListId = Number.isFinite(listId);
 
-  const { listsById, listItems, fetchListItems } = useList();
+  const { listsById, listItems, listItemsState, fetchListItems } = useList();
   const { user } = useAuth();
   const { blockedIds } = useBlock();
   const list = isValidListId ? listsById[listId] : undefined;
   const items = isValidListId ? listItems[listId] : undefined;
-  const [itemsError, setItemsError] = useState<string | null>(null);
-  const [loadingItems, setLoadingItems] = useState(false);
+  const itemState = isValidListId ? listItemsState[listId] : undefined;
+  const loadingItems = itemState?.isLoading ?? false;
+  const itemsError = itemState?.error ?? null;
   const actions = useListcreenActions(listId);
   const theme = useTheme();
   const router = useRouter();
 
   useEffect(() => {
-    const loadItems = async () => {
-      if (!isValidListId || !list || items) return;
-
-      setLoadingItems(true);
-      setItemsError(null);
-
-      const result = await fetchListItems(listId);
-
-      if (!result.success) {
-        setItemsError(result.error);
-      }
-
-      setLoadingItems(false);
-    };
-
-    loadItems();
+    if (!isValidListId || !list || items) return;
+    fetchListItems(listId);
   }, [isValidListId, list, items, listId, fetchListItems]);
 
   if (!isValidListId) {
@@ -68,7 +55,14 @@ export default function ListScreen() {
   }
 
   if (!items && itemsError) {
-    return <ErrorScreen fullScreen title="Oops!" message={itemsError} />;
+    return (
+      <ErrorScreen
+        fullScreen
+        title="Oops!"
+        message={itemsError}
+        onRetry={() => fetchListItems(listId)}
+      />
+    );
   }
 
   if (list && blockedIds.has(list.user_id)) {

@@ -26,7 +26,10 @@ interface LiveSettingsModalProps {
 
 function Toggle({ active, onPress }: { active: boolean; onPress: () => void }) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}>
       <View
         className={`h-6 w-11 justify-center rounded-full px-0.5 ${
           active ? 'bg-primary-800 dark:bg-primary-900' : 'bg-primary-300 dark:bg-primary-700'

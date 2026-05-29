@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, View, FlatList } from 'react-native';
+import { ActivityIndicator, View, FlatList, Text, TouchableOpacity } from 'react-native';
 import TimestampPicker from './TimestampPicker';
 import { useComment } from '~/store/commentStore';
 import { useTheme } from '~/hooks/useTheme';
@@ -47,6 +47,7 @@ export default function MediaCommentSection({
   const details = mediaState?.details ?? null;
   const detailsLoading = mediaState?.isLoading ?? false;
   const hasFetchedDetails = mediaState?.hasFetched ?? false;
+  const detailsError = mediaState?.error ?? null;
 
   const [timestamp, setTimestamp] = useState(0);
   const [season, setSeason] = useState(1);
@@ -231,8 +232,19 @@ export default function MediaCommentSection({
   return (
     <View className="flex-1">
       <View className="px-4">
-        {!details || detailsLoading ? (
+        {detailsLoading ? (
           <TimestampSkeleton />
+        ) : detailsError ? (
+          <View className="flex-row items-center gap-3 py-3">
+            <Text className="font-SpaceGrotesk-Regular text-sm text-red-500">
+              Failed to load media details.
+            </Text>
+            <TouchableOpacity onPress={() => fetchMediaDetails(mediaId, true)}>
+              <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
+                Try again
+              </Text>
+            </TouchableOpacity>
+          </View>
         ) : details ? (
           <TimestampPicker
             mediaType={mediaType}
@@ -266,7 +278,21 @@ export default function MediaCommentSection({
           color={theme.primary[950]}
         />
       ) : error ? (
-        <ErrorScreen fullScreen={false} title="Oops!" message={error} />
+        <ErrorScreen
+          fullScreen={false}
+          title="Oops!"
+          message={error}
+          onRetry={() =>
+            mediaType === 'movie'
+              ? fetchCommentsForMedia({ mediaId, force: true })
+              : fetchCommentsForMedia({
+                  mediaId,
+                  seasonNumber: season,
+                  episodeNumber: episode,
+                  force: true,
+                })
+          }
+        />
       ) : (
         <View
           className={`mx-4 mt-2 flex-1 overflow-hidden rounded-t-2xl ${comments.length > 0 ? 'bg-primary-100 dark:bg-primary-900' : ''}`}>

@@ -23,6 +23,8 @@ import {
 
 interface ListState {
   listsById: Record<number, ListWithMeta>;
+  isLoadingLists: boolean;
+  listsError: string | null;
 
   // ids for convenience / ordering
   defaultListIds: {
@@ -36,6 +38,7 @@ interface ListState {
    * ======================= */
 
   listItems: Record<number, ListItemWithMedia[] | undefined>;
+  listItemsState: Record<number, { isLoading: boolean; error: string | null }>;
 
   // list actions
   fetchLists: () => Promise<StoreResult<void>>;
@@ -58,18 +61,24 @@ interface ListState {
 
 export const useList = create<ListState>((set, get) => ({
   listsById: {},
+  isLoadingLists: false,
+  listsError: null,
   defaultListIds: {
     library: null,
     favorites: null,
   },
   customListIds: [],
   listItems: {},
+  listItemsState: {},
 
   // ---- LIST ACTIONS ----
   fetchLists: async () => {
+    set({ isLoadingLists: true, listsError: null });
+
     const [ownedResult, likedResult] = await Promise.all([getOwnedLists(), getLikedLists()]);
 
     if (!ownedResult.success) {
+      set({ isLoadingLists: false, listsError: ownedResult.error });
       return { success: false, error: ownedResult.error };
     }
 
@@ -106,6 +115,7 @@ export const useList = create<ListState>((set, get) => ({
 
     set({
       listsById,
+      isLoadingLists: false,
       defaultListIds: {
         library: libraryId,
         favorites: favoritesId,
@@ -294,12 +304,23 @@ export const useList = create<ListState>((set, get) => ({
 
   // ---- ITEM ACTIONS ----
   fetchListItems: async (listId) => {
+    set((state) => ({
+      listItemsState: {
+        ...state.listItemsState,
+        [listId]: { isLoading: true, error: null },
+      },
+    }));
+
     const result = await getListItems(listId);
+
     if (!result.success) {
-      return {
-        success: false,
-        error: result.error,
-      };
+      set((state) => ({
+        listItemsState: {
+          ...state.listItemsState,
+          [listId]: { isLoading: false, error: result.error },
+        },
+      }));
+      return { success: false, error: result.error };
     }
 
     const items = result.data ?? [];
@@ -308,6 +329,10 @@ export const useList = create<ListState>((set, get) => ({
       listItems: {
         ...state.listItems,
         [listId]: items,
+      },
+      listItemsState: {
+        ...state.listItemsState,
+        [listId]: { isLoading: false, error: null },
       },
       listsById: {
         ...state.listsById,

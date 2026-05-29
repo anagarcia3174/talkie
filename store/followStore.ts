@@ -20,6 +20,8 @@ interface FollowState {
   following: Profile[];
   isLoadingFollowers: boolean;
   isLoadingFollowing: boolean;
+  followersError: string | null;
+  followingError: string | null;
 
   fetchFollowingIds: () => Promise<StoreResult<void>>;
   fetchFollowerIds: () => Promise<StoreResult<void>>;
@@ -43,6 +45,8 @@ export const useFollow = create<FollowState>((set, get) => ({
   following: [],
   isLoadingFollowers: false,
   isLoadingFollowing: false,
+  followersError: null,
+  followingError: null,
   fetchFollowingIds: async () => {
     if (get().isLoadingFollowingIds) return { success: true };
     set({ isLoadingFollowingIds: true });
@@ -118,13 +122,14 @@ export const useFollow = create<FollowState>((set, get) => ({
 
   fetchFollowers: async () => {
     if (get().isLoadingFollowers) return { success: true };
-    set({ isLoadingFollowers: true });
+    set({ isLoadingFollowers: true, followersError: null });
 
     const result = await getFollowers();
 
     set({ isLoadingFollowers: false });
 
     if (!result.success) {
+      set({ followersError: result.error });
       return { success: false, error: result.error };
     }
 
@@ -140,13 +145,14 @@ export const useFollow = create<FollowState>((set, get) => ({
 
   fetchFollowing: async () => {
     if (get().isLoadingFollowing) return { success: true };
-    set({ isLoadingFollowing: true });
+    set({ isLoadingFollowing: true, followingError: null });
 
     const result = await getFollowing();
 
     set({ isLoadingFollowing: false });
 
     if (!result.success) {
+      set({ followingError: result.error });
       return { success: false, error: result.error };
     }
 
@@ -191,6 +197,8 @@ export const useFollow = create<FollowState>((set, get) => ({
       following: [],
       isLoadingFollowers: false,
       isLoadingFollowing: false,
+      followersError: null,
+      followingError: null,
     });
   },
 }));

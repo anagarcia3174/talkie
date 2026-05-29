@@ -46,6 +46,7 @@ export default function ReportModal({ type, visible, onClose, onSubmit }: Report
         </Text>
         <TouchableOpacity
           onPress={onClose}
+          hitSlop={8}
           className="rounded-lg bg-primary-200 p-1 dark:bg-primary-800">
           <X size={20} color={theme.primary[950]} strokeWidth={2} />
         </TouchableOpacity>

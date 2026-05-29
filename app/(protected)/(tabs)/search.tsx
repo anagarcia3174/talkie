@@ -173,6 +173,7 @@ export default function Search() {
           />
           <TouchableOpacity
             className="rounded-lg bg-primary-300 p-1.5 dark:bg-primary-800"
+            hitSlop={8}
             onPress={() => {
               haptics.action();
               setSortModalVisible(true);

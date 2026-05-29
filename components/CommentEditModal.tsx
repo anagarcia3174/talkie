@@ -30,7 +30,7 @@ export default function CommentEditModal({
   episode = 1,
   onSubmit,
 }: CommentEditModalProps) {
-  const { mediaDetails } = useMedia();
+  const { mediaDetails, fetchMediaDetails } = useMedia();
   const theme = useTheme();
   const mediaState = mediaDetails[mediaId];
   const details = mediaState?.details ?? null;
@@ -65,12 +65,19 @@ export default function CommentEditModal({
       {isLoading ? (
         <TimestampSkeleton />
       ) : error ? (
-        <View>
-          <Text className="text-sm text-red-500">Failed to load media details.</Text>
+        <View className="flex-row items-center gap-3 py-2">
+          <Text className="font-SpaceGrotesk-Regular text-sm text-red-500">
+            Failed to load media details.
+          </Text>
+          <TouchableOpacity onPress={() => fetchMediaDetails(mediaId, true)}>
+            <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
+              Try again
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : details ? (
         <View className="mb-4">
-          <View className="-mx-4">
+          <View className="-mx-2 mb-4">
             <TimestampPicker
               mediaType={mediaType}
               details={details}
@@ -81,6 +88,7 @@ export default function CommentEditModal({
               onSeasonChange={() => {}}
               onEpisodeChange={() => {}}
               pickersDisabled
+              hidePlayPause
             />
           </View>
           <CommentForm

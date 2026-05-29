@@ -13,6 +13,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import CommentForm from '~/components/CommentForm';
+import ErrorScreen from '~/components/ErrorScreen';
 import LiveCommentItem from '~/components/LiveCommentItem';
 import LiveSettingsModal, {
   DEFAULT_LIVE_SETTINGS,
@@ -51,6 +52,7 @@ export default function LiveScreen() {
   const details = mediaState?.details ?? null;
   const detailsLoading = mediaState?.isLoading ?? false;
   const hasFetchedDetails = mediaState?.hasFetched ?? false;
+  const detailsError = mediaState?.error ?? null;
 
   const [selectedTimestamp, setSelectedTimestamp] = useState(Number(initialTimestamp ?? 0));
   const [selectedSeason, setSelectedSeason] = useState(season ? Number(season) : undefined);
@@ -70,6 +72,7 @@ export default function LiveScreen() {
   const mediaComments = fetchedComments[contextKey];
   const comments = useMemo(() => mediaComments?.comments ?? [], [mediaComments]);
   const commentsLoading = mediaComments?.isLoading ?? false;
+  const commentsError = mediaComments?.error ?? null;
 
   const visibleComments = useMemo(
     () =>
@@ -182,6 +185,7 @@ export default function LiveScreen() {
           <View className="flex-row items-center justify-between">
             <TouchableOpacity
               onPress={() => router.back()}
+              hitSlop={8}
               className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
               <ChevronLeft color={theme.primary[950]} size={20} strokeWidth={2} />
             </TouchableOpacity>
@@ -193,6 +197,7 @@ export default function LiveScreen() {
             </Text>
             <TouchableOpacity
               onPress={() => setSettingsVisible(true)}
+              hitSlop={8}
               className="rounded-md bg-primary-100 p-1 dark:bg-primary-900">
               <Settings color={theme.primary[950]} size={20} />
             </TouchableOpacity>
@@ -200,9 +205,20 @@ export default function LiveScreen() {
         </View>
 
         <View className="px-4">
-          {!details || detailsLoading ? (
+          {detailsLoading ? (
             <TimestampSkeleton />
-          ) : (
+          ) : detailsError ? (
+            <View className="flex-row items-center gap-3 py-3">
+              <Text className="font-SpaceGrotesk-Regular text-sm text-red-500">
+                Failed to load media details.
+              </Text>
+              <TouchableOpacity onPress={() => fetchMediaDetails(mediaId, true)} hitSlop={8}>
+                <Text className="font-SpaceGrotesk-Medium text-sm text-primary-500 dark:text-primary-400">
+                  Try again
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : details ? (
             <TimestampPicker
               mediaType={parsedMediaType}
               details={details}
@@ -214,12 +230,28 @@ export default function LiveScreen() {
               onEpisodeChange={setSelectedEpisode}
               externalPaused={liveSettings.pauseWhileTyping && isTyping}
             />
-          )}
+          ) : null}
         </View>
 
         <View className="mx-4 mt-4 flex-1 overflow-hidden">
           {commentsLoading ? (
             <ActivityIndicator className="flex-1" color={theme.primary[500]} />
+          ) : commentsError ? (
+            <ErrorScreen
+              fullScreen={false}
+              title="Oops!"
+              message={commentsError}
+              onRetry={() =>
+                mediaType === 'movie'
+                  ? fetchCommentsForMedia({ mediaId, force: true })
+                  : fetchCommentsForMedia({
+                      mediaId,
+                      seasonNumber: selectedSeason,
+                      episodeNumber: selectedEpisode,
+                      force: true,
+                    })
+              }
+            />
           ) : (
             <FlatList
               ref={flatListRef}

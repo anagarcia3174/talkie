@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useList } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Lock, Plus } from 'lucide-react-native';
+import { Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import CreateListModal from '~/components/CreateListModal';
@@ -191,6 +191,7 @@ export default function Lists() {
           {customListIds.length < 5 && (
             <TouchableOpacity
               disabled={createLoading}
+              hitSlop={8}
               onPress={() => {
                 haptics.action();
                 setCreateListModalVisible(true);
@@ -221,9 +222,6 @@ export default function Lists() {
                 {library.name}
               </Text>
               <View className="flex-row items-center gap-1.5">
-                {library.is_private && (
-                  <Lock size={14} className="text-primary-500 dark:text-primary-400" />
-                )}
                 <View className="rounded-full bg-primary-200 px-2.5 py-0.5 dark:bg-primary-800">
                   <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-600 dark:text-primary-400">
                     {library.item_count} {library.item_count === 1 ? 'item' : 'items'}
@@ -267,9 +265,6 @@ export default function Lists() {
                 {favorites.name}
               </Text>
               <View className="flex-row items-center gap-1.5">
-                {favorites.is_private && (
-                  <Lock size={14} className="text-primary-500 dark:text-primary-400" />
-                )}
                 <View className="rounded-full bg-primary-200 px-2.5 py-0.5 dark:bg-primary-800">
                   <Text className="font-SpaceGrotesk-SemiBold text-xs text-primary-600 dark:text-primary-400">
                     {favorites.item_count} {favorites.item_count === 1 ? 'item' : 'items'}

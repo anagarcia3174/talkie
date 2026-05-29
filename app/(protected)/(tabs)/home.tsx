@@ -113,7 +113,7 @@ export default function Home() {
         {isInitialLoading ? (
           <LoadingScreen fullScreen={false} />
         ) : error ? (
-          <ErrorScreen title="Oops!" message={error} />
+          <ErrorScreen title="Oops!" message={error} onRetry={() => fetchHomeData(true)} />
         ) : (
           <View className="flex-1 gap-y-4">
             {library && (

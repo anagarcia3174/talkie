@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '~/hooks/useTheme';
 import { AlertTriangle } from 'lucide-react-native';
@@ -7,12 +7,14 @@ interface ErrorScreenProps {
   title?: string;
   message?: string;
   fullScreen?: boolean;
+  onRetry?: () => void;
 }
 
 export default function ErrorScreen({
   title = 'Whoops!',
   message = 'An unexpected error occurred. Please try again.',
   fullScreen = true,
+  onRetry,
 }: ErrorScreenProps) {
   const theme = useTheme();
 
@@ -34,6 +36,16 @@ export default function ErrorScreen({
           {message}
         </Text>
       </View>
+
+      {onRetry && (
+        <TouchableOpacity
+          onPress={onRetry}
+          className="rounded-xl bg-primary-200 px-6 py-3 dark:bg-primary-800">
+          <Text className="font-SpaceGrotesk-SemiBold text-base text-primary-800 dark:text-primary-200">
+            Try again
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 

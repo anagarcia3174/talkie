@@ -12,6 +12,7 @@ interface MediaDetailsState {
 interface MediaState {
   loading: boolean;
   hasFetchedHomeData: boolean;
+  homeDataError: string | null;
   trendingMovies: Media[];
   trendingShows: Media[];
   mediaDetails: Record<number, MediaDetailsState>;
@@ -22,6 +23,7 @@ interface MediaState {
 export const useMedia = create<MediaState>((set, get) => ({
   loading: false,
   hasFetchedHomeData: false,
+  homeDataError: null,
   trendingMovies: [],
   trendingShows: [],
   mediaDetails: {},
@@ -36,7 +38,7 @@ export const useMedia = create<MediaState>((set, get) => ({
       return { success: true };
     }
 
-    set({ loading: true });
+    set({ loading: true, homeDataError: null });
 
     const [trendingMoviesResult, trendingShowsResult] = await Promise.all([
       getTrendingMovies(),
@@ -44,12 +46,12 @@ export const useMedia = create<MediaState>((set, get) => ({
     ]);
 
     if (!trendingMoviesResult.success) {
-      set({ loading: false });
+      set({ loading: false, homeDataError: trendingMoviesResult.error });
       return { success: false, error: trendingMoviesResult.error };
     }
 
     if (!trendingShowsResult.success) {
-      set({ loading: false });
+      set({ loading: false, homeDataError: trendingShowsResult.error });
       return { success: false, error: trendingShowsResult.error };
     }
 
