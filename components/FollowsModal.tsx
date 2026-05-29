@@ -42,8 +42,7 @@ export default function FollowsModal({ checking, visible, onClose }: FollowsModa
     if (checking === 'followers') {
       const profileIds = new Set(followers.map((u) => u.id));
       const isOutOfSync =
-        followerIds.size !== profileIds.size ||
-        [...followerIds].some((id) => !profileIds.has(id));
+        followerIds.size !== profileIds.size || [...followerIds].some((id) => !profileIds.has(id));
       if (isOutOfSync) fetchFollowers();
     } else {
       const profileIds = new Set(following.map((u) => u.id));

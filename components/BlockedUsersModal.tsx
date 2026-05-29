@@ -16,7 +16,14 @@ interface BlockedUsersModalProps {
 }
 
 export default function BlockedUsersModal({ visible, onClose }: BlockedUsersModalProps) {
-  const { blockedIds, blockedUsers, isLoadingBlockedUsers, blockedUsersError, fetchBlockedUsers, unblock } = useBlock();
+  const {
+    blockedIds,
+    blockedUsers,
+    isLoadingBlockedUsers,
+    blockedUsersError,
+    fetchBlockedUsers,
+    unblock,
+  } = useBlock();
   const { user } = useAuth();
   const theme = useTheme();
 

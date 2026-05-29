@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { useList } from '~/store/listStore';
 import { useTheme } from '~/hooks/useTheme';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Lock, Plus } from 'lucide-react-native';
+import { Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import CreateListModal from '~/components/CreateListModal';

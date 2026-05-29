@@ -218,7 +218,7 @@ export default function LiveScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          ) : (
+          ) : details ? (
             <TimestampPicker
               mediaType={parsedMediaType}
               details={details}
@@ -230,7 +230,7 @@ export default function LiveScreen() {
               onEpisodeChange={setSelectedEpisode}
               externalPaused={liveSettings.pauseWhileTyping && isTyping}
             />
-          )}
+          ) : null}
         </View>
 
         <View className="mx-4 mt-4 flex-1 overflow-hidden">

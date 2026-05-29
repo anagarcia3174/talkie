@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, View, FlatList } from 'react-native';
+import { ActivityIndicator, View, FlatList, Text, TouchableOpacity } from 'react-native';
 import TimestampPicker from './TimestampPicker';
 import { useComment } from '~/store/commentStore';
 import { useTheme } from '~/hooks/useTheme';
@@ -285,7 +285,12 @@ export default function MediaCommentSection({
           onRetry={() =>
             mediaType === 'movie'
               ? fetchCommentsForMedia({ mediaId, force: true })
-              : fetchCommentsForMedia({ mediaId, seasonNumber: season, episodeNumber: episode, force: true })
+              : fetchCommentsForMedia({
+                  mediaId,
+                  seasonNumber: season,
+                  episodeNumber: episode,
+                  force: true,
+                })
           }
         />
       ) : (
