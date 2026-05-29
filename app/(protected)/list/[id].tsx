@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useList } from '~/store/listStore';
+import { analytics } from '~/utils/analytics';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ListContent from '~/components/ListContent';
@@ -35,6 +36,11 @@ export default function ListScreen() {
     if (!isValidListId || !list || items) return;
     fetchListItems(listId);
   }, [isValidListId, list, items, listId, fetchListItems]);
+
+  useEffect(() => {
+    if (!list || !user) return;
+    analytics.listViewed({ list_id: id, is_own: list.user_id === user.id });
+  }, [id, list, user]);
 
   if (!isValidListId) {
     return (

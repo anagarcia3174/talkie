@@ -8,6 +8,7 @@ import {
   unfollowUser,
 } from '~/services/followService';
 import { Profile, StoreResult } from '~/types/supabaseTypes';
+import { analytics } from '~/utils/analytics';
 
 interface FollowState {
   // relationship cache (keyed by target user id)
@@ -87,6 +88,8 @@ export const useFollow = create<FollowState>((set, get) => ({
       return { success: false, error: result.error };
     }
 
+    analytics.userFollowed();
+
     set((state) => {
       const updatedIds = new Set(state.followingIds);
       updatedIds.add(targetUserId);
@@ -106,6 +109,8 @@ export const useFollow = create<FollowState>((set, get) => ({
     if (!result.success) {
       return { success: false, error: result.error };
     }
+
+    analytics.userUnfollowed();
 
     set((state) => {
       const updatedIds = new Set(state.followingIds);

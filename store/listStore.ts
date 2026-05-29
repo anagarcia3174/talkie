@@ -20,6 +20,7 @@ import {
   updateItemStatus,
   getLikedLists,
 } from '~/services/listService';
+import { analytics } from '~/utils/analytics';
 
 interface ListState {
   listsById: Record<number, ListWithMeta>;
@@ -166,6 +167,8 @@ export const useList = create<ListState>((set, get) => ({
 
     const createdList = result.data; // List
 
+    analytics.listCreated({ is_private: createdList.is_private });
+
     set((state) => ({
       listsById: {
         ...state.listsById,
@@ -189,6 +192,8 @@ export const useList = create<ListState>((set, get) => ({
         error: result.error,
       };
     }
+
+    analytics.listUpdated();
 
     const updatedList = result.data;
     set((state) => {
@@ -217,6 +222,8 @@ export const useList = create<ListState>((set, get) => ({
         error: result.error,
       };
     }
+
+    analytics.listDeleted();
 
     set((state) => {
       const { [listId]: _, ...remainingLists } = state.listsById;
@@ -266,6 +273,7 @@ export const useList = create<ListState>((set, get) => ({
       return { success: false, error: result.error };
     }
 
+    analytics.listLiked();
     return { success: true };
   },
 
@@ -299,6 +307,7 @@ export const useList = create<ListState>((set, get) => ({
       return { success: false, error: result.error };
     }
 
+    analytics.listUnliked();
     return { success: true };
   },
 
@@ -377,6 +386,9 @@ export const useList = create<ListState>((set, get) => ({
         error: result.error,
       };
     }
+
+    analytics.listItemRemoved();
+
     set((state) => {
       const existingItems = state.listItems[item.list_id];
 

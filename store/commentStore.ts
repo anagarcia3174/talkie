@@ -8,6 +8,7 @@ import {
   getRecentCommentsFeed,
 } from '~/services/commentService';
 import { reportComment } from '~/services/reportService';
+import { analytics } from '~/utils/analytics';
 import {
   CommentWithUser,
   Comment,
@@ -245,6 +246,8 @@ export const useComment = create<CommentState>((set, get) => ({
       return result;
     }
 
+    analytics.commentCreated({ media_id: comment.media_id });
+
     const newComment = result.data;
 
     const { baseKey, episodeKey } = buildCommentKey({
@@ -290,6 +293,8 @@ export const useComment = create<CommentState>((set, get) => ({
     if (!result.success) {
       return result;
     }
+
+    analytics.commentDeleted();
 
     const { baseKey, episodeKey } = buildCommentKey(contextKey);
 

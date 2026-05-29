@@ -3,7 +3,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Media } from '~/types/supabaseTypes';
 import ListSelectionModal from '~/components/ListSelectionModal';
 import { useAuth } from '~/context/AuthContext';
@@ -15,6 +15,7 @@ import PosterPreviewModal from '~/components/PosterPreviewModal';
 import MediaCommentSection from '~/components/MediaCommentSection';
 import MediaReviewSection from '~/components/MediaReviewSection';
 import { haptics } from '~/utils/haptics';
+import { analytics } from '~/utils/analytics';
 
 const CONTENT_OPTIONS = ['Reviews', 'Comments'];
 
@@ -30,6 +31,14 @@ export default function MediaScreen() {
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { addItemToList } = useList();
+
+  useEffect(() => {
+    analytics.mediaViewed({
+      media_id: media.id,
+      media_type: media.media_type,
+      media_title: media.title,
+    });
+  }, [media.id, media.media_type, media.title]);
 
   const handleAddToList = async (listIds: number[]) => {
     if (!listIds.length || !user?.id) return;
@@ -58,6 +67,7 @@ export default function MediaScreen() {
         onPress: () => Toast.hide(),
       });
     } else {
+      analytics.listItemAdded({ media_type: media.media_type });
       haptics.success();
       Toast.show({
         type: 'success',

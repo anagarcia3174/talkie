@@ -14,6 +14,7 @@ import {
   updateReview as updateReviewService,
 } from '~/services/reviewService';
 import { reportReview } from '~/services/reportService';
+import { analytics } from '~/utils/analytics';
 
 interface MediaReviewsState {
   reviews: ReviewWithUser[];
@@ -106,6 +107,8 @@ export const useReview = create<ReviewState>((set, get) => ({
       return result;
     }
 
+    analytics.reviewCreated({ media_id: review.media_id, rating: review.rating });
+
     const newReview = result.data;
     if (newReview) {
       set((state) => {
@@ -131,6 +134,8 @@ export const useReview = create<ReviewState>((set, get) => ({
     if (!result.success) {
       return result;
     }
+
+    analytics.reviewDeleted({ media_id: mediaId });
 
     set((state) => {
       const updated = { ...state.fetchedReviews };
@@ -245,6 +250,10 @@ export const useReview = create<ReviewState>((set, get) => ({
     }));
 
     const result = await updateReviewService(reviewId, updates);
+
+    if (result.success) {
+      analytics.reviewUpdated({ media_id: mediaId });
+    }
 
     // Rollback on failure
     if (!result.success) {

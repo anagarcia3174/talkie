@@ -1,6 +1,7 @@
 import '~/global.css';
 
-import { Stack } from 'expo-router';
+import * as Sentry from '@sentry/react-native';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
@@ -9,6 +10,13 @@ import LoadingScreen from '~/components/LoadingScreen';
 import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 import { toastConfig } from '~/components/ToastConfig';
 import Toast from 'react-native-toast-message';
+import { posthog } from '~/utils/analytics';
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  environment: __DEV__ ? 'development' : 'production',
+});
 
 SplashScreen.preventAutoHideAsync();
 
@@ -41,7 +49,7 @@ const InitialLayout = () => {
   );
 };
 
-export default function RootLayout() {
+function RootLayout() {
   const [loaded, error] = useFonts({
     'SpaceGrotesk-Bold': require('../assets/fonts/SpaceGrotesk-Bold.ttf'),
     'SpaceGrotesk-Light': require('../assets/fonts/SpaceGrotesk-Light.ttf'),
@@ -50,12 +58,17 @@ export default function RootLayout() {
     'SpaceGrotesk-SemiBold': require('../assets/fonts/SpaceGrotesk-SemiBold.ttf'),
   });
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  useEffect(() => {
+    posthog.screen(pathname);
+  }, [pathname]);
 
   if (!loaded && !error) {
     return null;
@@ -74,3 +87,5 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);
