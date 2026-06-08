@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { analytics } from '~/utils/analytics';
 import LoadingScreen from '~/components/LoadingScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
@@ -48,6 +49,11 @@ export default function ProfileScreen() {
 
     fetchOtherProfile(id);
   }, [id, fetchOtherProfile]);
+
+  useEffect(() => {
+    if (!profile || !user) return;
+    analytics.profileViewed({ profile_id: profile.id, is_own: profile.id === user.id });
+  }, [profile, user]);
 
   useEffect(() => {
     if (!profile) return;

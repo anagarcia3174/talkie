@@ -3,6 +3,7 @@ import { Text, View, TextInput, TouchableOpacity } from 'react-native';
 import { ArrowDownUp, Search as SearchIcon } from 'lucide-react-native';
 import { useTheme } from '~/hooks/useTheme';
 import { useState } from 'react';
+import { analytics } from '~/utils/analytics';
 import { searchMedia } from '~/services/mediaService';
 import { Media, SearchPublicListResult } from '~/types/supabaseTypes';
 import { useRouter } from 'expo-router';
@@ -97,6 +98,7 @@ export default function Search() {
       });
     } else {
       setMediaResults(result.data);
+      analytics.searchPerformed({ query, result_count: result.data.length });
     }
   };
 
@@ -125,6 +127,7 @@ export default function Search() {
       });
     } else {
       setListResults(listResult.data);
+      analytics.searchPerformed({ query, result_count: listResult.data.length });
     }
   };
 

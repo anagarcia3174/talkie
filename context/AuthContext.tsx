@@ -6,6 +6,7 @@ import { useList } from '~/store/listStore';
 import { restoreUser } from '~/services/profileService';
 import { useFollow } from '~/store/followStore';
 import { useBlock } from '~/store/blockStore';
+import { analytics, identifyUser, resetUser } from '~/utils/analytics';
 
 interface AuthContextType {
   user: User | null;
@@ -83,12 +84,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const result = await loadUserData();
 
         if (result.accountDeleted) {
+          analytics.accountDeleted();
           setAccountDeleted(true);
           return;
         }
 
+        identifyUser(newSession.user.id, newSession.user.email ?? undefined);
         setAccountDeleted(false);
       } else {
+        resetUser();
         useProfile.getState().clearProfile();
         setAccountDeleted(false);
       }
@@ -130,6 +134,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!isInitializedRef.current) return;
 
       if (!mounted) return;
+
+      if (event === 'SIGNED_IN') {
+        analytics.userSignedIn();
+      } else if (event === 'SIGNED_OUT') {
+        analytics.userSignedOut();
+      }
 
       setLoading(true);
       try {
